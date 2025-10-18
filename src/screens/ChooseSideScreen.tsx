@@ -1,15 +1,21 @@
 import React from "react"
+import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import type { PieceColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
+import { useGame } from "../hooks/useGame"
 
-interface ChooseSideScreenProps {
-    onChooseSide: (c: PieceColor) => void
-    onBack: () => void
-}
+interface ChooseSideScreenProps {}
 
-export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({ onChooseSide, onBack }) => {
+export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
+    const navigate = useNavigate()
     const { t } = useLanguage()
+    const { setPlayerColor } = useGame()
+
+    const handleChooseSide = (color: PieceColor) => {
+        setPlayerColor(color)
+        navigate("/game")
+    }
 
     return (
         <Box
@@ -26,14 +32,14 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({ onChooseSide
         >
             <Typography sx={{ color: "#fff", fontSize: 28 }}>{t("chooseYourSide")}</Typography>
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Button onClick={() => onChooseSide("light")} sx={{ bgcolor: "#ddd", color: "#000" }}>
+                <Button onClick={() => handleChooseSide("light")} sx={{ bgcolor: "#ddd", color: "#000" }}>
                     {t("light")}
                 </Button>
-                <Button onClick={() => onChooseSide("dark")} sx={{ bgcolor: "#111", color: "#fff" }}>
+                <Button onClick={() => handleChooseSide("dark")} sx={{ bgcolor: "#111", color: "#fff" }}>
                     {t("dark")}
                 </Button>
             </Box>
-            <Button onClick={onBack} sx={{ mt: 3, color: "#fff" }}>
+            <Button onClick={() => navigate("/")} sx={{ mt: 3, color: "#fff" }}>
                 {t("goBack")}
             </Button>
         </Box>

@@ -1,12 +1,12 @@
 import React from "react"
+import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import { useLanguage } from "../hooks/useLanguage"
 
-interface OptionsScreenProps {
-    onBack: () => void
-}
+interface OptionsScreenProps {}
 
-export const OptionsScreen: React.FC<OptionsScreenProps> = ({ onBack }) => {
+export const OptionsScreen: React.FC<OptionsScreenProps> = ({}) => {
+    const navigate = useNavigate()
     const { setLanguage, t } = useLanguage()
 
     return (
@@ -31,7 +31,7 @@ export const OptionsScreen: React.FC<OptionsScreenProps> = ({ onBack }) => {
                     {t("ptBR")}
                 </Button>
             </Box>
-            <Button onClick={onBack} sx={{ mt: 3, color: "#fff" }}>
+            <Button onClick={() => navigate(-1)} sx={{ mt: 3, color: "#fff" }}>
                 {t("goBack")}
             </Button>
         </Box>

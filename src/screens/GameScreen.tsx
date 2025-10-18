@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { Box } from "@mui/material"
 import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import type { PieceType, PieceColor, PiecePosition } from "../logic/types"
 import { reachableCells, manhattan } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
+import { useGame } from "../hooks/useGame"
 
-interface GameScreenProps {
-    playerColor: PieceColor
-    onGameEnd: (winner: PieceColor) => void
-    onQuit: () => void
-}
+interface GameScreenProps {}
 
-export const GameScreen: React.FC<GameScreenProps> = ({ playerColor, onGameEnd, onQuit }) => {
+export const GameScreen: React.FC<GameScreenProps> = ({}) => {
+    const navigate = useNavigate()
+    const { playerColor, setWinner } = useGame()
+
     const BOARD_SIZE = 20
     const CELL_SIZE = 64
 
@@ -35,6 +36,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({ playerColor, onGameEnd, 
     const [turn, setTurn] = useState<PieceColor>("light")
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [highlighted, setHighlighted] = useState<PiecePosition[]>([])
+
+    const handleGameEnd = (winningColor: "light" | "dark") => {
+        setWinner(winningColor)
+        navigate("/end")
+    }
 
     // IA move
     useEffect(() => {
@@ -74,9 +80,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({ playerColor, onGameEnd, 
     useEffect(() => {
         const lights = pieces.filter((p) => p.color === "light").length
         const darks = pieces.filter((p) => p.color === "dark").length
-        if (lights === 0) onGameEnd("dark")
-        if (darks === 0) onGameEnd("light")
-    }, [pieces, onGameEnd])
+        if (lights === 0) handleGameEnd("dark")
+        if (darks === 0) handleGameEnd("light")
+    }, [pieces, handleGameEnd])
 
     const endTurn = () => {
         const nextTurn = turn === "light" ? "dark" : "light"
@@ -173,7 +179,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({ playerColor, onGameEnd, 
                 />
             </Box>
 
-            <HUD turn={turn} onEndTurn={onEndTurn} onQuit={onQuit} playerColor={playerColor} />
+            <HUD turn={turn} onEndTurn={onEndTurn} onQuit={() => navigate("/")} playerColor={playerColor} />
         </Box>
     )
 }

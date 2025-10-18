@@ -5,7 +5,7 @@ import { useLanguage } from "../hooks/useLanguage"
 
 interface HUDProps {
     turn: PieceColor
-    playerColor: PieceColor
+    playerColor: PieceColor | null
     onEndTurn: () => void
     onQuit: () => void
 }

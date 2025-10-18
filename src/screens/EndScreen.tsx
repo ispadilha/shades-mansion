@@ -1,14 +1,20 @@
 import React from "react"
+import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import { useLanguage } from "../hooks/useLanguage"
+import { useGame } from "../hooks/useGame"
 
-interface EndScreenProps {
-    winner: "light" | "dark"
-    onRestart: () => void
-}
+interface EndScreenProps {}
 
-export const EndScreen: React.FC<EndScreenProps> = ({ winner, onRestart }) => {
+export const EndScreen: React.FC<EndScreenProps> = ({}) => {
+    const navigate = useNavigate()
     const { t } = useLanguage()
+    const { winner, setWinner } = useGame()
+
+    const handleRestart = () => {
+        setWinner(null)
+        navigate("/choose-side")
+    }
 
     return (
         <Box
@@ -24,7 +30,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({ winner, onRestart }) => {
             }}
         >
             <Typography sx={{ fontSize: 36, mb: 2 }}>{winner === "light" ? t("lightWon") : t("darkWon")}</Typography>
-            <Button onClick={onRestart} sx={{ bgcolor: "#222", color: "#fff" }}>
+            <Button onClick={handleRestart} sx={{ bgcolor: "#222", color: "#fff" }}>
                 {t("playAgain")}
             </Button>
         </Box>
