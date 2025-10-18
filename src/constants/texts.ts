@@ -1,66 +1,86 @@
 export const texts = {
+    chooseLanguage: {
+        enUS: "Choose language",
+        ptBR: "Escolha o idioma",
+    },
+
+    enUS: {
+        enUS: "English (US)",
+        ptBR: "Inglês (EUA)",
+    },
+
+    ptBR: {
+        enUS: "Portuguese (BR)",
+        ptBR: "Português (BR)",
+    },
+
+    options: {
+        enUS: "Options",
+        ptBR: "Opções",
+    },
+
     startGame: {
-        enus: "Start game",
-        ptbr: "Iniciar jogo"
+        enUS: "Start game",
+        ptBR: "Iniciar jogo",
     },
-    
-    chooseSide: {
-        enus: "Choose your side",
-        ptbr: "Escolha seu lado"
+
+    chooseYourSide: {
+        enUS: "Choose your side",
+        ptBR: "Escolha seu lado",
     },
-    
+
     goBack: {
-        enus: "Go back",
-        ptbr: "Voltar"
+        enUS: "Go back",
+        ptBR: "Voltar",
     },
-    
+
     light: {
-        enus: "Light",
-        ptbr: "Peças claras"
+        enUS: "Light",
+        ptBR: "Peças claras",
     },
-    
+
     dark: {
-        enus: "Dark",
-        ptbr: "Peças escuras"
+        enUS: "Dark",
+        ptBR: "Peças escuras",
     },
-    
+
     turn: {
-        enus: "Turn",
-        ptbr: "Turno"
+        enUS: "Turn",
+        ptBR: "Turno",
     },
-    
+
     yourTurn: {
-        enus: "Your turn!",
-        ptbr: "Seu turno!"
+        enUS: "Your turn!",
+        ptBR: "Seu turno!",
     },
-    
+
     wait: {
-        enus: "Wait...",
-        ptbr: "Aguarde..."
+        enUS: "Wait...",
+        ptBR: "Aguarde...",
     },
-    
+
     endTurn: {
-        enus: "End Turn",
-        ptbr: "Terminar turno"
+        enUS: "End Turn",
+        ptBR: "Terminar turno",
     },
-    
+
     quit: {
-        enus: "Quit",
-        ptbr: "Sair"
+        enUS: "Quit",
+        ptBR: "Sair",
     },
-    
+
     lightWon: {
-        enus: "Light side won!",
-        ptbr: "Lado claro venceu!"
+        enUS: "Light side won!",
+        ptBR: "Lado claro venceu!",
     },
-    
+
     darkWon: {
-        enus: "Dark side won!",
-        ptbr: "Lado escuro venceu!"
+        enUS: "Dark side won!",
+        ptBR: "Lado escuro venceu!",
     },
-    
+
     playAgain: {
-        enus: "Play again",
-        ptbr: "Jogar novamente"
-    }
+        enUS: "Play again",
+        ptBR: "Jogar novamente",
+    },
 }

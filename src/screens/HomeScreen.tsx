@@ -2,7 +2,12 @@ import React from "react"
 import { Box, Button, Typography } from "@mui/material"
 import { useLanguage } from "../hooks/useLanguage"
 
-export const HomeScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
+interface HomeScreenProps {
+    onStart: () => void
+    onOpt: () => void
+}
+
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onStart, onOpt }) => {
     const { t } = useLanguage()
 
     return (
@@ -15,11 +20,15 @@ export const HomeScreen: React.FC<{ onStart: () => void }> = ({ onStart }) => {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
+                gap: 4,
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 44, mb: 4 }}>Shades Mansion</Typography>
+            <Typography sx={{ color: "#fff", fontSize: 44 }}>Shades Mansion</Typography>
             <Button variant="contained" onClick={onStart} sx={{ bgcolor: "#222", color: "#fff", px: 4, py: 1.5 }}>
                 {t("startGame")}
+            </Button>
+            <Button variant="contained" onClick={onOpt} sx={{ bgcolor: "#222", color: "#fff", px: 4, py: 1.5 }}>
+                {t("options")}
             </Button>
         </Box>
     )

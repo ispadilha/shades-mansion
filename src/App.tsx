@@ -2,6 +2,7 @@ import { useState } from "react"
 import { CssBaseline } from "@mui/material"
 import { LanguageProvider } from "./contexts/LanguageContext"
 import { HomeScreen } from "./screens/HomeScreen"
+import { OptionsScreen } from "./screens/OptionsScreen"
 import { ChooseSideScreen } from "./screens/ChooseSideScreen"
 import { GameScreen } from "./screens/GameScreen"
 import { EndScreen } from "./screens/EndScreen"
@@ -11,17 +12,18 @@ const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 }
 
 export default function App() {
-    const [route, setRoute] = useState<"home" | "choose" | "game" | "end">("home")
+    const [route, setRoute] = useState<"home" | "options" | "choose" | "game" | "end">("home")
     const [playerColor, setPlayerColor] = useState<"light" | "dark" | null>(null)
     const [winner, setWinner] = useState<"light" | "dark" | null>(null)
 
     return (
         <AppProviders>
             <CssBaseline />
-            {route === "home" && <HomeScreen onStart={() => setRoute("choose")} />}
+            {route === "home" && <HomeScreen onOpt={() => setRoute("options")} onStart={() => setRoute("choose")} />}
+            {route === "options" && <OptionsScreen onBack={() => setRoute("home")} />}
             {route === "choose" && (
                 <ChooseSideScreen
-                    onChoose={(color) => {
+                    onChooseSide={(color) => {
                         setPlayerColor(color)
                         setRoute("game")
                     }}

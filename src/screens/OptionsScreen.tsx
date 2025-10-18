@@ -1,15 +1,13 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
-import type { PieceColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
 
-interface ChooseSideScreenProps {
-    onChooseSide: (c: PieceColor) => void
+interface OptionsScreenProps {
     onBack: () => void
 }
 
-export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({ onChooseSide, onBack }) => {
-    const { t } = useLanguage()
+export const OptionsScreen: React.FC<OptionsScreenProps> = ({ onBack }) => {
+    const { setLanguage, t } = useLanguage()
 
     return (
         <Box
@@ -24,13 +22,13 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({ onChooseSide
                 flexDirection: "column",
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 28 }}>{t("chooseYourSide")}</Typography>
+            <Typography sx={{ color: "#fff", fontSize: 28 }}>{t("chooseLanguage")}</Typography>
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Button onClick={() => onChooseSide("light")} sx={{ bgcolor: "#ddd", color: "#000" }}>
-                    {t("light")}
+                <Button onClick={() => setLanguage("enUS")} sx={{ bgcolor: "#001", color: "#faa" }}>
+                    {t("enUS")}
                 </Button>
-                <Button onClick={() => onChooseSide("dark")} sx={{ bgcolor: "#111", color: "#fff" }}>
-                    {t("dark")}
+                <Button onClick={() => setLanguage("ptBR")} sx={{ bgcolor: "#010", color: "#ffa" }}>
+                    {t("ptBR")}
                 </Button>
             </Box>
             <Button onClick={onBack} sx={{ mt: 3, color: "#fff" }}>

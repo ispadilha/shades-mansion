@@ -2,17 +2,17 @@ import type { texts } from "../constants/texts"
 
 export type PieceColor = "light" | "dark"
 
-export interface Position {
+export interface PiecePosition {
     x: number
     y: number
 }
 
-export interface Piece {
+export interface PieceType {
     id: string
     color: PieceColor
-    position: Position
+    position: PiecePosition
     movedThisTurn: boolean
 }
 
-export type Language = "enus" | "ptbr"
+export type Language = "enUS" | "ptBR"
 export type TextKey = keyof typeof texts
