@@ -9,12 +9,12 @@ interface BoardProps {
     cellSize: number
     pieces: PieceType[]
     highlighted: PiecePosition[]
-    onCellClick: (pos: PiecePosition, left: boolean) => void
-    onPieceRightClick: (pieceId: string) => void
     selectedPieceId: string | null
+    onCellClick: (pos: PiecePosition, left: boolean) => void
+    onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 
-export const Board: React.FC<BoardProps> = ({ boardSize, cellSize, pieces, highlighted, onCellClick, onPieceRightClick, selectedPieceId }) => {
+export const Board: React.FC<BoardProps> = ({ boardSize, cellSize, pieces, highlighted, selectedPieceId, onCellClick, onCellContextMenu }) => {
     const cells: JSX.Element[] = []
     for (let y = 0; y < boardSize; y++) {
         for (let x = 0; x < boardSize; x++) {
@@ -31,7 +31,7 @@ export const Board: React.FC<BoardProps> = ({ boardSize, cellSize, pieces, highl
                     isHighlighted={isHighlighted}
                     isSelected={isSelected}
                     onCellClick={onCellClick}
-                    onPieceRightClick={onPieceRightClick}
+                    onCellContextMenu={onCellContextMenu}
                 />
             )
         }

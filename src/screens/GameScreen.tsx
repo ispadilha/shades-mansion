@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { Box } from "@mui/material"
+import { Box, Menu, MenuItem, Modal, Typography } from "@mui/material"
 import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import type { PieceType, PieceColor, PiecePosition } from "../logic/types"
@@ -36,6 +36,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const [turn, setTurn] = useState<PieceColor>("light")
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [highlighted, setHighlighted] = useState<PiecePosition[]>([])
+    const [infoModal, setInfoModal] = useState<{ open: boolean; piece?: PieceType }>({ open: false })
+    const [contextMenu, setContextMenu] = useState<{
+        mouseX: number
+        mouseY: number
+        position?: PiecePosition
+        targetPiece?: PieceType
+    } | null>(null)
 
     const handleGameEnd = (winningColor: "light" | "dark") => {
         setWinner(winningColor)
@@ -93,51 +100,56 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     }
 
     const onCellClick = (pos: PiecePosition, left: boolean) => {
-        // Ignorar cliques durante turno da IA
         if (turn !== playerColor) return
 
         const clickedPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
 
         if (left) {
-            // Clique esquerdo - selecionar ou mover
             if (clickedPiece && clickedPiece.color === playerColor && !clickedPiece.movedThisTurn) {
                 setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
-                return
-            }
-
-            if (selectedId) {
-                const selectedPiece = pieces.find((p) => p.id === selectedId)
-                if (!selectedPiece || selectedPiece.movedThisTurn) {
-                    setSelectedId(null)
-                    return
-                }
-
-                const canMove = highlighted.some((h) => h.x === pos.x && h.y === pos.y)
-                const isOccupied = pieces.some((p) => p.position.x === pos.x && p.position.y === pos.y)
-
-                if (canMove && !isOccupied) {
-                    setPieces((prev) => prev.map((p) => (p.id === selectedId ? { ...p, position: pos, movedThisTurn: true } : p)))
-                    setSelectedId(null)
-                }
+            } else {
+                setSelectedId(null)
             }
         }
     }
 
-    const onPieceRightClick = (targetId: string) => {
-        // Ignorar durante turno da IA
+    const onCellContextMenu = (event: React.MouseEvent, pos: PiecePosition) => {
+        event.preventDefault()
         if (turn !== playerColor) return
 
-        const target = pieces.find((p) => p.id === targetId)
-        const selected = selectedId ? pieces.find((p) => p.id === selectedId) : undefined
+        const targetPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
 
-        if (!target || !selected || selected.movedThisTurn) return
-        if (selected.color === target.color) return
+        setContextMenu({
+            mouseX: event.clientX,
+            mouseY: event.clientY,
+            position: pos,
+            targetPiece,
+        })
+    }
 
-        // Verificar alcance
-        if (manhattan(selected.position, target.position) <= 5) {
-            setPieces((prev) => prev.filter((p) => p.id !== targetId).map((p) => (p.id === selectedId ? { ...p, movedThisTurn: true } : p)))
-            setSelectedId(null)
-        }
+    const handleCloseContextMenu = () => setContextMenu(null)
+
+    const handleMove = () => {
+        if (!selectedId || !contextMenu?.position) return
+
+        setPieces((prev) => prev.map((p) => (p.id === selectedId ? { ...p, position: contextMenu.position!, movedThisTurn: true } : p)))
+        setSelectedId(null)
+        handleCloseContextMenu()
+    }
+
+    const handleAttack = () => {
+        if (!selectedId || !contextMenu?.targetPiece) return
+
+        setPieces((prev) =>
+            prev.filter((p) => p.id !== contextMenu.targetPiece!.id).map((p) => (p.id === selectedId ? { ...p, movedThisTurn: true } : p))
+        )
+        setSelectedId(null)
+        handleCloseContextMenu()
+    }
+
+    const handleShowInfo = () => {
+        setInfoModal({ open: true, piece: contextMenu?.targetPiece })
+        handleCloseContextMenu()
     }
 
     const onEndTurn = () => {
@@ -174,12 +186,40 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                     pieces={pieces}
                     highlighted={highlighted}
                     onCellClick={onCellClick}
-                    onPieceRightClick={onPieceRightClick}
                     selectedPieceId={selectedId}
+                    onCellContextMenu={onCellContextMenu}
                 />
             </Box>
-
             <HUD turn={turn} onEndTurn={onEndTurn} onQuit={() => navigate("/")} playerColor={playerColor} />
+
+            <Menu
+                open={contextMenu !== null}
+                onClose={handleCloseContextMenu}
+                anchorReference="anchorPosition"
+                anchorPosition={contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined}
+            >
+                {!selectedId && contextMenu?.targetPiece && <MenuItem onClick={handleShowInfo}>Informações</MenuItem>}
+                {selectedId && !contextMenu?.targetPiece && <MenuItem onClick={handleMove}>Mover</MenuItem>}
+                {selectedId && contextMenu?.targetPiece && contextMenu.targetPiece.color !== pieces.find((p) => p.id === selectedId)?.color && (
+                    <MenuItem onClick={handleAttack}>Atacar</MenuItem>
+                )}
+            </Menu>
+            <Modal open={infoModal.open} onClose={() => setInfoModal({ open: false })}>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: 200,
+                        bgcolor: "background.paper",
+                        p: 2,
+                    }}
+                >
+                    <Typography>Cor: {infoModal.piece?.color}</Typography>
+                    <Typography>Alcance: 5</Typography>
+                </Box>
+            </Modal>
         </Box>
     )
 }

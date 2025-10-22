@@ -12,10 +12,10 @@ interface CellProps {
     isHighlighted: boolean
     isSelected: boolean
     onCellClick: (pos: PiecePosition, left: boolean) => void
-    onPieceRightClick: (pieceId: string) => void
+    onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 
-export const Cell: React.FC<CellProps> = ({ x, y, size, piece, isHighlighted, isSelected, onCellClick, onPieceRightClick }) => {
+export const Cell: React.FC<CellProps> = ({ x, y, size, piece, isHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
     const base = (x + y) % 2 === 0 ? "#4b2f26" : "#3b241c"
     const bg = isHighlighted ? "#a6763a" : base
     const border = isSelected ? "2px solid #ffd700" : "1px solid rgba(0,0,0,0.2)"
@@ -29,7 +29,7 @@ export const Cell: React.FC<CellProps> = ({ x, y, size, piece, isHighlighted, is
             onContextMenu={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
-                if (piece) onPieceRightClick(piece.id)
+                onCellContextMenu(e, { x, y })
             }}
             sx={{
                 position: "absolute",
