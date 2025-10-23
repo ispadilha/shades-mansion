@@ -4,14 +4,16 @@ import { Box, Menu, MenuItem, Modal, Typography } from "@mui/material"
 import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import type { PieceType, PieceColor, PiecePosition } from "../logic/types"
-import { reachableCells, manhattan } from "../logic/movement"
+import { reachableCells } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
+import { useLanguage } from "../hooks/useLanguage"
 
 interface GameScreenProps {}
 
 export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const navigate = useNavigate()
+    const { t } = useLanguage()
     const { playerColor, setWinner } = useGame()
 
     const BOARD_SIZE = 20
@@ -198,10 +200,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                 anchorReference="anchorPosition"
                 anchorPosition={contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined}
             >
-                {!selectedId && contextMenu?.targetPiece && <MenuItem onClick={handleShowInfo}>Informações</MenuItem>}
-                {selectedId && !contextMenu?.targetPiece && <MenuItem onClick={handleMove}>Mover</MenuItem>}
+                {!selectedId && contextMenu?.targetPiece && <MenuItem onClick={handleShowInfo}>{t("info")}</MenuItem>}
+                {selectedId && !contextMenu?.targetPiece && <MenuItem onClick={handleMove}>{t("move")}</MenuItem>}
                 {selectedId && contextMenu?.targetPiece && contextMenu.targetPiece.color !== pieces.find((p) => p.id === selectedId)?.color && (
-                    <MenuItem onClick={handleAttack}>Atacar</MenuItem>
+                    <MenuItem onClick={handleAttack}>{t("attack")}</MenuItem>
                 )}
             </Menu>
             <Modal open={infoModal.open} onClose={() => setInfoModal({ open: false })}>
@@ -216,8 +218,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                         p: 2,
                     }}
                 >
-                    <Typography>Cor: {infoModal.piece?.color}</Typography>
-                    <Typography>Alcance: 5</Typography>
+                    <Typography>
+                        {t("team")}: {infoModal.piece?.color === "light" ? t("light") : t("dark")}
+                    </Typography>
+                    <Typography>{t("range")}: 5</Typography>
                 </Box>
             </Modal>
         </Box>

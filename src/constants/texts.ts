@@ -44,6 +44,31 @@ export const texts = {
         ptBR: "Peças escuras",
     },
 
+    info: {
+        enUS: "Info",
+        ptBR: "Informações",
+    },
+
+    move: {
+        enUS: "Move",
+        ptBR: "Mover",
+    },
+
+    attack: {
+        enUS: "Attack",
+        ptBR: "Atacar",
+    },
+
+    team: {
+        enUS: "Team",
+        ptBR: "Equipe",
+    },
+
+    range: {
+        enUS: "Range",
+        ptBR: "Alcance",
+    },
+
     turn: {
         enUS: "Turn",
         ptBR: "Turno",
