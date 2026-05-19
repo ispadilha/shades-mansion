@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { Box, Menu, MenuItem, Modal, Typography } from "@mui/material"
 import { Board } from "../components/Board"
@@ -8,6 +8,7 @@ import { reachableCells, manhattan } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
+import { useEdgeScroll } from "../hooks/useEdgeScroll"
 
 interface GameScreenProps {}
 
@@ -16,7 +17,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const { t } = useLanguage()
     const { playerColor, setWinner } = useGame()
 
-    const BOARD_SIZE = 20
+    const BOARD_SIZE = 40
     const CELL_SIZE = 64
 
     const initialPieces = useMemo<PieceType[]>(() => {
@@ -45,6 +46,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         position?: PiecePosition
         targetPiece?: PieceType
     } | null>(null)
+
+    const scrollRef = useRef<HTMLDivElement>(null)
+    useEdgeScroll(scrollRef, { edgeSize: 80, maxSpeed: 20, enabled: contextMenu === null && !infoModal.open })
 
     const handleGameEnd = (winningColor: "light" | "dark") => {
         setWinner(winningColor)
@@ -125,7 +129,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const canInfo = !selectedId && targetPiece
         const canMove = selectedId && !targetPiece && highlighted.some((h) => h.x === pos.x && h.y === pos.y)
         const canAttack =
-            selectedId && targetPiece && selectedPiece && targetPiece.color !== selectedPiece.color && manhattan(selectedPiece.position, targetPiece.position) <= 5
+            selectedId &&
+            targetPiece &&
+            selectedPiece &&
+            targetPiece.color !== selectedPiece.color &&
+            manhattan(selectedPiece.position, targetPiece.position) <= 5
 
         if (!canInfo && !canMove && !canAttack) return
 
@@ -151,7 +159,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         if (!selectedId || !contextMenu?.targetPiece) return
 
         setPieces((prev) =>
-            prev.filter((p) => p.id !== contextMenu.targetPiece!.id).map((p) => (p.id === selectedId ? { ...p, movedThisTurn: true } : p))
+            prev.filter((p) => p.id !== contextMenu.targetPiece!.id).map((p) => (p.id === selectedId ? { ...p, movedThisTurn: true } : p)),
         )
         setSelectedId(null)
         handleCloseContextMenu()
@@ -180,25 +188,35 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             }}
         >
             <Box
+                ref={scrollRef}
                 sx={{
-                    // flex: 1,
-                    // display: "flex",
-                    // alignItems: "center",
-                    // justifyContent: "center",
+                    flex: 1,
                     overflow: "auto",
-                    p: 2,
-                    m: "auto",
+                    position: "relative",
                 }}
             >
-                <Board
-                    boardSize={BOARD_SIZE}
-                    cellSize={CELL_SIZE}
-                    pieces={pieces}
-                    highlighted={highlighted}
-                    onCellClick={onCellClick}
-                    selectedPieceId={selectedId}
-                    onCellContextMenu={onCellContextMenu}
-                />
+                <Box
+                    sx={{
+                        width: "fit-content",
+                        minWidth: "100%",
+                        minHeight: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        p: 2,
+                        boxSizing: "border-box",
+                    }}
+                >
+                    <Board
+                        boardSize={BOARD_SIZE}
+                        cellSize={CELL_SIZE}
+                        pieces={pieces}
+                        highlighted={highlighted}
+                        onCellClick={onCellClick}
+                        selectedPieceId={selectedId}
+                        onCellContextMenu={onCellContextMenu}
+                    />
+                </Box>
             </Box>
             <HUD turn={turn} onEndTurn={onEndTurn} onQuit={() => navigate("/")} playerColor={playerColor} />
 
