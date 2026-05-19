@@ -1,21 +1,18 @@
 import React from "react"
 import { Box } from "@mui/material"
-import { Piece } from "./Piece"
-import type { PieceType } from "../logic/types"
 import type { PiecePosition } from "../logic/types"
 
 interface CellProps {
     x: number
     y: number
     size: number
-    piece?: PieceType | undefined
     isHighlighted: boolean
     isSelected: boolean
     onCellClick: (pos: PiecePosition, left: boolean) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 
-export const Cell: React.FC<CellProps> = ({ x, y, size, piece, isHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
+export const Cell: React.FC<CellProps> = ({ x, y, size, isHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
     const base = (x + y) % 2 === 0 ? "#4b2f26" : "#3b241c"
     const bg = isHighlighted ? "#a6763a" : base
     const border = isSelected ? "2px solid #ffd700" : "1px solid rgba(0,0,0,0.2)"
@@ -39,13 +36,8 @@ export const Cell: React.FC<CellProps> = ({ x, y, size, piece, isHighlighted, is
                 height: size,
                 bgcolor: bg,
                 border,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
                 userSelect: "none",
             }}
-        >
-            {piece && <Piece piece={piece} />}
-        </Box>
+        />
     )
 }

@@ -4,7 +4,7 @@ import { Box, Menu, MenuItem, Modal, Typography } from "@mui/material"
 import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import type { PieceType, PieceColor, PiecePosition } from "../logic/types"
-import { reachableCells } from "../logic/movement"
+import { reachableCells, manhattan } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
@@ -120,6 +120,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         if (turn !== playerColor) return
 
         const targetPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
+        const selectedPiece = pieces.find((p) => p.id === selectedId)
+
+        const canInfo = !selectedId && targetPiece
+        const canMove = selectedId && !targetPiece && highlighted.some((h) => h.x === pos.x && h.y === pos.y)
+        const canAttack =
+            selectedId && targetPiece && selectedPiece && targetPiece.color !== selectedPiece.color && manhattan(selectedPiece.position, targetPiece.position) <= 5
+
+        if (!canInfo && !canMove && !canAttack) return
 
         setContextMenu({
             mouseX: event.clientX,

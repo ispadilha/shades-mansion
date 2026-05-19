@@ -1,6 +1,7 @@
 import React, { type JSX } from "react"
 import { Box } from "@mui/material"
 import { Cell } from "./Cell"
+import { PhaserBoard } from "./PhaserBoard"
 import type { PieceType } from "../logic/types"
 import type { PiecePosition } from "../logic/types"
 
@@ -27,7 +28,6 @@ export const Board: React.FC<BoardProps> = ({ boardSize, cellSize, pieces, highl
                     x={x}
                     y={y}
                     size={cellSize}
-                    piece={piece}
                     isHighlighted={isHighlighted}
                     isSelected={isSelected}
                     onCellClick={onCellClick}
@@ -37,5 +37,10 @@ export const Board: React.FC<BoardProps> = ({ boardSize, cellSize, pieces, highl
         }
     }
 
-    return <Box sx={{ position: "relative", width: boardSize * cellSize, height: boardSize * cellSize }}>{cells}</Box>
+    return (
+        <Box sx={{ position: "relative", width: boardSize * cellSize, height: boardSize * cellSize }}>
+            {cells}
+            <PhaserBoard boardSize={boardSize} cellSize={cellSize} pieces={pieces} />
+        </Box>
+    )
 }
