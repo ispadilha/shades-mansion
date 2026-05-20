@@ -1,13 +1,13 @@
 import Phaser from "phaser"
-import type { PiecePosition, PieceType } from "../logic/types"
+import type { PiecePosition, PieceDefinition } from "../logic/types"
 
-const STEP_MS = 280
+export const STEP_MS = 280
 
 export class BoardScene extends Phaser.Scene {
     private cellSize: number
     private sprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private lastCells: Map<string, PiecePosition> = new Map()
-    private pendingPieces: PieceType[] | null = null
+    private pendingPieces: PieceDefinition[] | null = null
     private isReady = false
 
     constructor(cellSize: number) {
@@ -23,7 +23,7 @@ export class BoardScene extends Phaser.Scene {
         }
     }
 
-    syncPieces(pieces: PieceType[]) {
+    syncPieces(pieces: PieceDefinition[]) {
         if (!this.isReady) {
             this.pendingPieces = pieces
             return
@@ -31,7 +31,7 @@ export class BoardScene extends Phaser.Scene {
         this.applyPieces(pieces)
     }
 
-    private applyPieces(pieces: PieceType[]) {
+    private applyPieces(pieces: PieceDefinition[]) {
         const seen = new Set<string>()
 
         for (const piece of pieces) {
@@ -113,7 +113,7 @@ export class BoardScene extends Phaser.Scene {
         return path
     }
 
-    private buildPiece(piece: PieceType): Phaser.GameObjects.Container {
+    private buildPiece(piece: PieceDefinition): Phaser.GameObjects.Container {
         const cs = this.cellSize
         const isLight = piece.color === "light"
         const clothing = isLight ? 0xf2f2f2 : 0x1a1a1a

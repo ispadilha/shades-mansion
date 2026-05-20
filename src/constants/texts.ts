@@ -69,6 +69,31 @@ export const texts = {
         ptBR: "Alcance",
     },
 
+    hp: {
+        enUS: "HP",
+        ptBR: "PV",
+    },
+
+    type: {
+        enUS: "Type",
+        ptBR: "Tipo",
+    },
+
+    moveRange: {
+        enUS: "Move range",
+        ptBR: "Alcance de movimento",
+    },
+
+    attackRange: {
+        enUS: "Attack range",
+        ptBR: "Alcance de ataque",
+    },
+
+    attackPower: {
+        enUS: "Attack power",
+        ptBR: "Força de ataque",
+    },
+
     turn: {
         enUS: "Turn",
         ptBR: "Turno",

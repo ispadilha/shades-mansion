@@ -3,12 +3,14 @@ import { useNavigate } from "react-router-dom"
 import { Box, Menu, MenuItem, Modal, Typography } from "@mui/material"
 import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
-import type { PieceType, PieceColor, PiecePosition } from "../logic/types"
-import { reachableCells, manhattan } from "../logic/movement"
+import type { PieceDefinition, PieceColor, PiecePosition } from "../logic/types"
+import { reachableCells, manhattan, findApproachCell } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
+import { MAX_HP, PIECE_STATS } from "../constants/gameRules"
+import { STEP_MS } from "../game/BoardScene"
 
 interface GameScreenProps {}
 
@@ -17,38 +19,50 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const { t } = useLanguage()
     const { playerColor, setWinner } = useGame()
 
-    const BOARD_SIZE = 40
+    const BOARD_SIZE = 20
     const CELL_SIZE = 64
 
-    const initialPieces = useMemo<PieceType[]>(() => {
+    const initialPieces = useMemo<PieceDefinition[]>(() => {
         const mid = Math.floor(BOARD_SIZE / 2)
         const xs = [mid - 1, mid, mid + 1].map((x) => Math.max(0, Math.min(BOARD_SIZE - 1, x)))
         const topY = 0
         const bottomY = BOARD_SIZE - 1
         return [
-            { id: "b1", color: "dark", position: { x: xs[0], y: topY }, movedThisTurn: false },
-            { id: "b2", color: "dark", position: { x: xs[1], y: topY }, movedThisTurn: false },
-            { id: "b3", color: "dark", position: { x: xs[2], y: topY }, movedThisTurn: false },
-            { id: "w1", color: "light", position: { x: xs[0], y: bottomY }, movedThisTurn: false },
-            { id: "w2", color: "light", position: { x: xs[1], y: bottomY }, movedThisTurn: false },
-            { id: "w3", color: "light", position: { x: xs[2], y: bottomY }, movedThisTurn: false },
+            { id: "dA", color: "dark", type: "A", position: { x: xs[0], y: topY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
+            { id: "dB", color: "dark", type: "B", position: { x: xs[1], y: topY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
+            { id: "dC", color: "dark", type: "C", position: { x: xs[2], y: topY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
+            { id: "lA", color: "light", type: "A", position: { x: xs[0], y: bottomY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
+            { id: "lB", color: "light", type: "B", position: { x: xs[1], y: bottomY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
+            { id: "lC", color: "light", type: "C", position: { x: xs[2], y: bottomY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
         ]
     }, [])
 
-    const [pieces, setPieces] = useState<PieceType[]>(initialPieces)
+    const [pieces, setPieces] = useState<PieceDefinition[]>(initialPieces)
     const [turn, setTurn] = useState<PieceColor>("light")
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [highlighted, setHighlighted] = useState<PiecePosition[]>([])
-    const [infoModal, setInfoModal] = useState<{ open: boolean; piece?: PieceType }>({ open: false })
+    const [attackHighlighted, setAttackHighlighted] = useState<PiecePosition[]>([])
+    const [infoModal, setInfoModal] = useState<{ open: boolean; piece?: PieceDefinition }>({ open: false })
     const [contextMenu, setContextMenu] = useState<{
         mouseX: number
         mouseY: number
         position?: PiecePosition
-        targetPiece?: PieceType
+        targetPiece?: PieceDefinition
     } | null>(null)
 
     const scrollRef = useRef<HTMLDivElement>(null)
     useEdgeScroll(scrollRef, { edgeSize: 80, maxSpeed: 20, enabled: contextMenu === null && !infoModal.open })
+
+    const attackInProgressRef = useRef(false)
+    const damageTimerRef = useRef<number | null>(null)
+    useEffect(() => {
+        return () => {
+            if (damageTimerRef.current !== null) {
+                clearTimeout(damageTimerRef.current)
+                damageTimerRef.current = null
+            }
+        }
+    }, [])
 
     // Centralizar visão nas peças no início do jogo
     useEffect(() => {
@@ -72,36 +86,68 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
     // IA move
     useEffect(() => {
-        if (turn !== playerColor) {
-            const timer = setTimeout(() => {
-                const { updatedPieces } = SimpleAI.makeMove(pieces, turn, BOARD_SIZE)
-                setPieces(updatedPieces)
+        if (turn === playerColor || attackInProgressRef.current) return
 
-                // Verificar se todas as peças da IA se moveram
-                const iaPieces = updatedPieces.filter((p) => p.color === turn)
-                const allMoved = iaPieces.length > 0 && iaPieces.every((p) => p.movedThisTurn)
+        const timer = setTimeout(() => {
+            const { updatedPieces, pendingDamage } = SimpleAI.makeMove(pieces, turn, BOARD_SIZE)
+            setPieces(updatedPieces)
 
-                if (allMoved) {
-                    endTurn()
-                }
-            }, 1000)
+            if (pendingDamage) {
+                attackInProgressRef.current = true
+                damageTimerRef.current = window.setTimeout(() => {
+                    setPieces((prev) =>
+                        prev.map((p) => (p.id === pendingDamage.targetId ? { ...p, hp: p.hp - pendingDamage.damage } : p)).filter((p) => p.hp > 0),
+                    )
+                    attackInProgressRef.current = false
+                    damageTimerRef.current = null
+                }, pendingDamage.delayMs)
+                return
+            }
 
-            return () => clearTimeout(timer)
-        }
+            // Verificar se todas as peças da IA se moveram
+            const iaPieces = updatedPieces.filter((p) => p.color === turn)
+            const allMoved = iaPieces.length > 0 && iaPieces.every((p) => p.movedThisTurn)
+
+            if (allMoved) {
+                endTurn()
+            }
+        }, 1000)
+
+        return () => clearTimeout(timer)
     }, [turn, pieces, playerColor])
 
     // Atualizar células destacadas
     useEffect(() => {
         if (!selectedId) {
             setHighlighted([])
+            setAttackHighlighted([])
             return
         }
         const p = pieces.find((x) => x.id === selectedId)
         if (!p) {
             setHighlighted([])
+            setAttackHighlighted([])
             return
         }
-        setHighlighted(reachableCells(p, pieces, BOARD_SIZE, 5))
+        const stats = PIECE_STATS[p.type]
+        setHighlighted(reachableCells(p, pieces, BOARD_SIZE, stats.moveRange))
+
+        const attackCells: PiecePosition[] = []
+        const r = stats.attackRange
+        for (let dx = -r; dx <= r; dx++) {
+            for (let dy = -r; dy <= r; dy++) {
+                if ((dx === 0 && dy === 0) || Math.abs(dx) + Math.abs(dy) > r) continue
+                const nx = p.position.x + dx
+                const ny = p.position.y + dy
+                if (nx < 0 || ny < 0 || nx >= BOARD_SIZE || ny >= BOARD_SIZE) continue
+
+                const pieceAtCell = pieces.find((pp) => pp.position.x === nx && pp.position.y === ny)
+                if (pieceAtCell && !findApproachCell(p, pieceAtCell, pieces, BOARD_SIZE)) continue
+
+                attackCells.push({ x: nx, y: ny })
+            }
+        }
+        setAttackHighlighted(attackCells)
     }, [selectedId, pieces])
 
     // Detectar vitória
@@ -118,6 +164,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         setTurn(nextTurn)
         setSelectedId(null)
         setHighlighted([])
+        setAttackHighlighted([])
     }
 
     const onCellClick = (pos: PiecePosition, left: boolean) => {
@@ -126,11 +173,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const clickedPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
 
         if (left) {
-            if (clickedPiece && clickedPiece.color === playerColor && !clickedPiece.movedThisTurn) {
-                setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
-            } else {
+            if (!clickedPiece) {
                 setSelectedId(null)
+                return
             }
+            const isOwnAndMoved = clickedPiece.color === playerColor && clickedPiece.movedThisTurn
+            if (isOwnAndMoved) {
+                setSelectedId(null)
+                return
+            }
+            setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
         }
     }
 
@@ -141,14 +193,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const targetPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
         const selectedPiece = pieces.find((p) => p.id === selectedId)
 
+        const isOwnSelection = !!selectedPiece && selectedPiece.color === playerColor
         const canInfo = !selectedId && targetPiece
-        const canMove = selectedId && !targetPiece && highlighted.some((h) => h.x === pos.x && h.y === pos.y)
+        const canMove = isOwnSelection && !targetPiece && highlighted.some((h) => h.x === pos.x && h.y === pos.y)
         const canAttack =
-            selectedId &&
+            isOwnSelection &&
             targetPiece &&
-            selectedPiece &&
-            targetPiece.color !== selectedPiece.color &&
-            manhattan(selectedPiece.position, targetPiece.position) <= 5
+            targetPiece.color !== selectedPiece!.color &&
+            manhattan(selectedPiece!.position, targetPiece.position) <= PIECE_STATS[selectedPiece!.type].attackRange &&
+            findApproachCell(selectedPiece!, targetPiece, pieces, BOARD_SIZE) !== null
 
         if (!canInfo && !canMove && !canAttack) return
 
@@ -173,11 +226,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const handleAttack = () => {
         if (!selectedId || !contextMenu?.targetPiece) return
 
-        setPieces((prev) =>
-            prev.filter((p) => p.id !== contextMenu.targetPiece!.id).map((p) => (p.id === selectedId ? { ...p, movedThisTurn: true } : p)),
-        )
+        const attacker = pieces.find((p) => p.id === selectedId)
+        if (!attacker) return
+
+        const target = contextMenu.targetPiece
+        const damage = PIECE_STATS[attacker.type].attackDamage
+        const approach = findApproachCell(attacker, target, pieces, BOARD_SIZE)
+        const newPos = approach ?? attacker.position
+        const moveSteps = manhattan(attacker.position, newPos)
+        const delayMs = moveSteps * STEP_MS + 50
+        const attackerId = attacker.id
+        const targetId = target.id
+
+        setPieces((prev) => prev.map((p) => (p.id === attackerId ? { ...p, position: newPos, movedThisTurn: true } : p)))
         setSelectedId(null)
         handleCloseContextMenu()
+
+        window.setTimeout(() => {
+            setPieces((prev) => prev.map((p) => (p.id === targetId ? { ...p, hp: p.hp - damage } : p)).filter((p) => p.hp > 0))
+        }, delayMs)
     }
 
     const handleShowInfo = () => {
@@ -227,6 +294,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                         cellSize={CELL_SIZE}
                         pieces={pieces}
                         highlighted={highlighted}
+                        attackHighlighted={attackHighlighted}
                         onCellClick={onCellClick}
                         selectedPieceId={selectedId}
                         onCellContextMenu={onCellContextMenu}
@@ -262,7 +330,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                     <Typography>
                         {t("team")}: {infoModal.piece?.color === "light" ? t("light") : t("dark")}
                     </Typography>
-                    <Typography>{t("range")}: 5</Typography>
+                    <Typography>
+                        {t("type")}: {infoModal.piece?.type}
+                    </Typography>
+                    <Typography>
+                        {t("hp")}: {infoModal.piece?.hp} / {infoModal.piece?.maxHp}
+                    </Typography>
+                    <Typography>
+                        {t("moveRange")}: {infoModal.piece ? PIECE_STATS[infoModal.piece.type].moveRange : ""}
+                    </Typography>
+                    <Typography>
+                        {t("attackRange")}: {infoModal.piece ? PIECE_STATS[infoModal.piece.type].attackRange : ""}
+                    </Typography>
+                    <Typography>
+                        {t("attackPower")}: {infoModal.piece ? PIECE_STATS[infoModal.piece.type].attackDamage : ""}
+                    </Typography>
                 </Box>
             </Modal>
         </Box>

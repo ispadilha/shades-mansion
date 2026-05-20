@@ -1,12 +1,12 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
-import type { PieceType } from "../logic/types"
+import type { PieceDefinition } from "../logic/types"
 import { BoardScene } from "../game/BoardScene"
 
 interface PhaserBoardProps {
     boardSize: number
     cellSize: number
-    pieces: PieceType[]
+    pieces: PieceDefinition[]
 }
 
 export const PhaserBoard: React.FC<PhaserBoardProps> = ({ boardSize, cellSize, pieces }) => {

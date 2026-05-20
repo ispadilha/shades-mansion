@@ -7,14 +7,15 @@ interface CellProps {
     y: number
     size: number
     isHighlighted: boolean
+    isAttackHighlighted: boolean
     isSelected: boolean
     onCellClick: (pos: PiecePosition, left: boolean) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 
-export const Cell: React.FC<CellProps> = ({ x, y, size, isHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
+export const Cell: React.FC<CellProps> = ({ x, y, size, isHighlighted, isAttackHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
     const base = (x + y) % 2 === 0 ? "#4b2f26" : "#3b241c"
-    const bg = isHighlighted ? "#a6763a" : base
+    const bg = isAttackHighlighted ? "#a63a3a" : isHighlighted ? "#a6763a" : base
     const border = isSelected ? "2px solid #ffd700" : "1px solid rgba(0,0,0,0.2)"
 
     return (
