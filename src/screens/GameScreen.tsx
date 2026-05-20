@@ -50,6 +50,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const scrollRef = useRef<HTMLDivElement>(null)
     useEdgeScroll(scrollRef, { edgeSize: 80, maxSpeed: 20, enabled: contextMenu === null && !infoModal.open })
 
+    // Centralizar visão nas peças no início do jogo
+    useEffect(() => {
+        const container = scrollRef.current
+        if (!container) return
+
+        const isLight = playerColor === "light"
+        const mid = Math.floor(BOARD_SIZE / 2)
+        const focusX = mid * CELL_SIZE + CELL_SIZE / 2
+        const boardPx = BOARD_SIZE * CELL_SIZE
+        const offsetX = (container.scrollWidth - boardPx) / 2
+
+        container.scrollLeft = offsetX + focusX - container.clientWidth / 2
+        container.scrollTop = isLight ? boardPx : 0
+    }, [playerColor])
+
     const handleGameEnd = (winningColor: "light" | "dark") => {
         setWinner(winningColor)
         navigate("/end")
