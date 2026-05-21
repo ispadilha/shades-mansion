@@ -1,19 +1,22 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
-import type { PieceColor } from "../logic/types"
+import type { MainColor, PieceColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
 
 interface HUDProps {
     turn: PieceColor
-    playerColor: PieceColor | null
+    playerColor: MainColor | null
     onEndTurn: () => void
     onQuit: () => void
+    onOpenInventory: () => void
+    inventoryCount: number
 }
 
-export const HUD: React.FC<HUDProps> = ({ turn, playerColor, onEndTurn, onQuit }) => {
+export const HUD: React.FC<HUDProps> = ({ turn, playerColor, onEndTurn, onQuit, onOpenInventory, inventoryCount }) => {
     const { t } = useLanguage()
 
     const isPlayerTurn = turn === playerColor
+    const turnLabel = turn === "light" ? t("light") : turn === "dark" ? t("dark") : t("gray")
 
     return (
         <Box
@@ -31,11 +34,18 @@ export const HUD: React.FC<HUDProps> = ({ turn, playerColor, onEndTurn, onQuit }
         >
             <Box>
                 <Typography sx={{ color: "#fff" }}>
-                    {t("turn")}: {turn === "light" ? t("light") : t("dark")}
+                    {t("turn")}: {turnLabel}
                 </Typography>
                 <Typography sx={{ color: isPlayerTurn ? "#4CAF50" : "#F44336", fontSize: 14 }}>{isPlayerTurn ? t("yourTurn") : t("wait")}</Typography>
             </Box>
             <Box sx={{ display: "flex", gap: 2 }}>
+                <Button
+                    onClick={onOpenInventory}
+                    variant="outlined"
+                    sx={{ color: "#fff", borderColor: "#555" }}
+                >
+                    {t("inventory")} ({inventoryCount})
+                </Button>
                 <Button
                     onClick={onEndTurn}
                     variant="contained"

@@ -1,7 +1,7 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
-import type { PieceColor } from "../logic/types"
+import type { MainColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
 import { useGame } from "../hooks/useGame"
 
@@ -12,7 +12,7 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
     const { t } = useLanguage()
     const { setPlayerColor } = useGame()
 
-    const handleChooseSide = (color: PieceColor) => {
+    const handleChooseSide = (color: MainColor) => {
         setPlayerColor(color)
         navigate("/game")
     }

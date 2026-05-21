@@ -1,9 +1,9 @@
 import React, { createContext, useState, type ReactNode } from "react"
-import type { PieceColor } from "../logic/types"
+import type { MainColor, PieceColor } from "../logic/types"
 
 interface GameContextValue {
-    playerColor: PieceColor | null
-    setPlayerColor: (color: PieceColor) => void
+    playerColor: MainColor | null
+    setPlayerColor: (color: MainColor) => void
     winner: PieceColor | null
     setWinner: (winner: PieceColor | null) => void
 }
@@ -16,7 +16,7 @@ const GameContext = createContext<GameContextValue>({} as GameContextValue)
 export default GameContext
 
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
-    const [playerColor, setPlayerColor] = useState<PieceColor | null>(null)
+    const [playerColor, setPlayerColor] = useState<MainColor | null>(null)
     const [winner, setWinner] = useState<PieceColor | null>(null)
 
     return (

@@ -1,15 +1,16 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
-import type { PieceDefinition } from "../logic/types"
+import type { PieceDefinition, SpecialItem } from "../logic/types"
 import { BoardScene } from "../game/BoardScene"
 
 interface PhaserBoardProps {
     boardSize: number
     cellSize: number
     pieces: PieceDefinition[]
+    items: SpecialItem[]
 }
 
-export const PhaserBoard: React.FC<PhaserBoardProps> = ({ boardSize, cellSize, pieces }) => {
+export const PhaserBoard: React.FC<PhaserBoardProps> = ({ boardSize, cellSize, pieces, items }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<BoardScene | null>(null)
 
@@ -31,6 +32,10 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({ boardSize, cellSize, p
             game.destroy(true)
         }
     }, [boardSize, cellSize])
+
+    useEffect(() => {
+        sceneRef.current?.syncItems(items)
+    }, [items])
 
     useEffect(() => {
         sceneRef.current?.syncPieces(pieces)

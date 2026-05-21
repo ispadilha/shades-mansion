@@ -29,7 +29,9 @@ export const EndScreen: React.FC<EndScreenProps> = ({}) => {
                 flexDirection: "column",
             }}
         >
-            <Typography sx={{ fontSize: 36, mb: 2 }}>{winner === "light" ? t("lightWon") : t("darkWon")}</Typography>
+            <Typography sx={{ fontSize: 36, mb: 2 }}>
+                {winner === "light" ? t("lightWon") : winner === "dark" ? t("darkWon") : t("grayWon")}
+            </Typography>
             <Button onClick={handleRestart} sx={{ bgcolor: "#222", color: "#fff" }}>
                 {t("playAgain")}
             </Button>

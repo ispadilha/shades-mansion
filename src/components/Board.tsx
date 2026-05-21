@@ -2,13 +2,14 @@ import React, { type JSX } from "react"
 import { Box } from "@mui/material"
 import { Cell } from "./Cell"
 import { PhaserBoard } from "./PhaserBoard"
-import type { PieceDefinition } from "../logic/types"
+import type { PieceDefinition, SpecialItem } from "../logic/types"
 import type { PiecePosition } from "../logic/types"
 
 interface BoardProps {
     boardSize: number
     cellSize: number
     pieces: PieceDefinition[]
+    items: SpecialItem[]
     highlighted: PiecePosition[]
     attackHighlighted: PiecePosition[]
     selectedPieceId: string | null
@@ -20,6 +21,7 @@ export const Board: React.FC<BoardProps> = ({
     boardSize,
     cellSize,
     pieces,
+    items,
     highlighted,
     attackHighlighted,
     selectedPieceId,
@@ -52,7 +54,7 @@ export const Board: React.FC<BoardProps> = ({
     return (
         <Box sx={{ position: "relative", width: boardSize * cellSize, height: boardSize * cellSize }}>
             {cells}
-            <PhaserBoard boardSize={boardSize} cellSize={cellSize} pieces={pieces} />
+            <PhaserBoard boardSize={boardSize} cellSize={cellSize} pieces={pieces} items={items} />
         </Box>
     )
 }
