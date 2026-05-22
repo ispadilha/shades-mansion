@@ -21,10 +21,9 @@ export function reachableCells(piece: PieceDefinition, pieces: PieceDefinition[]
     return res
 }
 
-// Encontra a casa em volta do alvo (8 vizinhas, incluindo diagonais) mais próxima
-// do atacante e livre. Retorna a posição atual do atacante se ele já estiver em
-// uma das 8 casas adjacentes ao alvo (Chebyshev = 1). Retorna null se nenhuma
-// das 8 casas em volta do alvo estiver disponível.
+// Encontra a casa adjacente ao alvo (8 vizinhas, com diagonais) mais próxima do
+// atacante e livre. Se o atacante já está adjacente, retorna sua própria posição.
+// Retorna null se nenhuma das 8 casas em volta do alvo estiver disponível.
 export function findApproachCell(
     attacker: PieceDefinition,
     target: PieceDefinition,

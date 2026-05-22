@@ -1,7 +1,7 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
-import type { MainColor } from "../logic/types"
+import type { PieceColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
 import { useGame } from "../hooks/useGame"
 
@@ -12,7 +12,7 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
     const { t } = useLanguage()
     const { setPlayerColor } = useGame()
 
-    const handleChooseSide = (color: MainColor) => {
+    const handleChooseSide = (color: PieceColor) => {
         setPlayerColor(color)
         navigate("/game")
     }
@@ -34,6 +34,9 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
             <Box sx={{ display: "flex", gap: 2 }}>
                 <Button onClick={() => handleChooseSide("light")} sx={{ bgcolor: "#ddd", color: "#000" }}>
                     {t("light")}
+                </Button>
+                <Button onClick={() => handleChooseSide("gray")} sx={{ bgcolor: "#888", color: "#fff" }}>
+                    {t("gray")}
                 </Button>
                 <Button onClick={() => handleChooseSide("dark")} sx={{ bgcolor: "#111", color: "#fff" }}>
                     {t("dark")}

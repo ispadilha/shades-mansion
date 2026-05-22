@@ -5,8 +5,8 @@ import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import { InventoryModal } from "../components/InventoryModal"
 import { ItemInfoModal } from "../components/ItemInfoModal"
-import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, SpecialItemKey, Inventories } from "../logic/types"
-import { ALL_ITEM_KEYS } from "../logic/types"
+import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, SpecialItemKey, Inventories, TextKey } from "../logic/types"
+import { ALL_ITEM_KEYS, itemKeyColor } from "../logic/types"
 import { reachableCells, manhattan, findApproachCell } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
@@ -15,18 +15,20 @@ import { useEdgeScroll } from "../hooks/useEdgeScroll"
 import { MAX_HP, PIECE_STATS } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
-interface GameScreenProps {}
+const TURN_ORDER: PieceColor[] = ["light", "dark", "gray"]
+const nextTurnColor = (turn: PieceColor): PieceColor => TURN_ORDER[(TURN_ORDER.indexOf(turn) + 1) % TURN_ORDER.length]
 
-const nextTurnColor = (turn: PieceColor): PieceColor => (turn === "light" ? "dark" : turn === "dark" ? "gray" : "light")
+const COLOR_LABEL: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
+const MAX_LOG_ENTRIES = 100
 
+// Espalha 2 cópias de cada item em casas aleatórias livres (sem peças e sem outros itens já colocados)
 const placeItems = (boardSize: number, pieces: PieceDefinition[]): SpecialItem[] => {
     const occupied = new Set(pieces.map((p) => `${p.position.x},${p.position.y}`))
     const result: SpecialItem[] = []
     for (let copy = 0; copy < 2; copy++) {
         for (const key of ALL_ITEM_KEYS) {
-            let attempts = 0
             let pos: PiecePosition = { x: 0, y: 0 }
-            while (attempts < 400) {
+            for (let attempts = 0; attempts < 400; attempts++) {
                 const x = Math.floor(Math.random() * boardSize)
                 const y = Math.floor(Math.random() * boardSize)
                 const k = `${x},${y}`
@@ -35,7 +37,6 @@ const placeItems = (boardSize: number, pieces: PieceDefinition[]): SpecialItem[]
                     occupied.add(k)
                     break
                 }
-                attempts++
             }
             result.push({ id: `item-${key}-${copy}`, key, position: pos })
         }
@@ -43,29 +44,34 @@ const placeItems = (boardSize: number, pieces: PieceDefinition[]): SpecialItem[]
     return result
 }
 
+const BOARD_SIZE = 20
+const CELL_SIZE = 64
+
+interface GameScreenProps {}
+
 export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const navigate = useNavigate()
     const { t } = useLanguage()
     const { playerColor, setWinner } = useGame()
 
-    const BOARD_SIZE = 20
-    const CELL_SIZE = 64
-
     const initialPieces = useMemo<PieceDefinition[]>(() => {
         const mid = Math.floor(BOARD_SIZE / 2)
-        const xs = [mid - 1, mid, mid + 1].map((x) => Math.max(0, Math.min(BOARD_SIZE - 1, x)))
+        const xs = [mid - 1, mid, mid + 1]
         const topY = 0
         const bottomY = BOARD_SIZE - 1
+        const make = (id: string, color: PieceColor, type: "A" | "B" | "C", x: number, y: number): PieceDefinition => ({
+            id, color, type, position: { x, y }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP,
+        })
         return [
-            { id: "dA", color: "dark", type: "A", position: { x: xs[0], y: topY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "dB", color: "dark", type: "B", position: { x: xs[1], y: topY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "dC", color: "dark", type: "C", position: { x: xs[2], y: topY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "gA", color: "gray", type: "A", position: { x: xs[0], y: mid }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "gB", color: "gray", type: "B", position: { x: xs[1], y: mid }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "gC", color: "gray", type: "C", position: { x: xs[2], y: mid }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "lA", color: "light", type: "A", position: { x: xs[0], y: bottomY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "lB", color: "light", type: "B", position: { x: xs[1], y: bottomY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
-            { id: "lC", color: "light", type: "C", position: { x: xs[2], y: bottomY }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP },
+            make("dA", "dark", "A", xs[0], topY),
+            make("dB", "dark", "B", xs[1], topY),
+            make("dC", "dark", "C", xs[2], topY),
+            make("gA", "gray", "A", xs[0], mid),
+            make("gB", "gray", "B", xs[1], mid),
+            make("gC", "gray", "C", xs[2], mid),
+            make("lA", "light", "A", xs[0], bottomY),
+            make("lB", "light", "B", xs[1], bottomY),
+            make("lC", "light", "C", xs[2], bottomY),
         ]
     }, [])
 
@@ -78,9 +84,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [highlighted, setHighlighted] = useState<PiecePosition[]>([])
     const [attackHighlighted, setAttackHighlighted] = useState<PiecePosition[]>([])
-    const [infoModal, setInfoModal] = useState<{ open: boolean; piece?: PieceDefinition }>({ open: false })
+    const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<SpecialItemKey | null>(null)
     const [inventoryOpen, setInventoryOpen] = useState(false)
+    const [manipulation, setManipulation] = useState<{ itemKey: SpecialItemKey } | null>(null)
+    const [gameLog, setGameLog] = useState<string[]>([])
     const [contextMenu, setContextMenu] = useState<{
         mouseX: number
         mouseY: number
@@ -90,12 +98,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     } | null>(null)
 
     const scrollRef = useRef<HTMLDivElement>(null)
-    useEdgeScroll(scrollRef, { edgeSize: 80, maxSpeed: 20, enabled: contextMenu === null && !infoModal.open && !inventoryOpen })
+    useEdgeScroll(scrollRef, { edgeSize: 80, maxSpeed: 20, enabled: contextMenu === null && !infoPiece && !inventoryOpen })
 
+    // Refs para sincronizar com tweens assíncronos (Phaser) e timeouts pendentes
     const attackInProgressRef = useRef(false)
     const damageTimerRef = useRef<number | null>(null)
     const healPhaseDoneRef = useRef<PieceColor | null>(null)
-
     const itemsRef = useRef(items)
     useEffect(() => {
         itemsRef.current = items
@@ -103,34 +111,60 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
     useEffect(() => {
         return () => {
-            if (damageTimerRef.current !== null) {
-                clearTimeout(damageTimerRef.current)
-                damageTimerRef.current = null
-            }
+            if (damageTimerRef.current !== null) clearTimeout(damageTimerRef.current)
         }
     }, [])
 
-    // Centralizar visão nas peças no início do jogo
+    // Ao entrar no jogo, posiciona a viewport perto da base do jogador
     useEffect(() => {
         const container = scrollRef.current
         if (!container) return
-
-        const isLight = playerColor === "light"
         const mid = Math.floor(BOARD_SIZE / 2)
-        const focusX = mid * CELL_SIZE + CELL_SIZE / 2
         const boardPx = BOARD_SIZE * CELL_SIZE
         const offsetX = (container.scrollWidth - boardPx) / 2
-
+        const focusX = mid * CELL_SIZE + CELL_SIZE / 2
+        const focusY =
+            playerColor === "light" ? boardPx :
+            playerColor === "dark" ? 0 :
+            mid * CELL_SIZE - CELL_SIZE * 4
         container.scrollLeft = offsetX + focusX - container.clientWidth / 2
-        container.scrollTop = isLight ? boardPx : 0
+        container.scrollTop = focusY
     }, [playerColor])
 
-    const handleGameEnd = (winningColor: PieceColor) => {
-        setWinner(winningColor)
-        navigate("/end")
+    // Histórico de jogadas: aceita novas entradas e descarta as mais antigas além de MAX_LOG_ENTRIES
+    const addLog = (entry: string) => {
+        setGameLog((prev) => [...prev.slice(-(MAX_LOG_ENTRIES - 1)), entry])
+    }
+    const teamLabel = (color: PieceColor) => t(COLOR_LABEL[color])
+    // Formato: "{time} usaram {peça} para {ação} [{alvo}]"
+    const logUsedTo = (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => {
+        const base = `${teamLabel(color)} ${t("verbUsed")} ${piece} ${t(actionKey)}`
+        addLog(target ? `${base} ${target}` : base)
+    }
+    // Formato: "{time} manipularam {peça} para {ação} [{alvo}]"
+    const logManipulatedTo = (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => {
+        const base = `${teamLabel(color)} ${t("verbManipulated")} ${piece} ${t(actionKey)}`
+        addLog(target ? `${base} ${target}` : base)
+    }
+    const logHealed = (color: PieceColor, piece: string) => {
+        addLog(`${teamLabel(color)} ${t("verbHealed")} ${piece}`)
+    }
+    // Eventos importantes:
+    const logEliminated = (pieceId: string) => {
+        addLog(`${pieceId} ${t("wasEliminated")}!`)
+    }
+    const logDefeated = (color: PieceColor) => {
+        addLog(`${teamLabel(color)} ${t("wasDefeated")}!`)
     }
 
-    // Agendar coleta para acontecer após a peça chegar na célula (casado com o tween)
+    // Retorna a chave de ação adequada (mover vs coletar) consultando se há item no destino
+    const moveActionFor = (newPos: PiecePosition): { actionKey: TextKey; target?: string } => {
+        const item = itemsRef.current.find((i) => i.position.x === newPos.x && i.position.y === newPos.y)
+        return item ? { actionKey: "toCollectItem", target: item.key } : { actionKey: "toMove" }
+    }
+
+    // Coleta acontece após o tween da peça chegar na célula (delay = nº de passos × STEP_MS).
+    // O log da coleta é registrado no ato da decisão (no callsite), não aqui.
     const schedulePickup = (color: PieceColor, position: PiecePosition, delayMs: number) => {
         const item = itemsRef.current.find((i) => i.position.x === position.x && i.position.y === position.y)
         if (!item) return
@@ -140,7 +174,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         }, delayMs)
     }
 
-    // IA move
+    // Loop da IA: roda quando não é o turno do jogador. Executa uma ação por tick;
+    // a mudança de state (pieces/inventories) reentra o efeito até o turno terminar.
     useEffect(() => {
         if (turn === playerColor) {
             healPhaseDoneRef.current = null
@@ -148,11 +183,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         }
         if (attackInProgressRef.current) return
 
-        // Fase de cura (uma vez por turno, qualquer time)
+        // Fase de cura: cada time tenta curar suas peças feridas no início do turno (uma vez)
         if (healPhaseDoneRef.current !== turn) {
             const heal = SimpleAI.applyHeals(pieces, turn, inventories)
             healPhaseDoneRef.current = turn
             if (heal.healed) {
+                for (const p of pieces) {
+                    const after = heal.pieces.find((q) => q.id === p.id)
+                    if (after && after.hp > p.hp) logHealed(turn, p.id)
+                }
                 setPieces(heal.pieces)
                 setInventories(heal.inventories)
                 return
@@ -161,67 +200,68 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
         const timer = setTimeout(() => {
             const previousPieces = pieces
-            const { updatedPieces, pendingDamage, pendingRecruit } = SimpleAI.makeMove(pieces, turn, BOARD_SIZE, items, inventories)
+            const { updatedPieces, pendingDamage } = SimpleAI.makeMove(pieces, turn, BOARD_SIZE, items, inventories)
             setPieces(updatedPieces)
 
-            // Detectar peça que se moveu e agendar coleta de item, se houver
-            for (const newP of updatedPieces) {
-                const oldP = previousPieces.find((p) => p.id === newP.id)
-                if (!oldP) continue
-                if (oldP.position.x === newP.position.x && oldP.position.y === newP.position.y) continue
-                const moveSteps = manhattan(oldP.position, newP.position)
-                const delayMs = moveSteps * STEP_MS + 50
-                schedulePickup(newP.color, newP.position, delayMs)
+            // Identifica peça que mudou de posição neste tick (no máximo uma por chamada de makeMove)
+            const movedPiece = updatedPieces.find((p) => {
+                const old = previousPieces.find((q) => q.id === p.id)
+                return old && (old.position.x !== p.position.x || old.position.y !== p.position.y)
+            })
+
+            if (movedPiece) {
+                const old = previousPieces.find((q) => q.id === movedPiece.id)!
+                const delayMs = manhattan(old.position, movedPiece.position) * STEP_MS + 50
+                schedulePickup(movedPiece.color, movedPiece.position, delayMs)
             }
 
             if (pendingDamage) {
+                // O dano só é aplicado depois que o tween de aproximação termina.
+                // Manipulação (consumedItemKey presente) loga como "manipulou X para atacar Y"; ataque comum como "usou X para atacar Y".
                 attackInProgressRef.current = true
+                const dmg = pendingDamage
+                if (dmg.consumedItemKey && dmg.consumerColor) {
+                    logManipulatedTo(dmg.consumerColor, dmg.consumedItemKey, "toAttack", dmg.targetId)
+                } else if (movedPiece) {
+                    logUsedTo(turn, movedPiece.id, "toAttack", dmg.targetId)
+                }
                 damageTimerRef.current = window.setTimeout(() => {
                     setPieces((prev) =>
-                        prev.map((p) => (p.id === pendingDamage.targetId ? { ...p, hp: p.hp - pendingDamage.damage } : p)).filter((p) => p.hp > 0),
+                        prev.map((p) => (p.id === dmg.targetId ? { ...p, hp: p.hp - dmg.damage } : p)).filter((p) => p.hp > 0),
                     )
+                    if (dmg.consumedItemKey && dmg.consumerColor) {
+                        const color = dmg.consumerColor
+                        const key = dmg.consumedItemKey
+                        setInventories((prev) => {
+                            const inv = [...prev[color]]
+                            const idx = inv.indexOf(key)
+                            if (idx >= 0) inv.splice(idx, 1)
+                            return { ...prev, [color]: inv }
+                        })
+                    }
                     attackInProgressRef.current = false
                     damageTimerRef.current = null
-                }, pendingDamage.delayMs)
+                }, dmg.delayMs)
                 return
             }
 
-            if (pendingRecruit) {
-                attackInProgressRef.current = true
-                const recruitData = pendingRecruit
-                damageTimerRef.current = window.setTimeout(() => {
-                    setPieces((prev) =>
-                        prev.map((p) =>
-                            p.id === recruitData.targetId
-                                ? { ...p, color: recruitData.recruiter, recruitedFrom: "gray", movedThisTurn: true }
-                                : p,
-                        ),
-                    )
-                    setInventories((prev) => {
-                        const newTeamInv = [...prev[recruitData.recruiter]]
-                        const idx = newTeamInv.indexOf(recruitData.consumedItemKey)
-                        if (idx >= 0) newTeamInv.splice(idx, 1)
-                        return { ...prev, [recruitData.recruiter]: newTeamInv }
-                    })
-                    attackInProgressRef.current = false
-                    damageTimerRef.current = null
-                }, recruitData.delayMs)
-                return
+            // Movimento puro (sem ataque pendente): loga mover ou coletar baseado no destino
+            if (movedPiece) {
+                const { actionKey, target } = moveActionFor(movedPiece.position)
+                logUsedTo(turn, movedPiece.id, actionKey, target)
             }
 
+            // Sem ações pendentes: se todas as peças da IA já se moveram, encerra o turno
             const teamPieces = updatedPieces.filter((p) => p.color === turn)
-            const allMoved = teamPieces.length > 0 && teamPieces.every((p) => p.movedThisTurn)
-            const noMoves = teamPieces.length === 0
-
-            if (allMoved || noMoves) {
-                endTurn()
-            }
+            if (teamPieces.length === 0 || teamPieces.every((p) => p.movedThisTurn)) endTurn()
         }, 1000)
 
         return () => clearTimeout(timer)
+        // endTurn fecha sobre `turn` (que está nas deps), então closure sempre atualizada
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [turn, pieces, playerColor, inventories, items])
 
-    // Atualizar células destacadas
+    // Recalcula células destacadas (movimento e ataque) sempre que a seleção muda
     useEffect(() => {
         if (!selectedId) {
             setHighlighted([])
@@ -229,14 +269,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             return
         }
         const p = pieces.find((x) => x.id === selectedId)
-        if (!p) {
-            setHighlighted([])
-            setAttackHighlighted([])
-            return
-        }
+        if (!p) return
         const stats = PIECE_STATS[p.type]
         setHighlighted(reachableCells(p, pieces, BOARD_SIZE, stats.moveRange))
 
+        // Casas no alcance de ataque: vazias ou ocupadas com casa adjacente livre para aproximação
         const attackCells: PiecePosition[] = []
         const r = stats.attackRange
         for (let dx = -r; dx <= r; dx++) {
@@ -245,241 +282,225 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                 const nx = p.position.x + dx
                 const ny = p.position.y + dy
                 if (nx < 0 || ny < 0 || nx >= BOARD_SIZE || ny >= BOARD_SIZE) continue
-
                 const pieceAtCell = pieces.find((pp) => pp.position.x === nx && pp.position.y === ny)
                 if (pieceAtCell && !findApproachCell(p, pieceAtCell, pieces, BOARD_SIZE)) continue
-
                 attackCells.push({ x: nx, y: ny })
             }
         }
         setAttackHighlighted(attackCells)
     }, [selectedId, pieces])
 
-    // Detectar vitória: último time vivo
+    // Se a peça manipulada morrer durante a manipulação, cancela e libera o jogador
     useEffect(() => {
-        const lights = pieces.filter((p) => p.color === "light").length
-        const darks = pieces.filter((p) => p.color === "dark").length
-        const grays = pieces.filter((p) => p.color === "gray").length
-        const alive = [lights, darks, grays].filter((c) => c > 0).length
-        if (alive > 1) return
-        if (lights > 0) handleGameEnd("light")
-        else if (darks > 0) handleGameEnd("dark")
-        else if (grays > 0) handleGameEnd("gray")
-    }, [pieces, handleGameEnd])
+        if (!manipulation) return
+        if (!pieces.some((p) => p.id === manipulation.itemKey)) {
+            setManipulation(null)
+            setSelectedId(null)
+        }
+    }, [pieces, manipulation])
+
+    // Detecta peças eliminadas (id desapareceu) e times derrotados (cor desapareceu) entre renders
+    const prevPiecesRef = useRef(pieces)
+    useEffect(() => {
+        const prev = prevPiecesRef.current
+        if (prev === pieces) return
+
+        const currIds = new Set(pieces.map((p) => p.id))
+        for (const p of prev) {
+            if (!currIds.has(p.id)) logEliminated(p.id)
+        }
+
+        const prevColors = new Set(prev.map((p) => p.color))
+        const currColors = new Set(pieces.map((p) => p.color))
+        for (const c of prevColors) {
+            if (!currColors.has(c)) logDefeated(c)
+        }
+
+        prevPiecesRef.current = pieces
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pieces])
+
+    // Vitória: último time vivo no tabuleiro
+    useEffect(() => {
+        const alive = new Set(pieces.map((p) => p.color))
+        if (alive.size !== 1) return
+        const [winner] = alive
+        setWinner(winner)
+        navigate("/end")
+    }, [pieces, navigate, setWinner])
 
     const endTurn = () => {
-        const next = nextTurnColor(turn)
         setPieces((prev) => prev.map((p) => ({ ...p, movedThisTurn: false })))
-        setTurn(next)
+        setTurn(nextTurnColor(turn))
         setSelectedId(null)
-        setHighlighted([])
-        setAttackHighlighted([])
+        setManipulation(null)
     }
 
-    const onCellClick = (pos: PiecePosition, left: boolean) => {
-        if (turn !== playerColor) return
-
+    const onCellClick = (pos: PiecePosition) => {
+        if (turn !== playerColor || manipulation) return
         const clickedPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
-
-        if (left) {
-            if (!clickedPiece) {
-                setSelectedId(null)
-                return
-            }
-            const isOwnAndMoved = clickedPiece.color === playerColor && clickedPiece.movedThisTurn
-            if (isOwnAndMoved) {
-                setSelectedId(null)
-                return
-            }
-            setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
+        if (!clickedPiece) {
+            setSelectedId(null)
+            return
         }
-    }
-
-    const hasRecruitItemFor = (target: PieceDefinition) => {
-        if (!playerColor) return false
-        if (target.color !== "gray") return false
-        return inventories[playerColor].includes(target.id as SpecialItemKey)
+        // Peças próprias já movidas neste turno não podem ser re-selecionadas
+        if (clickedPiece.color === playerColor && clickedPiece.movedThisTurn) {
+            setSelectedId(null)
+            return
+        }
+        setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
     }
 
     const onCellContextMenu = (event: React.MouseEvent, pos: PiecePosition) => {
-        event.preventDefault()
         if (turn !== playerColor) return
 
         const targetPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
         const itemAtPos = items.find((i) => i.position.x === pos.x && i.position.y === pos.y)
         const selectedPiece = pieces.find((p) => p.id === selectedId)
 
-        const isOwnSelection = !!selectedPiece && selectedPiece.color === playerColor
+        // Durante manipulação, a peça-alvo do item é tratada como "própria" para efeitos da ação
+        const isManipulating = manipulation !== null
+        const isOwnSelection =
+            !!selectedPiece &&
+            (selectedPiece.color === playerColor || (isManipulating && selectedPiece.id === manipulation.itemKey))
         const inMoveRange = highlighted.some((h) => h.x === pos.x && h.y === pos.y)
-        const canInfo = !selectedId && targetPiece
-        const canItemInfo = !selectedId && !targetPiece && !!itemAtPos
+
+        const canInfo = !selectedId && !!targetPiece && !isManipulating
+        const canItemInfo = !selectedId && !targetPiece && !!itemAtPos && !isManipulating
         const canMove = isOwnSelection && !targetPiece && !itemAtPos && inMoveRange
         const canCollect = isOwnSelection && !targetPiece && !!itemAtPos && inMoveRange
-        const inAttackRange =
+        // Ataque: durante manipulação, alvo pode ser de qualquer cor (exceto a própria peça manipulada)
+        const canAttack =
             isOwnSelection &&
-            targetPiece &&
-            targetPiece.color !== selectedPiece!.color &&
+            !!targetPiece &&
+            targetPiece.id !== selectedPiece!.id &&
+            (isManipulating || targetPiece.color !== selectedPiece!.color) &&
             manhattan(selectedPiece!.position, targetPiece.position) <= PIECE_STATS[selectedPiece!.type].attackRange &&
             findApproachCell(selectedPiece!, targetPiece, pieces, BOARD_SIZE) !== null
-        const canAttack = inAttackRange
-        const canRecruit = inAttackRange && hasRecruitItemFor(targetPiece!)
 
-        if (!canInfo && !canItemInfo && !canMove && !canCollect && !canAttack && !canRecruit) return
+        if (!canInfo && !canItemInfo && !canMove && !canCollect && !canAttack) return
 
-        setContextMenu({
-            mouseX: event.clientX,
-            mouseY: event.clientY,
-            position: pos,
-            targetPiece,
-            itemAtPos,
-        })
+        setContextMenu({ mouseX: event.clientX, mouseY: event.clientY, position: pos, targetPiece, itemAtPos })
     }
 
-    const handleCloseContextMenu = () => setContextMenu(null)
+    const closeContextMenu = () => setContextMenu(null)
+
+    // Remove o item do inventário e sai do modo manipulação (log já foi feito no callsite)
+    const consumeManipulationItem = () => {
+        if (!playerColor || !manipulation) return
+        const key = manipulation.itemKey
+        setInventories((prev) => {
+            const inv = [...prev[playerColor]]
+            const idx = inv.indexOf(key)
+            if (idx >= 0) inv.splice(idx, 1)
+            return { ...prev, [playerColor]: inv }
+        })
+        setManipulation(null)
+    }
 
     const moveSelectedTo = (newPos: PiecePosition) => {
-        if (!selectedId) return
+        if (!selectedId || !playerColor) return
         const piece = pieces.find((p) => p.id === selectedId)
         if (!piece) return
-        const moveSteps = manhattan(piece.position, newPos)
-        const delayMs = moveSteps * STEP_MS + 50
+        const delayMs = manhattan(piece.position, newPos) * STEP_MS + 50
+        const { actionKey, target } = moveActionFor(newPos)
 
         setPieces((prev) => prev.map((p) => (p.id === selectedId ? { ...p, position: newPos, movedThisTurn: true } : p)))
         schedulePickup(piece.color, newPos, delayMs)
         setSelectedId(null)
-        handleCloseContextMenu()
+        closeContextMenu()
+
+        if (manipulation) {
+            logManipulatedTo(playerColor, piece.id, actionKey, target)
+            consumeManipulationItem()
+        } else {
+            logUsedTo(playerColor, piece.id, actionKey, target)
+        }
     }
 
-    const handleMove = () => {
-        if (!contextMenu?.position) return
-        moveSelectedTo(contextMenu.position)
-    }
-
-    const handleCollect = () => {
-        if (!contextMenu?.position) return
-        moveSelectedTo(contextMenu.position)
-    }
+    const handleMove = () => contextMenu?.position && moveSelectedTo(contextMenu.position)
+    const handleCollect = () => contextMenu?.position && moveSelectedTo(contextMenu.position)
 
     const handleAttack = () => {
-        if (!selectedId || !contextMenu?.targetPiece) return
-
+        if (!selectedId || !contextMenu?.targetPiece || !playerColor) return
         const attacker = pieces.find((p) => p.id === selectedId)
         if (!attacker) return
 
         const target = contextMenu.targetPiece
         const damage = PIECE_STATS[attacker.type].attackDamage
-        const approach = findApproachCell(attacker, target, pieces, BOARD_SIZE)
-        const newPos = approach ?? attacker.position
-        const moveSteps = manhattan(attacker.position, newPos)
-        const delayMs = moveSteps * STEP_MS + 50
-        const attackerId = attacker.id
+        const newPos = findApproachCell(attacker, target, pieces, BOARD_SIZE) ?? attacker.position
+        const delayMs = manhattan(attacker.position, newPos) * STEP_MS + 50
         const targetId = target.id
 
-        setPieces((prev) => prev.map((p) => (p.id === attackerId ? { ...p, position: newPos, movedThisTurn: true } : p)))
+        setPieces((prev) => prev.map((p) => (p.id === attacker.id ? { ...p, position: newPos, movedThisTurn: true } : p)))
         schedulePickup(attacker.color, newPos, delayMs)
         setSelectedId(null)
-        handleCloseContextMenu()
+        closeContextMenu()
 
+        if (manipulation) {
+            logManipulatedTo(playerColor, attacker.id, "toAttack", targetId)
+            consumeManipulationItem()
+        } else {
+            logUsedTo(playerColor, attacker.id, "toAttack", targetId)
+        }
+
+        // O dano só é aplicado quando o tween de aproximação termina (elimination/defeat são logados pelo efeito de pieces)
         window.setTimeout(() => {
             setPieces((prev) => prev.map((p) => (p.id === targetId ? { ...p, hp: p.hp - damage } : p)).filter((p) => p.hp > 0))
         }, delayMs)
     }
 
-    const handleRecruit = () => {
-        if (!selectedId || !contextMenu?.targetPiece || !playerColor) return
-
-        const recruiter = pieces.find((p) => p.id === selectedId)
-        if (!recruiter) return
-
-        const target = contextMenu.targetPiece
-        if (target.color !== "gray") return
-
-        const itemKey = target.id as SpecialItemKey
-        if (!inventories[playerColor].includes(itemKey)) return
-
-        const approach = findApproachCell(recruiter, target, pieces, BOARD_SIZE)
-        const newPos = approach ?? recruiter.position
-        const moveSteps = manhattan(recruiter.position, newPos)
-        const delayMs = moveSteps * STEP_MS + 50
-        const recruiterId = recruiter.id
-        const targetId = target.id
-        const newColor = playerColor
-
-        setPieces((prev) => prev.map((p) => (p.id === recruiterId ? { ...p, position: newPos, movedThisTurn: true } : p)))
-        schedulePickup(recruiter.color, newPos, delayMs)
-        setSelectedId(null)
-        handleCloseContextMenu()
-
-        window.setTimeout(() => {
-            setPieces((prev) =>
-                prev.map((p) =>
-                    p.id === targetId ? { ...p, color: newColor, recruitedFrom: "gray", movedThisTurn: true } : p,
-                ),
-            )
-            setInventories((prev) => {
-                const newTeamInv = [...prev[newColor]]
-                const idx = newTeamInv.indexOf(itemKey)
-                if (idx >= 0) newTeamInv.splice(idx, 1)
-                return { ...prev, [newColor]: newTeamInv }
-            })
-        }, delayMs)
-    }
-
     const handleShowInfo = () => {
-        setInfoModal({ open: true, piece: contextMenu?.targetPiece })
-        handleCloseContextMenu()
+        setInfoPiece(contextMenu?.targetPiece ?? null)
+        closeContextMenu()
     }
 
     const handleShowItemInfo = () => {
         if (!contextMenu?.itemAtPos) return
         setItemInfoKey(contextMenu.itemAtPos.key)
-        handleCloseContextMenu()
+        closeContextMenu()
     }
 
     const handleUseHealItem = (key: SpecialItemKey) => {
-        if (!playerColor) return
+        if (!playerColor || itemKeyColor(key) !== playerColor) return
         if (!inventories[playerColor].includes(key)) return
         const target = pieces.find((p) => p.id === key)
-        if (!target || target.color !== playerColor || target.hp >= target.maxHp) return
+        if (!target || target.hp >= target.maxHp) return
 
         setPieces((prev) => prev.map((p) => (p.id === key ? { ...p, hp: p.maxHp } : p)))
         setInventories((prev) => {
-            const newTeamInv = [...prev[playerColor]]
-            const idx = newTeamInv.indexOf(key)
-            if (idx >= 0) newTeamInv.splice(idx, 1)
-            return { ...prev, [playerColor]: newTeamInv }
+            const inv = [...prev[playerColor]]
+            const idx = inv.indexOf(key)
+            if (idx >= 0) inv.splice(idx, 1)
+            return { ...prev, [playerColor]: inv }
         })
+        logHealed(playerColor, key)
     }
 
-    const onEndTurn = () => {
-        if (turn === playerColor) {
-            endTurn()
-        }
+    const handleUseManipulationItem = (key: SpecialItemKey) => {
+        if (!playerColor || turn !== playerColor) return
+        if (itemKeyColor(key) === playerColor) return
+        if (!inventories[playerColor].includes(key)) return
+        if (!pieces.some((p) => p.id === key)) return
+
+        // Entra no modo manipulação: a peça-alvo fica selecionada e o próximo move/attack consome o item
+        setInventoryOpen(false)
+        setManipulation({ itemKey: key })
+        setSelectedId(key)
     }
 
-    const labelForColor = (color: PieceColor) => (color === "light" ? t("light") : color === "dark" ? t("dark") : t("gray"))
+    const cancelManipulation = () => {
+        setManipulation(null)
+        setSelectedId(null)
+    }
 
+    const labelForColor = (color: PieceColor) => t(COLOR_LABEL[color])
     const playerInventory = playerColor ? inventories[playerColor] : []
+    const selectedPiece = selectedId ? pieces.find((p) => p.id === selectedId) : undefined
 
     return (
-        <Box
-            sx={{
-                width: "100vw",
-                height: "100vh",
-                bgcolor: "#000",
-                display: "flex",
-                flexDirection: "column",
-                overflow: "hidden",
-            }}
-        >
-            <Box
-                ref={scrollRef}
-                sx={{
-                    flex: 1,
-                    overflow: "auto",
-                    position: "relative",
-                }}
-            >
+        <Box sx={{ width: "100vw", height: "100vh", bgcolor: "#000", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+            <Box ref={scrollRef} sx={{ flex: 1, overflow: "auto", position: "relative" }}>
                 <Box
                     sx={{
                         width: "fit-content",
@@ -505,18 +526,22 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                     />
                 </Box>
             </Box>
+
             <HUD
                 turn={turn}
-                onEndTurn={onEndTurn}
+                onEndTurn={() => turn === playerColor && endTurn()}
                 onQuit={() => navigate("/")}
                 playerColor={playerColor}
                 onOpenInventory={() => setInventoryOpen(true)}
                 inventoryCount={playerInventory.length}
+                log={gameLog}
+                manipulationKey={manipulation?.itemKey ?? null}
+                onCancelManipulation={cancelManipulation}
             />
 
             <Menu
                 open={contextMenu !== null}
-                onClose={handleCloseContextMenu}
+                onClose={closeContextMenu}
                 anchorReference="anchorPosition"
                 anchorPosition={contextMenu ? { top: contextMenu.mouseY, left: contextMenu.mouseX } : undefined}
             >
@@ -530,15 +555,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                 {selectedId && !contextMenu?.targetPiece && contextMenu?.itemAtPos && (
                     <MenuItem onClick={handleCollect}>{t("collect")}</MenuItem>
                 )}
-                {selectedId && contextMenu?.targetPiece && contextMenu.targetPiece.color !== pieces.find((p) => p.id === selectedId)?.color && (
-                    <MenuItem onClick={handleAttack}>{t("attack")}</MenuItem>
-                )}
                 {selectedId &&
                     contextMenu?.targetPiece &&
-                    contextMenu.targetPiece.color === "gray" &&
-                    hasRecruitItemFor(contextMenu.targetPiece) && <MenuItem onClick={handleRecruit}>{t("recruit")}</MenuItem>}
+                    contextMenu.targetPiece.id !== selectedId &&
+                    (manipulation || contextMenu.targetPiece.color !== selectedPiece?.color) && (
+                        <MenuItem onClick={handleAttack}>{t("attack")}</MenuItem>
+                    )}
             </Menu>
-            <Modal open={infoModal.open} onClose={() => setInfoModal({ open: false })}>
+
+            <Modal open={infoPiece !== null} onClose={() => setInfoPiece(null)}>
                 <Box
                     sx={{
                         position: "absolute",
@@ -550,27 +575,26 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                         p: 2,
                     }}
                 >
-                    <Typography>
-                        {t("team")}: {infoModal.piece ? labelForColor(infoModal.piece.color) : ""}
-                    </Typography>
-                    <Typography>
-                        {t("type")}: {infoModal.piece?.type}
-                    </Typography>
-                    <Typography>
-                        {t("hp")}: {infoModal.piece?.hp} / {infoModal.piece?.maxHp}
-                    </Typography>
-                    <Typography>
-                        {t("moveRange")}: {infoModal.piece ? PIECE_STATS[infoModal.piece.type].moveRange : ""}
-                    </Typography>
-                    <Typography>
-                        {t("attackRange")}: {infoModal.piece ? PIECE_STATS[infoModal.piece.type].attackRange : ""}
-                    </Typography>
-                    <Typography>
-                        {t("attackPower")}: {infoModal.piece ? PIECE_STATS[infoModal.piece.type].attackDamage : ""}
-                    </Typography>
+                    {infoPiece && (
+                        <>
+                            <Typography>{t("team")}: {labelForColor(infoPiece.color)}</Typography>
+                            <Typography>{t("type")}: {infoPiece.type}</Typography>
+                            <Typography>{t("hp")}: {infoPiece.hp} / {infoPiece.maxHp}</Typography>
+                            <Typography>{t("moveRange")}: {PIECE_STATS[infoPiece.type].moveRange}</Typography>
+                            <Typography>{t("attackRange")}: {PIECE_STATS[infoPiece.type].attackRange}</Typography>
+                            <Typography>{t("attackPower")}: {PIECE_STATS[infoPiece.type].attackDamage}</Typography>
+                        </>
+                    )}
                 </Box>
             </Modal>
-            <ItemInfoModal open={itemInfoKey !== null} onClose={() => setItemInfoKey(null)} itemKey={itemInfoKey} />
+
+            <ItemInfoModal
+                open={itemInfoKey !== null}
+                onClose={() => setItemInfoKey(null)}
+                itemKey={itemInfoKey}
+                playerColor={playerColor}
+            />
+
             {playerColor && (
                 <InventoryModal
                     open={inventoryOpen}
@@ -579,6 +603,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                     pieces={pieces}
                     playerColor={playerColor}
                     onUseHealItem={handleUseHealItem}
+                    onUseManipulationItem={handleUseManipulationItem}
                 />
             )}
         </Box>

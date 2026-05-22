@@ -27,6 +27,8 @@ export function useEdgeScroll<T extends HTMLElement>(
             mouse.inside = false
         }
 
+        // Quanto mais perto da borda, mais rápido o scroll (rampa linear até maxSpeed).
+        // Dentro de [edgeSize, rect.width - edgeSize] a velocidade é zero.
         const tick = () => {
             if (mouse.inside) {
                 const rect = container.getBoundingClientRect()

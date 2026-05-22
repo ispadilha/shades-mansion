@@ -1,13 +1,31 @@
 import Phaser from "phaser"
-import type { PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
+import type { PieceColor, PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
+import { itemKeyColor } from "../logic/types"
 
 export const STEP_MS = 280
+
+type Palette = { clothing: number; outline: number; skin: number }
+
+const PIECE_PALETTE: Record<PieceColor, Palette> = {
+    light: { clothing: 0xf2f2f2, outline: 0x2a2a2a, skin: 0xf0c8a0 },
+    dark: { clothing: 0x1a1a1a, outline: 0xdedede, skin: 0xf0c8a0 },
+    gray: { clothing: 0x7a7a7a, outline: 0x2a2a2a, skin: 0xb8a890 },
+}
+
+type ItemPalette = { bg: number; outline: number; text: string; stroke: string }
+
+const ITEM_PALETTE: Record<PieceColor, ItemPalette> = {
+    dark: { bg: 0x2a2a2a, outline: 0xeeeeee, text: "#ffffff", stroke: "#000000" },
+    light: { bg: 0xeeeeee, outline: 0x222222, text: "#1a1a1a", stroke: "#ffffff" },
+    gray: { bg: 0x888888, outline: 0x222222, text: "#ffffff", stroke: "#000000" },
+}
 
 export class BoardScene extends Phaser.Scene {
     private cellSize: number
     private sprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private itemSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private lastCells: Map<string, PiecePosition> = new Map()
+    // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
     private pendingPieces: PieceDefinition[] | null = null
     private pendingItems: SpecialItem[] | null = null
     private isReady = false
@@ -50,17 +68,13 @@ export class BoardScene extends Phaser.Scene {
 
         for (const item of items) {
             seen.add(item.id)
-            const targetPx = this.cellToPixel(item.position)
-            let sprite = this.itemSprites.get(item.id)
-            if (!sprite) {
-                sprite = this.buildItem(item)
-                sprite.setPosition(targetPx.x, targetPx.y)
-                this.itemSprites.set(item.id, sprite)
-            } else {
-                sprite.setPosition(targetPx.x, targetPx.y)
-            }
+            const { x, y } = this.cellToPixel(item.position)
+            const sprite = this.itemSprites.get(item.id) ?? this.buildItem(item)
+            sprite.setPosition(x, y)
+            this.itemSprites.set(item.id, sprite)
         }
 
+        // Itens que sumiram da lista (coletados) somem com fade
         for (const [id, sprite] of this.itemSprites) {
             if (seen.has(id)) continue
             this.itemSprites.delete(id)
@@ -80,8 +94,8 @@ export class BoardScene extends Phaser.Scene {
 
         for (const piece of pieces) {
             seen.add(piece.id)
-            const target = piece.position
-            const targetPx = this.cellToPixel(target)
+            const targetPx = this.cellToPixel(piece.position)
+            // Peças que já se moveram no turno ficam translúcidas para indicar isso
             const targetAlpha = piece.movedThisTurn ? 0.55 : 1
 
             let sprite = this.sprites.get(piece.id)
@@ -90,26 +104,16 @@ export class BoardScene extends Phaser.Scene {
                 sprite.setPosition(targetPx.x, targetPx.y)
                 sprite.setAlpha(targetAlpha)
                 this.sprites.set(piece.id, sprite)
-                this.lastCells.set(piece.id, { x: target.x, y: target.y })
-                continue
-            }
-
-            const expectedColor = sprite.getData("color")
-            if (expectedColor !== piece.color) {
-                sprite.destroy()
-                sprite = this.buildPiece(piece)
-                sprite.setPosition(targetPx.x, targetPx.y)
-                sprite.setAlpha(targetAlpha)
-                this.sprites.set(piece.id, sprite)
-                this.lastCells.set(piece.id, { x: target.x, y: target.y })
+                this.lastCells.set(piece.id, { ...piece.position })
                 continue
             }
 
             const last = this.lastCells.get(piece.id)
-            const cellChanged = !last || last.x !== target.x || last.y !== target.y
+            const cellChanged = !last || last.x !== piece.position.x || last.y !== piece.position.y
             if (cellChanged) {
+                // Anima passo-a-passo (uma célula por vez) para criar o efeito de caminhada
                 this.tweens.killTweensOf(sprite)
-                const path = this.buildPath(last ?? target, target)
+                const path = this.buildPath(last ?? piece.position, piece.position)
                 if (path.length === 0) {
                     sprite.setPosition(targetPx.x, targetPx.y)
                 } else {
@@ -119,18 +123,15 @@ export class BoardScene extends Phaser.Scene {
                     })
                     this.tweens.chain({ targets: sprite, tweens: steps })
                 }
-                this.lastCells.set(piece.id, { x: target.x, y: target.y })
+                this.lastCells.set(piece.id, { ...piece.position })
             }
 
             if (Math.abs(sprite.alpha - targetAlpha) > 0.01) {
-                this.tweens.add({
-                    targets: sprite,
-                    alpha: targetAlpha,
-                    duration: 200,
-                })
+                this.tweens.add({ targets: sprite, alpha: targetAlpha, duration: 200 })
             }
         }
 
+        // Peças removidas (mortas) somem com fade
         for (const [id, sprite] of this.sprites) {
             if (seen.has(id)) continue
             this.sprites.delete(id)
@@ -153,6 +154,7 @@ export class BoardScene extends Phaser.Scene {
         }
     }
 
+    // Caminho ortogonal célula-a-célula entre dois pontos (eixo X primeiro, depois Y)
     private buildPath(from: PiecePosition, to: PiecePosition): PiecePosition[] {
         const path: PiecePosition[] = []
         let cx = from.x
@@ -170,16 +172,9 @@ export class BoardScene extends Phaser.Scene {
 
     private buildPiece(piece: PieceDefinition): Phaser.GameObjects.Container {
         const cs = this.cellSize
-        const isGray = piece.color === "gray"
-        const isLight = piece.color === "light"
-        const wasRecruited = piece.recruitedFrom === "gray"
-
-        const clothing = isGray ? 0x7a7a7a : isLight ? 0xf2f2f2 : 0x1a1a1a
-        const outline = isGray ? 0x2a2a2a : isLight ? 0x2a2a2a : 0xdedede
-        const skin = wasRecruited ? 0x9a9a9a : isGray ? 0xb8a890 : 0xf0c8a0
+        const { clothing, outline, skin } = PIECE_PALETTE[piece.color]
 
         const container = this.add.container(0, 0)
-        container.setData("color", piece.color)
         const shadow = this.add.ellipse(0, cs * 0.3, cs * 0.42, cs * 0.1, 0x000000, 0.45)
 
         const legY = cs * 0.2
@@ -200,14 +195,13 @@ export class BoardScene extends Phaser.Scene {
         const leftEye = this.add.circle(-cs * 0.04, eyeY, eyeR, 0x111111)
         const rightEye = this.add.circle(cs * 0.04, eyeY, eyeR, 0x111111)
 
-        const letterColor = isLight ? "#1a1a1a" : "#ffffff"
-        const letterStroke = isLight ? "#ffffff" : "#000000"
+        const isLight = piece.color === "light"
         const letter = this.add
             .text(0, 0, piece.type, {
                 fontFamily: "Arial Black",
                 fontSize: `${Math.max(10, Math.floor(cs * 0.18))}px`,
-                color: letterColor,
-                stroke: letterStroke,
+                color: isLight ? "#1a1a1a" : "#ffffff",
+                stroke: isLight ? "#ffffff" : "#000000",
                 strokeThickness: 2,
             })
             .setOrigin(0.5, 0.5)
@@ -218,21 +212,13 @@ export class BoardScene extends Phaser.Scene {
 
     private buildItem(item: SpecialItem): Phaser.GameObjects.Container {
         const cs = this.cellSize
-        const team = item.key[0] as "d" | "g" | "l"
-        const type = item.key[1]
-
-        const palette: Record<"d" | "g" | "l", { bg: number; outline: number; text: string; stroke: string }> = {
-            d: { bg: 0x2a2a2a, outline: 0xeeeeee, text: "#ffffff", stroke: "#000000" },
-            l: { bg: 0xeeeeee, outline: 0x222222, text: "#1a1a1a", stroke: "#ffffff" },
-            g: { bg: 0x888888, outline: 0x222222, text: "#ffffff", stroke: "#000000" },
-        }
-        const colors = palette[team]
+        const colors = ITEM_PALETTE[itemKeyColor(item.key)]
 
         const container = this.add.container(0, 0)
         const ring = this.add.circle(0, 0, cs * 0.22, 0x000000, 0.25)
         const circle = this.add.circle(0, 0, cs * 0.18, colors.bg).setStrokeStyle(2, colors.outline)
         const letter = this.add
-            .text(0, 0, type, {
+            .text(0, 0, item.key[1], {
                 fontFamily: "Arial Black",
                 fontSize: `${Math.max(10, Math.floor(cs * 0.18))}px`,
                 color: colors.text,

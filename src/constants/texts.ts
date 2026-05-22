@@ -59,11 +59,6 @@ export const texts = {
         ptBR: "Atacar",
     },
 
-    recruit: {
-        enUS: "Recruit",
-        ptBR: "Recrutar",
-    },
-
     collect: {
         enUS: "Collect",
         ptBR: "Coletar",
@@ -85,8 +80,33 @@ export const texts = {
     },
 
     itemDescHealGray: {
-        enUS: "Heals Gray (or recruits if owned by Light/Dark)",
-        ptBR: "Cura a peça cinza (ou recruta se for de time claro/escuro)",
+        enUS: "Heals Gray",
+        ptBR: "Cura a peça cinza",
+    },
+
+    itemDescManipulateLight: {
+        enUS: "Manipulate Light",
+        ptBR: "Manipula a peça clara",
+    },
+
+    itemDescManipulateDark: {
+        enUS: "Manipulate Dark",
+        ptBR: "Manipula a peça escura",
+    },
+
+    itemDescManipulateGray: {
+        enUS: "Manipulate Gray",
+        ptBR: "Manipula a peça cinza",
+    },
+
+    itemDescOwnSuffix: {
+        enUS: "(restores full HP)",
+        ptBR: "(restaura PV total)",
+    },
+
+    itemDescManipulateSuffix: {
+        enUS: "(force one action: move or attack — single use)",
+        ptBR: "(força uma ação: mover ou atacar — uso único)",
     },
 
     gray: {
@@ -97,11 +117,6 @@ export const texts = {
     team: {
         enUS: "Team",
         ptBR: "Equipe",
-    },
-
-    range: {
-        enUS: "Range",
-        ptBR: "Alcance",
     },
 
     hp: {
@@ -194,23 +209,53 @@ export const texts = {
         ptBR: "Nenhum item coletado ainda.",
     },
 
-    healItems: {
-        enUS: "Heal items",
-        ptBR: "Itens de cura",
+    manipulatingPiece: {
+        enUS: "Manipulating",
+        ptBR: "Manipulando",
     },
 
-    recruitItems: {
-        enUS: "Recruit items",
-        ptBR: "Itens de recrutamento",
+    cancelManipulation: {
+        enUS: "Cancel manipulation",
+        ptBR: "Cancelar manipulação",
     },
 
-    otherItems: {
-        enUS: "Other items (denied)",
-        ptBR: "Outros itens (negados)",
+    verbUsed: {
+        enUS: "used",
+        ptBR: "usaram",
     },
 
-    needsItemToRecruit: {
-        enUS: "Need item to recruit",
-        ptBR: "Precisa do item para recrutar",
+    verbManipulated: {
+        enUS: "manipulated",
+        ptBR: "manipularam",
+    },
+
+    verbHealed: {
+        enUS: "healed",
+        ptBR: "curaram",
+    },
+
+    toMove: {
+        enUS: "to move",
+        ptBR: "para mover",
+    },
+
+    toAttack: {
+        enUS: "to attack",
+        ptBR: "para atacar",
+    },
+
+    toCollectItem: {
+        enUS: "to collect item",
+        ptBR: "para coletar o item",
+    },
+
+    wasEliminated: {
+        enUS: "was eliminated",
+        ptBR: "foi eliminada",
+    },
+
+    wasDefeated: {
+        enUS: "was defeated",
+        ptBR: "foram derrotadas",
     },
 }

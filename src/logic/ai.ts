@@ -1,27 +1,21 @@
-import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventories, SpecialItemKey, MainColor } from "./types"
+import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventories, SpecialItemKey } from "./types"
+import { itemKeyColor } from "./types"
 import { reachableCells, manhattan, findApproachCell } from "./movement"
 import { PIECE_STATS } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
-
-const isMainColor = (color: PieceColor): color is MainColor => color === "light" || color === "dark"
 
 export interface PendingDamage {
     targetId: string
     damage: number
     delayMs: number
-}
-
-export interface PendingRecruit {
-    targetId: string
-    recruiter: MainColor
-    delayMs: number
-    consumedItemKey: SpecialItemKey
+    // Preenchidos quando o dano vem de um item de manipulação — o item é consumido ao aplicar o dano
+    consumedItemKey?: SpecialItemKey
+    consumerColor?: PieceColor
 }
 
 export interface AIMoveResult {
     updatedPieces: PieceDefinition[]
     pendingDamage?: PendingDamage
-    pendingRecruit?: PendingRecruit
 }
 
 export interface HealResult {
@@ -31,29 +25,23 @@ export interface HealResult {
 }
 
 export class SimpleAI {
+    // Para cada peça ferida do time, gasta o item homônimo do inventário (id == key) para curar
     static applyHeals(pieces: PieceDefinition[], color: PieceColor, inventories: Inventories): HealResult {
         const teamInv = [...inventories[color]]
         let updatedPieces = pieces
         let healed = false
 
         for (const piece of pieces) {
-            if (piece.color !== color) continue
-            if (piece.hp >= piece.maxHp) continue
-            const healKey = piece.id as SpecialItemKey
-            const idx = teamInv.indexOf(healKey)
+            if (piece.color !== color || piece.hp >= piece.maxHp) continue
+            const idx = teamInv.indexOf(piece.id as SpecialItemKey)
             if (idx === -1) continue
-            if (piece.id !== healKey) continue
 
             teamInv.splice(idx, 1)
             updatedPieces = updatedPieces.map((p) => (p.id === piece.id ? { ...p, hp: p.maxHp } : p))
             healed = true
         }
 
-        return {
-            pieces: updatedPieces,
-            inventories: { ...inventories, [color]: teamInv },
-            healed,
-        }
+        return { pieces: updatedPieces, inventories: { ...inventories, [color]: teamInv }, healed }
     }
 
     static makeMove(
@@ -65,19 +53,11 @@ export class SimpleAI {
     ): AIMoveResult {
         const myPieces = pieces.filter((p) => p.color === color && !p.movedThisTurn)
         const enemyPieces = pieces.filter((p) => p.color !== color)
-        const teamIsMain = isMainColor(color)
         const myInv: SpecialItemKey[] = inventories[color]
 
-        // Prioridade 1: recrutar (apenas times principais com item correspondente)
-        if (teamIsMain) {
-            for (const myPiece of myPieces) {
-                for (const reach of this.findInRangeTargets(myPiece, enemyPieces, pieces, boardSize)) {
-                    if (reach.target.color === "gray" && myInv.includes(reach.target.id as SpecialItemKey)) {
-                        return this.buildRecruit(myPiece, reach.target, reach.approach, pieces, color, reach.target.id as SpecialItemKey)
-                    }
-                }
-            }
-        }
+        // Prioridade 1: usar item de manipulação para forçar um ataque vantajoso
+        const manipulation = this.tryManipulationAttack(pieces, color, myInv, boardSize)
+        if (manipulation) return manipulation
 
         // Prioridade 2: atacar qualquer inimigo no alcance
         for (const myPiece of myPieces) {
@@ -106,6 +86,55 @@ export class SimpleAI {
         }
 
         return { updatedPieces: pieces }
+    }
+
+    // Para cada item de manipulação no inventário, verifica se a peça correspondente
+    // pode atacar alguém que NÃO seja do time da IA. Escolhe o alvo de menor HP
+    // (mais chance de morte). Se nenhum item rende um ataque útil, retorna null.
+    private static tryManipulationAttack(
+        pieces: PieceDefinition[],
+        color: PieceColor,
+        myInv: SpecialItemKey[],
+        boardSize: number,
+    ): AIMoveResult | null {
+        for (const itemKey of myInv) {
+            if (itemKeyColor(itemKey) === color) continue
+            const manipulated = pieces.find((p) => p.id === itemKey)
+            if (!manipulated) continue
+
+            const range = PIECE_STATS[manipulated.type].attackRange
+            const damage = PIECE_STATS[manipulated.type].attackDamage
+
+            let best: { target: PieceDefinition; approach: PiecePosition } | null = null
+            for (const other of pieces) {
+                if (other.id === manipulated.id) continue
+                if (other.color === color) continue
+                if (manhattan(manipulated.position, other.position) > range) continue
+                const approach = findApproachCell(manipulated, other, pieces, boardSize)
+                if (!approach) continue
+                if (!best || other.hp < best.target.hp) {
+                    best = { target: other, approach }
+                }
+            }
+
+            if (!best) continue
+
+            const moveSteps = manhattan(manipulated.position, best.approach)
+            const updatedPieces = pieces.map((p) =>
+                p.id === manipulated.id ? { ...p, position: best!.approach, movedThisTurn: true } : p,
+            )
+            return {
+                updatedPieces,
+                pendingDamage: {
+                    targetId: best.target.id,
+                    damage,
+                    delayMs: moveSteps * STEP_MS + 50,
+                    consumedItemKey: itemKey,
+                    consumerColor: color,
+                },
+            }
+        }
+        return null
     }
 
     private static moveTowardItem(
@@ -163,27 +192,6 @@ export class SimpleAI {
                 targetId: target.id,
                 damage,
                 delayMs: moveSteps * STEP_MS + 50,
-            },
-        }
-    }
-
-    private static buildRecruit(
-        recruiter: PieceDefinition,
-        target: PieceDefinition,
-        approach: PiecePosition,
-        pieces: PieceDefinition[],
-        recruiterColor: MainColor,
-        itemKey: SpecialItemKey,
-    ): AIMoveResult {
-        const moveSteps = manhattan(recruiter.position, approach)
-        const updatedPieces = pieces.map((p) => (p.id === recruiter.id ? { ...p, position: approach, movedThisTurn: true } : p))
-        return {
-            updatedPieces,
-            pendingRecruit: {
-                targetId: target.id,
-                recruiter: recruiterColor,
-                delayMs: moveSteps * STEP_MS + 50,
-                consumedItemKey: itemKey,
             },
         }
     }

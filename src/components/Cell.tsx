@@ -9,7 +9,7 @@ interface CellProps {
     isHighlighted: boolean
     isAttackHighlighted: boolean
     isSelected: boolean
-    onCellClick: (pos: PiecePosition, left: boolean) => void
+    onCellClick: (pos: PiecePosition) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 
@@ -20,13 +20,9 @@ export const Cell: React.FC<CellProps> = ({ x, y, size, isHighlighted, isAttackH
 
     return (
         <Box
-            onClick={(e) => {
-                e.stopPropagation()
-                onCellClick({ x, y }, true)
-            }}
+            onClick={() => onCellClick({ x, y })}
             onContextMenu={(e) => {
                 e.preventDefault()
-                e.stopPropagation()
                 onCellContextMenu(e, { x, y })
             }}
             sx={{

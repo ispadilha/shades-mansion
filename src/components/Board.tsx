@@ -13,7 +13,7 @@ interface BoardProps {
     highlighted: PiecePosition[]
     attackHighlighted: PiecePosition[]
     selectedPieceId: string | null
-    onCellClick: (pos: PiecePosition, left: boolean) => void
+    onCellClick: (pos: PiecePosition) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 

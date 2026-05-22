@@ -1,21 +1,29 @@
 import React from "react"
 import { Box, Button, Modal, Typography } from "@mui/material"
-import type { SpecialItemKey } from "../logic/types"
+import type { PieceColor, SpecialItemKey } from "../logic/types"
+import { itemKeyColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
 
-const itemTeamLetter = (key: SpecialItemKey) => key[0] as "d" | "g" | "l"
-const itemTypeLetter = (key: SpecialItemKey) => key[1] as "A" | "B" | "C"
+const PALETTE: Record<PieceColor, { bg: string; outline: string; text: string }> = {
+    dark: { bg: "#2a2a2a", outline: "#222", text: "#ffffff" },
+    light: { bg: "#eeeeee", outline: "#222", text: "#111111" },
+    gray: { bg: "#888888", outline: "#222", text: "#ffffff" },
+}
 
-const PALETTE: Record<"d" | "g" | "l", { bg: string; outline: string; text: string }> = {
-    d: { bg: "#2a2a2a", outline: "#222", text: "#ffffff" },
-    l: { bg: "#eeeeee", outline: "#222", text: "#111111" },
-    g: { bg: "#888888", outline: "#222", text: "#ffffff" },
+const HEAL_HEAD: Record<PieceColor, "itemDescHealLight" | "itemDescHealDark" | "itemDescHealGray"> = {
+    light: "itemDescHealLight",
+    dark: "itemDescHealDark",
+    gray: "itemDescHealGray",
+}
+
+const MANIPULATE_HEAD: Record<PieceColor, "itemDescManipulateLight" | "itemDescManipulateDark" | "itemDescManipulateGray"> = {
+    light: "itemDescManipulateLight",
+    dark: "itemDescManipulateDark",
+    gray: "itemDescManipulateGray",
 }
 
 export const ItemBadge: React.FC<{ k: SpecialItemKey; size?: number }> = ({ k, size = 28 }) => {
-    const team = itemTeamLetter(k)
-    const colors = PALETTE[team]
-    const fontSize = Math.max(10, Math.floor(size * 0.5))
+    const colors = PALETTE[itemKeyColor(k)]
     return (
         <Box
             sx={{
@@ -29,11 +37,11 @@ export const ItemBadge: React.FC<{ k: SpecialItemKey; size?: number }> = ({ k, s
                 alignItems: "center",
                 justifyContent: "center",
                 fontFamily: "Arial Black",
-                fontSize,
+                fontSize: Math.max(10, Math.floor(size * 0.5)),
                 flexShrink: 0,
             }}
         >
-            {itemTypeLetter(k)}
+            {k[1]}
         </Box>
     )
 }
@@ -42,17 +50,18 @@ interface ItemInfoModalProps {
     open: boolean
     onClose: () => void
     itemKey: SpecialItemKey | null
+    playerColor?: PieceColor | null
 }
 
-export const ItemInfoModal: React.FC<ItemInfoModalProps> = ({ open, onClose, itemKey }) => {
+export const ItemInfoModal: React.FC<ItemInfoModalProps> = ({ open, onClose, itemKey, playerColor }) => {
     const { t } = useLanguage()
 
     const describe = (key: SpecialItemKey) => {
-        const team = itemTeamLetter(key)
-        const type = itemTypeLetter(key)
-        if (team === "l") return `${t("itemDescHealLight")} ${type}.`
-        if (team === "d") return `${t("itemDescHealDark")} ${type}.`
-        return `${t("itemDescHealGray")} ${type}.`
+        const itemColor = itemKeyColor(key)
+        const isOwn = itemColor === playerColor
+        const head = isOwn ? HEAL_HEAD[itemColor] : MANIPULATE_HEAD[itemColor]
+        const suffix = isOwn ? t("itemDescOwnSuffix") : t("itemDescManipulateSuffix")
+        return `${t(head)} ${key[1]} ${suffix}.`
     }
 
     return (
