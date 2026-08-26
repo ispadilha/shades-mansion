@@ -5,14 +5,14 @@ import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import { InventoryModal } from "../components/InventoryModal"
 import { ItemInfoModal } from "../components/ItemInfoModal"
-import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, SpecialItemKey, Inventories, TextKey } from "../logic/types"
+import type { PieceDefinition, PieceColor, PieceType, PiecePosition, SpecialItem, SpecialItemKey, Inventories, TextKey } from "../logic/types"
 import { ALL_ITEM_KEYS, itemKeyColor } from "../logic/types"
-import { reachableCells, manhattan, findApproachCell } from "../logic/movement"
+import { reachableCells, manhattan, findApproachCell, lineOfFire } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
-import { MAX_HP, PIECE_STATS } from "../constants/gameRules"
+import { MAX_HP, PIECE_STATS, isRanged } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
 const TURN_ORDER: PieceColor[] = ["light", "dark", "gray"]
@@ -56,22 +56,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
     const initialPieces = useMemo<PieceDefinition[]>(() => {
         const mid = Math.floor(BOARD_SIZE / 2)
-        const xs = [mid - 1, mid, mid + 1]
+        const xs = [mid - 2, mid - 1, mid, mid + 1]
         const topY = 0
         const bottomY = BOARD_SIZE - 1
-        const make = (id: string, color: PieceColor, type: "A" | "B" | "C", x: number, y: number): PieceDefinition => ({
+        const make = (id: string, color: PieceColor, type: PieceType, x: number, y: number): PieceDefinition => ({
             id, color, type, position: { x, y }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP,
         })
         return [
             make("dA", "dark", "A", xs[0], topY),
             make("dB", "dark", "B", xs[1], topY),
             make("dC", "dark", "C", xs[2], topY),
+            make("dD", "dark", "D", xs[3], topY),
             make("gA", "gray", "A", xs[0], mid),
             make("gB", "gray", "B", xs[1], mid),
             make("gC", "gray", "C", xs[2], mid),
+            make("gD", "gray", "D", xs[3], mid),
             make("lA", "light", "A", xs[0], bottomY),
             make("lB", "light", "B", xs[1], bottomY),
             make("lC", "light", "C", xs[2], bottomY),
+            make("lD", "light", "D", xs[3], bottomY),
         ]
     }, [])
 
@@ -222,8 +225,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                 const dmg = pendingDamage
                 if (dmg.consumedItemKey && dmg.consumerColor) {
                     logManipulatedTo(dmg.consumerColor, dmg.consumedItemKey, "toAttack", dmg.targetId)
-                } else if (movedPiece) {
-                    logUsedTo(turn, movedPiece.id, "toAttack", dmg.targetId)
+                } else {
+                    logUsedTo(turn, dmg.attackerId, "toAttack", dmg.targetId)
                 }
                 damageTimerRef.current = window.setTimeout(() => {
                     setPieces((prev) =>
@@ -272,6 +275,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         if (!p) return
         const stats = PIECE_STATS[p.type]
         setHighlighted(reachableCells(p, pieces, BOARD_SIZE, stats.moveRange))
+
+        // Peças de ataque à distância destacam as próprias linhas, colunas e diagonais
+        if (isRanged(p.type)) {
+            setAttackHighlighted(lineOfFire(p, pieces, BOARD_SIZE, stats.attackRange).cells)
+            return
+        }
 
         // Casas no alcance de ataque: vazias ou ocupadas com casa adjacente livre para aproximação
         const attackCells: PiecePosition[] = []
@@ -351,6 +360,19 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
     }
 
+    // Peças de ataque à distância atingem quem estiver na sua linha, coluna ou diagonal
+    // (a primeira peça de cada direção); as demais precisam de uma casa livre adjacente ao alvo.
+    const canHitTarget = (attacker: PieceDefinition, target: PieceDefinition) => {
+        const { attackRange } = PIECE_STATS[attacker.type]
+        if (isRanged(attacker.type)) {
+            return lineOfFire(attacker, pieces, BOARD_SIZE, attackRange).targets.some((t) => t.id === target.id)
+        }
+        return (
+            manhattan(attacker.position, target.position) <= attackRange &&
+            findApproachCell(attacker, target, pieces, BOARD_SIZE) !== null
+        )
+    }
+
     const onCellContextMenu = (event: React.MouseEvent, pos: PiecePosition) => {
         if (turn !== playerColor) return
 
@@ -375,8 +397,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             !!targetPiece &&
             targetPiece.id !== selectedPiece!.id &&
             (isManipulating || targetPiece.color !== selectedPiece!.color) &&
-            manhattan(selectedPiece!.position, targetPiece.position) <= PIECE_STATS[selectedPiece!.type].attackRange &&
-            findApproachCell(selectedPiece!, targetPiece, pieces, BOARD_SIZE) !== null
+            canHitTarget(selectedPiece!, targetPiece)
 
         if (!canInfo && !canItemInfo && !canMove && !canCollect && !canAttack) return
 
@@ -428,12 +449,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
         const target = contextMenu.targetPiece
         const damage = PIECE_STATS[attacker.type].attackDamage
-        const newPos = findApproachCell(attacker, target, pieces, BOARD_SIZE) ?? attacker.position
-        const delayMs = manhattan(attacker.position, newPos) * STEP_MS + 50
         const targetId = target.id
+        // Ataque à distância acerta de onde a peça está; os outros tipos se aproximam do alvo antes
+        const ranged = isRanged(attacker.type)
+        const newPos = ranged ? attacker.position : (findApproachCell(attacker, target, pieces, BOARD_SIZE) ?? attacker.position)
+        const delayMs = manhattan(attacker.position, newPos) * STEP_MS + 50
 
         setPieces((prev) => prev.map((p) => (p.id === attacker.id ? { ...p, position: newPos, movedThisTurn: true } : p)))
-        schedulePickup(attacker.color, newPos, delayMs)
+        if (!ranged) schedulePickup(attacker.color, newPos, delayMs)
         setSelectedId(null)
         closeContextMenu()
 
@@ -583,6 +606,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                             <Typography>{t("moveRange")}: {PIECE_STATS[infoPiece.type].moveRange}</Typography>
                             <Typography>{t("attackRange")}: {PIECE_STATS[infoPiece.type].attackRange}</Typography>
                             <Typography>{t("attackPower")}: {PIECE_STATS[infoPiece.type].attackDamage}</Typography>
+                            <Typography>
+                                {t("attackStyle")}: {t(isRanged(infoPiece.type) ? "attackStyleRanged" : "attackStyleMelee")}
+                            </Typography>
                         </>
                     )}
                 </Box>

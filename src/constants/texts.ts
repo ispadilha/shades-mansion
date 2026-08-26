@@ -144,6 +144,21 @@ export const texts = {
         ptBR: "Força de ataque",
     },
 
+    attackStyle: {
+        enUS: "Attack style",
+        ptBR: "Estilo de ataque",
+    },
+
+    attackStyleMelee: {
+        enUS: "Melee",
+        ptBR: "Corpo a corpo",
+    },
+
+    attackStyleRanged: {
+        enUS: "Ranged",
+        ptBR: "À distância",
+    },
+
     turn: {
         enUS: "Turn",
         ptBR: "Turno",

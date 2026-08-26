@@ -2,7 +2,7 @@ import type { texts } from "../constants/texts"
 
 export type PieceColor = "light" | "dark" | "gray"
 
-export type PieceType = "A" | "B" | "C"
+export type PieceType = "A" | "B" | "C" | "D"
 
 export interface PiecePosition {
     x: number
@@ -23,12 +23,15 @@ export type SpecialItemKey =
     | "dA"
     | "dB"
     | "dC"
+    | "dD"
     | "gA"
     | "gB"
     | "gC"
+    | "gD"
     | "lA"
     | "lB"
     | "lC"
+    | "lD"
 
 export interface SpecialItem {
     id: string
@@ -39,7 +42,7 @@ export interface SpecialItem {
 export type TeamInventory = SpecialItemKey[]
 export type Inventories = Record<PieceColor, TeamInventory>
 
-export const ALL_ITEM_KEYS: SpecialItemKey[] = ["dA", "dB", "dC", "gA", "gB", "gC", "lA", "lB", "lC"]
+export const ALL_ITEM_KEYS: SpecialItemKey[] = ["dA", "dB", "dC", "dD", "gA", "gB", "gC", "gD", "lA", "lB", "lC", "lD"]
 
 export const itemKeyColor = (key: SpecialItemKey): PieceColor =>
     key[0] === "l" ? "light" : key[0] === "d" ? "dark" : "gray"

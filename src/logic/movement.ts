@@ -54,3 +54,48 @@ export function findApproachCell(
 
     return valid.reduce((best, c) => (manhattan(attacker.position, c) < manhattan(attacker.position, best) ? c : best))
 }
+
+// As 8 direções que formam as linhas, colunas e diagonais de uma peça
+const LINE_DIRECTIONS: Array<{ dx: number; dy: number }> = [
+    { dx: 1, dy: 0 },
+    { dx: -1, dy: 0 },
+    { dx: 0, dy: 1 },
+    { dx: 0, dy: -1 },
+    { dx: 1, dy: 1 },
+    { dx: 1, dy: -1 },
+    { dx: -1, dy: 1 },
+    { dx: -1, dy: -1 },
+]
+
+// Ataque à distância: percorre as 8 direções até `range` casas.
+// A primeira peça encontrada em cada direção é o alvo daquela linha
+// e bloqueia o restante dela — peças no caminho protegem quem está atrás.
+// `cells` inclui as casas percorridas (para destacar no tabuleiro)
+// e `targets`, as peças atingíveis.
+export function lineOfFire(
+    piece: PieceDefinition,
+    pieces: PieceDefinition[],
+    boardSize: number,
+    range: number,
+): { cells: PiecePosition[]; targets: PieceDefinition[] } {
+    const cells: PiecePosition[] = []
+    const targets: PieceDefinition[] = []
+
+    for (const { dx, dy } of LINE_DIRECTIONS) {
+        for (let step = 1; step <= range; step++) {
+            const nx = piece.position.x + dx * step
+            const ny = piece.position.y + dy * step
+            if (nx < 0 || ny < 0 || nx >= boardSize || ny >= boardSize) break
+
+            cells.push({ x: nx, y: ny })
+
+            const occupant = pieces.find((p) => p.position.x === nx && p.position.y === ny)
+            if (occupant) {
+                if (occupant.id !== piece.id) targets.push(occupant)
+                break
+            }
+        }
+    }
+
+    return { cells, targets }
+}

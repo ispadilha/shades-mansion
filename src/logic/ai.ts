@@ -1,10 +1,11 @@
 import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventories, SpecialItemKey } from "./types"
 import { itemKeyColor } from "./types"
-import { reachableCells, manhattan, findApproachCell } from "./movement"
-import { PIECE_STATS } from "../constants/gameRules"
+import { reachableCells, manhattan, findApproachCell, lineOfFire } from "./movement"
+import { PIECE_STATS, isRanged } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
 export interface PendingDamage {
+    attackerId: string
     targetId: string
     damage: number
     delayMs: number
@@ -90,7 +91,7 @@ export class SimpleAI {
 
     // Para cada item de manipulação no inventário, verifica se a peça correspondente
     // pode atacar alguém que NÃO seja do time da IA. Escolhe o alvo de menor HP
-    // (mais chance de morte). Se nenhum item rende um ataque útil, retorna null.
+    // (mais chance de eliminar). Se nenhum item rende um ataque útil, retorna null.
     private static tryManipulationAttack(
         pieces: PieceDefinition[],
         color: PieceColor,
@@ -102,30 +103,24 @@ export class SimpleAI {
             const manipulated = pieces.find((p) => p.id === itemKey)
             if (!manipulated) continue
 
-            const range = PIECE_STATS[manipulated.type].attackRange
             const damage = PIECE_STATS[manipulated.type].attackDamage
 
-            let best: { target: PieceDefinition; approach: PiecePosition } | null = null
-            for (const other of pieces) {
-                if (other.id === manipulated.id) continue
-                if (other.color === color) continue
-                if (manhattan(manipulated.position, other.position) > range) continue
-                const approach = findApproachCell(manipulated, other, pieces, boardSize)
-                if (!approach) continue
-                if (!best || other.hp < best.target.hp) {
-                    best = { target: other, approach }
-                }
-            }
+            // Alvos possíveis: qualquer peça que não seja da IA nem a própria peça manipulada
+            const candidates = pieces.filter((p) => p.id !== manipulated.id && p.color !== color)
+            const reach = this.findInRangeTargets(manipulated, candidates, pieces, boardSize)
+            if (reach.length === 0) continue
 
-            if (!best) continue
+            // Escolhe o alvo de menor HP (mais chance de eliminá-lo)
+            const best = reach.reduce((acc, r) => (r.target.hp < acc.target.hp ? r : acc))
 
             const moveSteps = manhattan(manipulated.position, best.approach)
             const updatedPieces = pieces.map((p) =>
-                p.id === manipulated.id ? { ...p, position: best!.approach, movedThisTurn: true } : p,
+                p.id === manipulated.id ? { ...p, position: best.approach, movedThisTurn: true } : p,
             )
             return {
                 updatedPieces,
                 pendingDamage: {
+                    attackerId: manipulated.id,
                     targetId: best.target.id,
                     damage,
                     delayMs: moveSteps * STEP_MS + 50,
@@ -189,6 +184,7 @@ export class SimpleAI {
         return {
             updatedPieces,
             pendingDamage: {
+                attackerId: attacker.id,
                 targetId: target.id,
                 damage,
                 delayMs: moveSteps * STEP_MS + 50,
@@ -203,6 +199,14 @@ export class SimpleAI {
         boardSize: number,
     ): Array<{ target: PieceDefinition; approach: PiecePosition }> {
         const range = PIECE_STATS[myPiece.type].attackRange
+
+        if (isRanged(myPiece.type)) {
+            const { targets } = lineOfFire(myPiece, pieces, boardSize, range)
+            return targets
+                .filter((target) => enemyPieces.some((e) => e.id === target.id))
+                .map((target) => ({ target, approach: myPiece.position }))
+        }
+
         const result: Array<{ target: PieceDefinition; approach: PiecePosition }> = []
         for (const enemy of enemyPieces) {
             if (manhattan(myPiece.position, enemy.position) > range) continue
