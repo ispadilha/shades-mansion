@@ -1,5 +1,14 @@
 import type { PieceType } from "../logic/types"
 
+export const CELL_SIZE = 64
+
+export const DEFAULT_BOARD_SIZE = 20
+export const BOARD_SIZE_RANGE = { min: 12, max: 40 }
+
+export const DEFAULT_MIN_ROOM_SIZE = 3
+export const DEFAULT_MAX_ROOM_SIZE = 6
+export const ROOM_SIZE_RANGE = { min: 2, max: 10 }
+
 export const MAX_HP = 3
 
 export const PIECE_STATS: Record<PieceType, { moveRange: number; attackRange: number; attackDamage: number; ranged?: boolean }> = {

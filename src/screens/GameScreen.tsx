@@ -5,14 +5,17 @@ import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import { InventoryModal } from "../components/InventoryModal"
 import { ItemInfoModal } from "../components/ItemInfoModal"
-import type { PieceDefinition, PieceColor, PieceType, PiecePosition, SpecialItem, SpecialItemKey, Inventories, TextKey } from "../logic/types"
-import { ALL_ITEM_KEYS, itemKeyColor } from "../logic/types"
-import { reachableCells, manhattan, findApproachCell, lineOfFire } from "../logic/movement"
+import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, SpecialItemKey, Inventories, TextKey } from "../logic/types"
+import { itemKeyColor } from "../logic/types"
+import { reachableCells, pathLength, findApproachCell, lineOfFire, meleeAttackCells } from "../logic/movement"
+import { generateMaze } from "../logic/maze"
+import { createInitialPieces, placeItems } from "../logic/setup"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
-import { MAX_HP, PIECE_STATS, isRanged } from "../constants/gameRules"
+import { useSettings } from "../hooks/useSettings"
+import { CELL_SIZE, PIECE_STATS, isRanged } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
 const TURN_ORDER: PieceColor[] = ["light", "dark", "gray"]
@@ -21,64 +24,19 @@ const nextTurnColor = (turn: PieceColor): PieceColor => TURN_ORDER[(TURN_ORDER.i
 const COLOR_LABEL: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
 const MAX_LOG_ENTRIES = 100
 
-// Espalha 2 cópias de cada item em casas aleatórias livres (sem peças e sem outros itens já colocados)
-const placeItems = (boardSize: number, pieces: PieceDefinition[]): SpecialItem[] => {
-    const occupied = new Set(pieces.map((p) => `${p.position.x},${p.position.y}`))
-    const result: SpecialItem[] = []
-    for (let copy = 0; copy < 2; copy++) {
-        for (const key of ALL_ITEM_KEYS) {
-            let pos: PiecePosition = { x: 0, y: 0 }
-            for (let attempts = 0; attempts < 400; attempts++) {
-                const x = Math.floor(Math.random() * boardSize)
-                const y = Math.floor(Math.random() * boardSize)
-                const k = `${x},${y}`
-                if (!occupied.has(k)) {
-                    pos = { x, y }
-                    occupied.add(k)
-                    break
-                }
-            }
-            result.push({ id: `item-${key}-${copy}`, key, position: pos })
-        }
-    }
-    return result
-}
-
-const BOARD_SIZE = 20
-const CELL_SIZE = 64
-
 interface GameScreenProps {}
 
 export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const navigate = useNavigate()
     const { t } = useLanguage()
     const { playerColor, setWinner } = useGame()
+    const { boardSize, minRoomSize, maxRoomSize } = useSettings()
 
-    const initialPieces = useMemo<PieceDefinition[]>(() => {
-        const mid = Math.floor(BOARD_SIZE / 2)
-        const xs = [mid - 2, mid - 1, mid, mid + 1]
-        const topY = 0
-        const bottomY = BOARD_SIZE - 1
-        const make = (id: string, color: PieceColor, type: PieceType, x: number, y: number): PieceDefinition => ({
-            id, color, type, position: { x, y }, movedThisTurn: false, hp: MAX_HP, maxHp: MAX_HP,
-        })
-        return [
-            make("dA", "dark", "A", xs[0], topY),
-            make("dB", "dark", "B", xs[1], topY),
-            make("dC", "dark", "C", xs[2], topY),
-            make("dD", "dark", "D", xs[3], topY),
-            make("gA", "gray", "A", xs[0], mid),
-            make("gB", "gray", "B", xs[1], mid),
-            make("gC", "gray", "C", xs[2], mid),
-            make("gD", "gray", "D", xs[3], mid),
-            make("lA", "light", "A", xs[0], bottomY),
-            make("lB", "light", "B", xs[1], bottomY),
-            make("lC", "light", "C", xs[2], bottomY),
-            make("lD", "light", "D", xs[3], bottomY),
-        ]
-    }, [])
-
-    const initialItems = useMemo<SpecialItem[]>(() => placeItems(BOARD_SIZE, initialPieces), [initialPieces])
+    // O labirinto é gerado uma vez por partida, com os tamanhos definidos nas opções.
+    // Peças e itens são posicionados depois dele, em casas livres.
+    const maze = useMemo(() => generateMaze(boardSize, minRoomSize, maxRoomSize), [boardSize, minRoomSize, maxRoomSize])
+    const initialPieces = useMemo<PieceDefinition[]>(() => createInitialPieces(maze), [maze])
+    const initialItems = useMemo<SpecialItem[]>(() => placeItems(maze, initialPieces), [maze, initialPieces])
 
     const [pieces, setPieces] = useState<PieceDefinition[]>(initialPieces)
     const [items, setItems] = useState<SpecialItem[]>(initialItems)
@@ -122,8 +80,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     useEffect(() => {
         const container = scrollRef.current
         if (!container) return
-        const mid = Math.floor(BOARD_SIZE / 2)
-        const boardPx = BOARD_SIZE * CELL_SIZE
+        const mid = Math.floor(maze.size / 2)
+        const boardPx = maze.size * CELL_SIZE
         const offsetX = (container.scrollWidth - boardPx) / 2
         const focusX = mid * CELL_SIZE + CELL_SIZE / 2
         const focusY =
@@ -132,7 +90,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             mid * CELL_SIZE - CELL_SIZE * 4
         container.scrollLeft = offsetX + focusX - container.clientWidth / 2
         container.scrollTop = focusY
-    }, [playerColor])
+    }, [playerColor, maze])
 
     // Histórico de jogadas: aceita novas entradas e descarta as mais antigas além de MAX_LOG_ENTRIES
     const addLog = (entry: string) => {
@@ -203,7 +161,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
         const timer = setTimeout(() => {
             const previousPieces = pieces
-            const { updatedPieces, pendingDamage } = SimpleAI.makeMove(pieces, turn, BOARD_SIZE, items, inventories)
+            const { updatedPieces, pendingDamage } = SimpleAI.makeMove(pieces, turn, maze, items, inventories)
             setPieces(updatedPieces)
 
             // Identifica peça que mudou de posição neste tick (no máximo uma por chamada de makeMove)
@@ -214,7 +172,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
             if (movedPiece) {
                 const old = previousPieces.find((q) => q.id === movedPiece.id)!
-                const delayMs = manhattan(old.position, movedPiece.position) * STEP_MS + 50
+                const delayMs = pathLength(old.position, movedPiece.position, maze) * STEP_MS + 50
                 schedulePickup(movedPiece.color, movedPiece.position, delayMs)
             }
 
@@ -274,32 +232,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const p = pieces.find((x) => x.id === selectedId)
         if (!p) return
         const stats = PIECE_STATS[p.type]
-        setHighlighted(reachableCells(p, pieces, BOARD_SIZE, stats.moveRange))
+        setHighlighted(reachableCells(p, pieces, maze, stats.moveRange))
 
         // Peças de ataque à distância destacam as próprias linhas, colunas e diagonais
         if (isRanged(p.type)) {
-            setAttackHighlighted(lineOfFire(p, pieces, BOARD_SIZE, stats.attackRange).cells)
+            setAttackHighlighted(lineOfFire(p, pieces, maze, stats.attackRange).cells)
             return
         }
 
-        // Casas no alcance de ataque: vazias ou ocupadas com casa adjacente livre para aproximação
-        const attackCells: PiecePosition[] = []
-        const r = stats.attackRange
-        for (let dx = -r; dx <= r; dx++) {
-            for (let dy = -r; dy <= r; dy++) {
-                if ((dx === 0 && dy === 0) || Math.abs(dx) + Math.abs(dy) > r) continue
-                const nx = p.position.x + dx
-                const ny = p.position.y + dy
-                if (nx < 0 || ny < 0 || nx >= BOARD_SIZE || ny >= BOARD_SIZE) continue
-                const pieceAtCell = pieces.find((pp) => pp.position.x === nx && pp.position.y === ny)
-                if (pieceAtCell && !findApproachCell(p, pieceAtCell, pieces, BOARD_SIZE)) continue
-                attackCells.push({ x: nx, y: ny })
-            }
-        }
+        // Corpo-a-corpo: casas dentro do alcance, contornando as paredes
+        const attackCells = meleeAttackCells(p, pieces, maze, stats.attackRange)
         setAttackHighlighted(attackCells)
-    }, [selectedId, pieces])
+    }, [selectedId, pieces, maze])
 
-    // Se a peça manipulada morrer durante a manipulação, cancela e libera o jogador
+    // Se a peça manipulada for eliminada durante a manipulação, cancela e libera o jogador
     useEffect(() => {
         if (!manipulation) return
         if (!pieces.some((p) => p.id === manipulation.itemKey)) {
@@ -365,12 +311,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const canHitTarget = (attacker: PieceDefinition, target: PieceDefinition) => {
         const { attackRange } = PIECE_STATS[attacker.type]
         if (isRanged(attacker.type)) {
-            return lineOfFire(attacker, pieces, BOARD_SIZE, attackRange).targets.some((t) => t.id === target.id)
+            return lineOfFire(attacker, pieces, maze, attackRange).targets.some((t) => t.id === target.id)
         }
-        return (
-            manhattan(attacker.position, target.position) <= attackRange &&
-            findApproachCell(attacker, target, pieces, BOARD_SIZE) !== null
-        )
+        return findApproachCell(attacker, target, pieces, maze, attackRange) !== null
     }
 
     const onCellContextMenu = (event: React.MouseEvent, pos: PiecePosition) => {
@@ -423,7 +366,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         if (!selectedId || !playerColor) return
         const piece = pieces.find((p) => p.id === selectedId)
         if (!piece) return
-        const delayMs = manhattan(piece.position, newPos) * STEP_MS + 50
+        const delayMs = pathLength(piece.position, newPos, maze) * STEP_MS + 50
         const { actionKey, target } = moveActionFor(newPos)
 
         setPieces((prev) => prev.map((p) => (p.id === selectedId ? { ...p, position: newPos, movedThisTurn: true } : p)))
@@ -452,8 +395,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const targetId = target.id
         // Ataque à distância acerta de onde a peça está; os outros tipos se aproximam do alvo antes
         const ranged = isRanged(attacker.type)
-        const newPos = ranged ? attacker.position : (findApproachCell(attacker, target, pieces, BOARD_SIZE) ?? attacker.position)
-        const delayMs = manhattan(attacker.position, newPos) * STEP_MS + 50
+        const newPos = ranged
+            ? attacker.position
+            : (findApproachCell(attacker, target, pieces, maze, PIECE_STATS[attacker.type].attackRange) ?? attacker.position)
+        const delayMs = pathLength(attacker.position, newPos, maze) * STEP_MS + 50
 
         setPieces((prev) => prev.map((p) => (p.id === attacker.id ? { ...p, position: newPos, movedThisTurn: true } : p)))
         if (!ranged) schedulePickup(attacker.color, newPos, delayMs)
@@ -537,8 +482,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                     }}
                 >
                     <Board
-                        boardSize={BOARD_SIZE}
                         cellSize={CELL_SIZE}
+                        maze={maze}
                         pieces={pieces}
                         items={items}
                         highlighted={highlighted}

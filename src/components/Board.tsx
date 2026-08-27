@@ -4,10 +4,12 @@ import { Cell } from "./Cell"
 import { PhaserBoard } from "./PhaserBoard"
 import type { PieceDefinition, SpecialItem } from "../logic/types"
 import type { PiecePosition } from "../logic/types"
+import type { Maze } from "../logic/maze"
+import { isWall } from "../logic/maze"
 
 interface BoardProps {
-    boardSize: number
     cellSize: number
+    maze: Maze
     pieces: PieceDefinition[]
     items: SpecialItem[]
     highlighted: PiecePosition[]
@@ -18,8 +20,8 @@ interface BoardProps {
 }
 
 export const Board: React.FC<BoardProps> = ({
-    boardSize,
     cellSize,
+    maze,
     pieces,
     items,
     highlighted,
@@ -29,18 +31,20 @@ export const Board: React.FC<BoardProps> = ({
     onCellContextMenu,
 }) => {
     const cells: JSX.Element[] = []
-    for (let y = 0; y < boardSize; y++) {
-        for (let x = 0; x < boardSize; x++) {
+    for (let y = 0; y < maze.size; y++) {
+        for (let x = 0; x < maze.size; x++) {
             const piece = pieces.find((p) => p.position.x === x && p.position.y === y)
             const isHighlighted = highlighted.some((h) => h.x === x && h.y === y)
             const isAttackHighlighted = attackHighlighted.some((h) => h.x === x && h.y === y)
             const isSelected = piece?.id === selectedPieceId
+            const wall = isWall(maze, x, y)
             cells.push(
                 <Cell
                     key={`${x}-${y}`}
                     x={x}
                     y={y}
                     size={cellSize}
+                    isWall={wall}
                     isHighlighted={isHighlighted}
                     isAttackHighlighted={isAttackHighlighted}
                     isSelected={isSelected}
@@ -52,9 +56,9 @@ export const Board: React.FC<BoardProps> = ({
     }
 
     return (
-        <Box sx={{ position: "relative", width: boardSize * cellSize, height: boardSize * cellSize }}>
+        <Box sx={{ position: "relative", width: maze.size * cellSize, height: maze.size * cellSize }}>
             {cells}
-            <PhaserBoard boardSize={boardSize} cellSize={cellSize} pieces={pieces} items={items} />
+            <PhaserBoard cellSize={cellSize} maze={maze} pieces={pieces} items={items} />
         </Box>
     )
 }

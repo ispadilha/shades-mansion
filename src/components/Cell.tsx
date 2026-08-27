@@ -6,6 +6,7 @@ interface CellProps {
     x: number
     y: number
     size: number
+    isWall: boolean
     isHighlighted: boolean
     isAttackHighlighted: boolean
     isSelected: boolean
@@ -13,10 +14,10 @@ interface CellProps {
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 
-export const Cell: React.FC<CellProps> = ({ x, y, size, isHighlighted, isAttackHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
+export const Cell: React.FC<CellProps> = ({ x, y, size, isWall, isHighlighted, isAttackHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
     const base = (x + y) % 2 === 0 ? "#4b2f26" : "#3b241c"
-    const bg = isAttackHighlighted ? "#a63a3a" : isHighlighted ? "#a6763a" : base
-    const border = isSelected ? "2px solid #ffd700" : "1px solid rgba(0,0,0,0.2)"
+    const bg = isWall ? "#000" : isAttackHighlighted ? "#a63a3a" : isHighlighted ? "#a6763a" : base
+    const border = isWall ? "1px solid #000" : isSelected ? "2px solid #ffd700" : "1px solid rgba(0,0,0,0.2)"
 
     return (
         <Box

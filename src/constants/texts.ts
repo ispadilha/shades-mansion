@@ -273,4 +273,29 @@ export const texts = {
         enUS: "was defeated",
         ptBR: "foram derrotadas",
     },
+
+    mazeSettings: {
+        enUS: "Maze",
+        ptBR: "Labirinto",
+    },
+
+    boardSide: {
+        enUS: "Board side",
+        ptBR: "Lado do tabuleiro",
+    },
+
+    minRoomSide: {
+        enUS: "Minimum room side",
+        ptBR: "Lado da sala mínima",
+    },
+
+    maxRoomSide: {
+        enUS: "Maximum room side",
+        ptBR: "Lado da sala máxima",
+    },
+
+    cells: {
+        enUS: "cells",
+        ptBR: "casas",
+    },
 }

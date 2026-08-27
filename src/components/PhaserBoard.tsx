@@ -1,28 +1,29 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
 import type { PieceDefinition, SpecialItem } from "../logic/types"
+import type { Maze } from "../logic/maze"
 import { BoardScene } from "../game/BoardScene"
 
 interface PhaserBoardProps {
-    boardSize: number
     cellSize: number
+    maze: Maze
     pieces: PieceDefinition[]
     items: SpecialItem[]
 }
 
-export const PhaserBoard: React.FC<PhaserBoardProps> = ({ boardSize, cellSize, pieces, items }) => {
+export const PhaserBoard: React.FC<PhaserBoardProps> = ({ cellSize, maze, pieces, items }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<BoardScene | null>(null)
 
     useEffect(() => {
         if (!containerRef.current) return
-        const scene = new BoardScene(cellSize)
+        const scene = new BoardScene(cellSize, maze)
         sceneRef.current = scene
         const game = new Phaser.Game({
             type: Phaser.AUTO,
             parent: containerRef.current,
-            width: boardSize * cellSize,
-            height: boardSize * cellSize,
+            width: maze.size * cellSize,
+            height: maze.size * cellSize,
             transparent: true,
             banner: false,
             scene,
@@ -31,7 +32,7 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({ boardSize, cellSize, p
             sceneRef.current = null
             game.destroy(true)
         }
-    }, [boardSize, cellSize])
+    }, [cellSize, maze])
 
     useEffect(() => {
         sceneRef.current?.syncItems(items)
@@ -48,8 +49,8 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({ boardSize, cellSize, p
                 position: "absolute",
                 top: 0,
                 left: 0,
-                width: boardSize * cellSize,
-                height: boardSize * cellSize,
+                width: maze.size * cellSize,
+                height: maze.size * cellSize,
                 pointerEvents: "none",
             }}
         />

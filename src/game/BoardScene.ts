@@ -1,6 +1,8 @@
 import Phaser from "phaser"
 import type { PieceColor, PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
+import type { Maze } from "../logic/maze"
+import { findPath } from "../logic/movement"
 
 export const STEP_MS = 280
 
@@ -22,6 +24,7 @@ const ITEM_PALETTE: Record<PieceColor, ItemPalette> = {
 
 export class BoardScene extends Phaser.Scene {
     private cellSize: number
+    private maze: Maze
     private sprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private itemSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private lastCells: Map<string, PiecePosition> = new Map()
@@ -30,9 +33,10 @@ export class BoardScene extends Phaser.Scene {
     private pendingItems: SpecialItem[] | null = null
     private isReady = false
 
-    constructor(cellSize: number) {
+    constructor(cellSize: number, maze: Maze) {
         super({ key: "BoardScene" })
         this.cellSize = cellSize
+        this.maze = maze
     }
 
     create() {
@@ -111,9 +115,9 @@ export class BoardScene extends Phaser.Scene {
             const last = this.lastCells.get(piece.id)
             const cellChanged = !last || last.x !== piece.position.x || last.y !== piece.position.y
             if (cellChanged) {
-                // Anima passo-a-passo (uma célula por vez) para criar o efeito de caminhada
+                // Anima passo-a-passo (uma célula por vez, contornando as paredes) para criar o efeito de caminhada
                 this.tweens.killTweensOf(sprite)
-                const path = this.buildPath(last ?? piece.position, piece.position)
+                const path = findPath(last ?? piece.position, piece.position, this.maze)
                 if (path.length === 0) {
                     sprite.setPosition(targetPx.x, targetPx.y)
                 } else {
@@ -131,7 +135,7 @@ export class BoardScene extends Phaser.Scene {
             }
         }
 
-        // Peças removidas (mortas) somem com fade
+        // Peças removidas (eliminadas) somem com fade
         for (const [id, sprite] of this.sprites) {
             if (seen.has(id)) continue
             this.sprites.delete(id)
@@ -152,22 +156,6 @@ export class BoardScene extends Phaser.Scene {
             x: cell.x * this.cellSize + this.cellSize / 2,
             y: cell.y * this.cellSize + this.cellSize / 2,
         }
-    }
-
-    // Caminho ortogonal célula-a-célula entre dois pontos (eixo X primeiro, depois Y)
-    private buildPath(from: PiecePosition, to: PiecePosition): PiecePosition[] {
-        const path: PiecePosition[] = []
-        let cx = from.x
-        let cy = from.y
-        while (cx !== to.x) {
-            cx += cx < to.x ? 1 : -1
-            path.push({ x: cx, y: cy })
-        }
-        while (cy !== to.y) {
-            cy += cy < to.y ? 1 : -1
-            path.push({ x: cx, y: cy })
-        }
-        return path
     }
 
     private buildPiece(piece: PieceDefinition): Phaser.GameObjects.Container {
