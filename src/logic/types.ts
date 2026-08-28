@@ -1,4 +1,6 @@
-import type { texts } from "../constants/texts"
+import type { texts_ui } from "../constants/texts_ui"
+import type { texts_characters } from "../constants/texts_characters"
+import type { texts_rules } from "../constants/texts_rules"
 
 export type PieceColor = "light" | "dark" | "gray"
 
@@ -61,4 +63,10 @@ export const controlledColorsFor = (selection: PlayerSelection | null): PieceCol
 }
 
 export type Language = "enUS" | "ptBR"
-export type TextKey = keyof typeof texts
+export type TextKey = keyof typeof texts_ui
+
+// Verbetes da biblioteca (personagens e regras).
+// Cada um tem um nome curto e uma descrição longa.
+export type CharacterKey = keyof typeof texts_characters
+export type RuleKey = keyof typeof texts_rules
+export type LoreField = "name" | "description"

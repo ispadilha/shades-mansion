@@ -26,6 +26,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({}) => {
             <Button variant="contained" onClick={() => navigate("/choose-side")} sx={{ bgcolor: "#222", color: "#fff", px: 4, py: 1.5 }}>
                 {t("startGame")}
             </Button>
+            <Button variant="contained" onClick={() => navigate("/library")} sx={{ bgcolor: "#222", color: "#fff", px: 4, py: 1.5 }}>
+                {t("library")}
+            </Button>
             <Button variant="contained" onClick={() => navigate("/options")} sx={{ bgcolor: "#222", color: "#fff", px: 4, py: 1.5 }}>
                 {t("options")}
             </Button>

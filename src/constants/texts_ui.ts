@@ -1,4 +1,4 @@
-export const texts = {
+export const texts_ui = {
     languageSettings: {
         enUS: "Language",
         ptBR: "Idioma",
@@ -22,6 +22,21 @@ export const texts = {
     startGame: {
         enUS: "Start game",
         ptBR: "Iniciar jogo",
+    },
+
+    library: {
+        enUS: "Library",
+        ptBR: "Biblioteca",
+    },
+
+    characters: {
+        enUS: "Characters",
+        ptBR: "Personagens",
+    },
+
+    rules: {
+        enUS: "Rules",
+        ptBR: "Regras",
     },
 
     chooseTeams: {
