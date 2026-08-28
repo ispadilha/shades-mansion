@@ -47,5 +47,18 @@ export const ALL_ITEM_KEYS: SpecialItemKey[] = ["dA", "dB", "dC", "dD", "gA", "g
 export const itemKeyColor = (key: SpecialItemKey): PieceColor =>
     key[0] === "l" ? "light" : key[0] === "d" ? "dark" : "gray"
 
+export const ALL_TEAM_COLORS: PieceColor[] = ["light", "dark", "gray"]
+
+// O que o jogador escolhe na tela de seleção: comandar um time, todos eles
+// (multi-jogador local) ou nenhum (assistir a uma partida de IA).
+export type PlayerSelection = PieceColor | "all" | "none"
+
+// Times que o jogador comanda de fato. Vazio quando ele está apenas assistindo.
+export const controlledColorsFor = (selection: PlayerSelection | null): PieceColor[] => {
+    if (selection === null || selection === "none") return []
+    if (selection === "all") return [...ALL_TEAM_COLORS]
+    return [selection]
+}
+
 export type Language = "enUS" | "ptBR"
 export type TextKey = keyof typeof texts

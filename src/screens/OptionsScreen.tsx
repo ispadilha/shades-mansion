@@ -63,7 +63,7 @@ export const OptionsScreen: React.FC<OptionsScreenProps> = ({}) => {
                 overflow: "auto",
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 28 }}>{t("chooseLanguage")}</Typography>
+            <Typography sx={{ color: "#fff", fontSize: 28 }}>{t("languageSettings")}</Typography>
             <Box sx={{ display: "flex", gap: 2 }}>
                 <Button onClick={() => setLanguage("enUS")} sx={{ bgcolor: "#001", color: "#faa" }}>
                     {t("enUS")}

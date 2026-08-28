@@ -5,7 +5,8 @@ import { useLanguage } from "../hooks/useLanguage"
 
 interface HUDProps {
     turn: PieceColor
-    playerColor: PieceColor | null
+    isPlayerTurn: boolean
+    spectating: boolean
     onEndTurn: () => void
     onQuit: () => void
     onOpenInventory: () => void
@@ -17,7 +18,8 @@ interface HUDProps {
 
 export const HUD: React.FC<HUDProps> = ({
     turn,
-    playerColor,
+    isPlayerTurn,
+    spectating,
     onEndTurn,
     onQuit,
     onOpenInventory,
@@ -29,7 +31,6 @@ export const HUD: React.FC<HUDProps> = ({
     const { t } = useLanguage()
     const logRef = useRef<HTMLDivElement>(null)
 
-    const isPlayerTurn = turn === playerColor
     const turnLabel = turn === "light" ? t("light") : turn === "dark" ? t("dark") : t("gray")
 
     // Mantém o log sempre rolado até a entrada mais recente (no rodapé da caixa)
@@ -91,26 +92,31 @@ export const HUD: React.FC<HUDProps> = ({
                     <Typography sx={{ color: "#fff" }}>
                         {t("turn")}: {turnLabel}
                     </Typography>
-                    <Typography sx={{ color: isPlayerTurn ? "#4CAF50" : "#F44336", fontSize: 14 }}>
-                        {isPlayerTurn ? t("yourTurn") : t("wait")}
+                    <Typography sx={{ color: isPlayerTurn ? "#4CAF50" : spectating ? "#aaa" : "#F44336", fontSize: 14 }}>
+                        {isPlayerTurn ? t("yourTurn") : spectating ? t("spectating") : t("wait")}
                     </Typography>
                 </Box>
                 <Box sx={{ display: "flex", gap: 2 }}>
-                    <Button onClick={onOpenInventory} variant="outlined" sx={{ color: "#fff", borderColor: "#555" }}>
-                        {t("inventory")} ({inventoryCount})
-                    </Button>
-                    <Button
-                        onClick={onEndTurn}
-                        variant="contained"
-                        disabled={!isPlayerTurn}
-                        sx={{
-                            bgcolor: isPlayerTurn ? "#444" : "#666",
-                            color: "#fff",
-                            "&:disabled": { color: "#999" },
-                        }}
-                    >
-                        {t("endTurn")}
-                    </Button>
+                    {/* Quem só assiste não tem inventário nem turno para encerrar */}
+                    {!spectating && (
+                        <>
+                            <Button onClick={onOpenInventory} variant="outlined" sx={{ color: "#fff", borderColor: "#555" }}>
+                                {t("inventory")} ({inventoryCount})
+                            </Button>
+                            <Button
+                                onClick={onEndTurn}
+                                variant="contained"
+                                disabled={!isPlayerTurn}
+                                sx={{
+                                    bgcolor: isPlayerTurn ? "#444" : "#666",
+                                    color: "#fff",
+                                    "&:disabled": { color: "#999" },
+                                }}
+                            >
+                                {t("endTurn")}
+                            </Button>
+                        </>
+                    )}
                     <Button onClick={onQuit} variant="outlined" sx={{ color: "#fff", borderColor: "#555" }}>
                         {t("quit")}
                     </Button>

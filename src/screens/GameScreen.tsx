@@ -6,7 +6,7 @@ import { HUD } from "../components/HUD"
 import { InventoryModal } from "../components/InventoryModal"
 import { ItemInfoModal } from "../components/ItemInfoModal"
 import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, SpecialItemKey, Inventories, TextKey } from "../logic/types"
-import { itemKeyColor } from "../logic/types"
+import { itemKeyColor, controlledColorsFor } from "../logic/types"
 import { reachableCells, pathLength, findApproachCell, lineOfFire, meleeAttackCells } from "../logic/movement"
 import { generateMaze } from "../logic/maze"
 import { createInitialPieces, placeItems } from "../logic/setup"
@@ -29,8 +29,12 @@ interface GameScreenProps {}
 export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const navigate = useNavigate()
     const { t } = useLanguage()
-    const { playerColor, setWinner } = useGame()
+    const { selection, setWinner } = useGame()
     const { boardSize, minRoomSize, maxRoomSize } = useSettings()
+
+    // Times sob comando do jogador: um só, os três (multi-jogador local) ou nenhum (assistindo)
+    const controlledColors = useMemo(() => controlledColorsFor(selection), [selection])
+    const spectating = controlledColors.length === 0
 
     // O labirinto é gerado uma vez por partida, com os tamanhos definidos nas opções.
     // Peças e itens são posicionados depois dele, em casas livres.
@@ -58,6 +62,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         itemAtPos?: SpecialItem
     } | null>(null)
 
+    // Cor que o jogador comanda NESTE turno (null quando é a vez da IA ou quando ele só assiste).
+    // No multi-jogador local ela acompanha o turno; com um único time, só na vez dele.
+    const isPlayerTurn = controlledColors.includes(turn)
+    const activeColor = isPlayerTurn ? turn : null
+    // Inventário exibido no HUD: quem comanda um único time consulta o seu a qualquer momento
+    // (inclusive para curar durante o turno da IA); no multi-jogador local é sempre o do time da vez.
+    const inventoryColor = controlledColors.length === 1 ? controlledColors[0] : activeColor
+
     const scrollRef = useRef<HTMLDivElement>(null)
     useEdgeScroll(scrollRef, { edgeSize: 80, maxSpeed: 20, enabled: contextMenu === null && !infoPiece && !inventoryOpen })
 
@@ -76,7 +88,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         }
     }, [])
 
-    // Ao entrar no jogo, posiciona a viewport perto da base do jogador
+    // Ao entrar no jogo, posiciona a viewport perto da base do jogador. Quem comanda todos os
+    // times ou só assiste não tem base própria: a câmera começa no meio do tabuleiro.
+    const focusColor = controlledColors.length === 1 ? controlledColors[0] : null
     useEffect(() => {
         const container = scrollRef.current
         if (!container) return
@@ -85,12 +99,12 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const offsetX = (container.scrollWidth - boardPx) / 2
         const focusX = mid * CELL_SIZE + CELL_SIZE / 2
         const focusY =
-            playerColor === "light" ? boardPx :
-            playerColor === "dark" ? 0 :
+            focusColor === "light" ? boardPx :
+            focusColor === "dark" ? 0 :
             mid * CELL_SIZE - CELL_SIZE * 4
         container.scrollLeft = offsetX + focusX - container.clientWidth / 2
         container.scrollTop = focusY
-    }, [playerColor, maze])
+    }, [focusColor, maze])
 
     // Histórico de jogadas: aceita novas entradas e descarta as mais antigas além de MAX_LOG_ENTRIES
     const addLog = (entry: string) => {
@@ -135,10 +149,11 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         }, delayMs)
     }
 
-    // Loop da IA: roda quando não é o turno do jogador. Executa uma ação por tick;
+    // Loop da IA: roda para todo time que o jogador não comanda. Executa uma ação por tick;
     // a mudança de state (pieces/inventories) reentra o efeito até o turno terminar.
+    // No multi-jogador local, nunca roda. Assistindo a uma partida de IA, roda para os três times.
     useEffect(() => {
-        if (turn === playerColor) {
+        if (isPlayerTurn) {
             healPhaseDoneRef.current = null
             return
         }
@@ -220,7 +235,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         return () => clearTimeout(timer)
         // endTurn fecha sobre `turn` (que está nas deps), então closure sempre atualizada
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [turn, pieces, playerColor, inventories, items])
+    }, [turn, pieces, isPlayerTurn, inventories, items])
 
     // Recalcula células destacadas (movimento e ataque) sempre que a seleção muda
     useEffect(() => {
@@ -292,14 +307,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     }
 
     const onCellClick = (pos: PiecePosition) => {
-        if (turn !== playerColor || manipulation) return
+        if (!activeColor || manipulation) return
         const clickedPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
         if (!clickedPiece) {
             setSelectedId(null)
             return
         }
         // Peças próprias já movidas neste turno não podem ser re-selecionadas
-        if (clickedPiece.color === playerColor && clickedPiece.movedThisTurn) {
+        if (clickedPiece.color === activeColor && clickedPiece.movedThisTurn) {
             setSelectedId(null)
             return
         }
@@ -317,7 +332,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     }
 
     const onCellContextMenu = (event: React.MouseEvent, pos: PiecePosition) => {
-        if (turn !== playerColor) return
+        // Fora do turno que o jogador comanda — inclusive assistindo à IA — o menu ainda abre,
+        // mas só com as opções de informação: nada que altere o estado do jogo.
+        const readOnly = activeColor === null
 
         const targetPiece = pieces.find((p) => p.position.x === pos.x && p.position.y === pos.y)
         const itemAtPos = items.find((i) => i.position.x === pos.x && i.position.y === pos.y)
@@ -326,8 +343,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         // Durante manipulação, a peça-alvo do item é tratada como "própria" para efeitos da ação
         const isManipulating = manipulation !== null
         const isOwnSelection =
+            !readOnly &&
             !!selectedPiece &&
-            (selectedPiece.color === playerColor || (isManipulating && selectedPiece.id === manipulation.itemKey))
+            (selectedPiece.color === activeColor || (isManipulating && selectedPiece.id === manipulation.itemKey))
         const inMoveRange = highlighted.some((h) => h.x === pos.x && h.y === pos.y)
 
         const canInfo = !selectedId && !!targetPiece && !isManipulating
@@ -351,19 +369,19 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
     // Remove o item do inventário e sai do modo manipulação (log já foi feito no callsite)
     const consumeManipulationItem = () => {
-        if (!playerColor || !manipulation) return
+        if (!activeColor || !manipulation) return
         const key = manipulation.itemKey
         setInventories((prev) => {
-            const inv = [...prev[playerColor]]
+            const inv = [...prev[activeColor]]
             const idx = inv.indexOf(key)
             if (idx >= 0) inv.splice(idx, 1)
-            return { ...prev, [playerColor]: inv }
+            return { ...prev, [activeColor]: inv }
         })
         setManipulation(null)
     }
 
     const moveSelectedTo = (newPos: PiecePosition) => {
-        if (!selectedId || !playerColor) return
+        if (!selectedId || !activeColor) return
         const piece = pieces.find((p) => p.id === selectedId)
         if (!piece) return
         const delayMs = pathLength(piece.position, newPos, maze) * STEP_MS + 50
@@ -375,10 +393,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         closeContextMenu()
 
         if (manipulation) {
-            logManipulatedTo(playerColor, piece.id, actionKey, target)
+            logManipulatedTo(activeColor, piece.id, actionKey, target)
             consumeManipulationItem()
         } else {
-            logUsedTo(playerColor, piece.id, actionKey, target)
+            logUsedTo(activeColor, piece.id, actionKey, target)
         }
     }
 
@@ -386,7 +404,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const handleCollect = () => contextMenu?.position && moveSelectedTo(contextMenu.position)
 
     const handleAttack = () => {
-        if (!selectedId || !contextMenu?.targetPiece || !playerColor) return
+        if (!selectedId || !contextMenu?.targetPiece || !activeColor) return
         const attacker = pieces.find((p) => p.id === selectedId)
         if (!attacker) return
 
@@ -406,10 +424,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         closeContextMenu()
 
         if (manipulation) {
-            logManipulatedTo(playerColor, attacker.id, "toAttack", targetId)
+            logManipulatedTo(activeColor, attacker.id, "toAttack", targetId)
             consumeManipulationItem()
         } else {
-            logUsedTo(playerColor, attacker.id, "toAttack", targetId)
+            logUsedTo(activeColor, attacker.id, "toAttack", targetId)
         }
 
         // O dano só é aplicado quando o tween de aproximação termina (elimination/defeat são logados pelo efeito de pieces)
@@ -430,25 +448,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     }
 
     const handleUseHealItem = (key: SpecialItemKey) => {
-        if (!playerColor || itemKeyColor(key) !== playerColor) return
-        if (!inventories[playerColor].includes(key)) return
+        if (!inventoryColor || itemKeyColor(key) !== inventoryColor) return
+        if (!inventories[inventoryColor].includes(key)) return
         const target = pieces.find((p) => p.id === key)
         if (!target || target.hp >= target.maxHp) return
 
         setPieces((prev) => prev.map((p) => (p.id === key ? { ...p, hp: p.maxHp } : p)))
         setInventories((prev) => {
-            const inv = [...prev[playerColor]]
+            const inv = [...prev[inventoryColor]]
             const idx = inv.indexOf(key)
             if (idx >= 0) inv.splice(idx, 1)
-            return { ...prev, [playerColor]: inv }
+            return { ...prev, [inventoryColor]: inv }
         })
-        logHealed(playerColor, key)
+        logHealed(inventoryColor, key)
     }
 
     const handleUseManipulationItem = (key: SpecialItemKey) => {
-        if (!playerColor || turn !== playerColor) return
-        if (itemKeyColor(key) === playerColor) return
-        if (!inventories[playerColor].includes(key)) return
+        if (!activeColor) return
+        if (itemKeyColor(key) === activeColor) return
+        if (!inventories[activeColor].includes(key)) return
         if (!pieces.some((p) => p.id === key)) return
 
         // Entra no modo manipulação: a peça-alvo fica selecionada e o próximo move/attack consome o item
@@ -463,7 +481,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     }
 
     const labelForColor = (color: PieceColor) => t(COLOR_LABEL[color])
-    const playerInventory = playerColor ? inventories[playerColor] : []
+    const playerInventory = inventoryColor ? inventories[inventoryColor] : []
     const selectedPiece = selectedId ? pieces.find((p) => p.id === selectedId) : undefined
 
     return (
@@ -497,9 +515,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
             <HUD
                 turn={turn}
-                onEndTurn={() => turn === playerColor && endTurn()}
+                onEndTurn={() => isPlayerTurn && endTurn()}
                 onQuit={() => navigate("/")}
-                playerColor={playerColor}
+                isPlayerTurn={isPlayerTurn}
+                spectating={spectating}
                 onOpenInventory={() => setInventoryOpen(true)}
                 inventoryCount={playerInventory.length}
                 log={gameLog}
@@ -563,16 +582,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                 open={itemInfoKey !== null}
                 onClose={() => setItemInfoKey(null)}
                 itemKey={itemInfoKey}
-                playerColor={playerColor}
+                playerColor={inventoryColor}
             />
 
-            {playerColor && (
+            {inventoryColor && (
                 <InventoryModal
                     open={inventoryOpen}
                     onClose={() => setInventoryOpen(false)}
                     inventory={playerInventory}
                     pieces={pieces}
-                    playerColor={playerColor}
+                    playerColor={inventoryColor}
                     onUseHealItem={handleUseHealItem}
                     onUseManipulationItem={handleUseManipulationItem}
                 />

@@ -1,7 +1,7 @@
 export const texts = {
-    chooseLanguage: {
-        enUS: "Choose language",
-        ptBR: "Escolha o idioma",
+    languageSettings: {
+        enUS: "Language",
+        ptBR: "Idioma",
     },
 
     enUS: {
@@ -24,9 +24,9 @@ export const texts = {
         ptBR: "Iniciar jogo",
     },
 
-    chooseYourSide: {
-        enUS: "Choose your side",
-        ptBR: "Escolha seu lado",
+    chooseTeams: {
+        enUS: "Choose team(s)",
+        ptBR: "Escolha de time(s)",
     },
 
     goBack: {
@@ -297,5 +297,20 @@ export const texts = {
     cells: {
         enUS: "cells",
         ptBR: "casas",
+    },
+
+    allTeams: {
+        enUS: "All (local multiplayer)",
+        ptBR: "Todos (multi-jogador local)",
+    },
+
+    noTeam: {
+        enUS: "None (spectate AI match)",
+        ptBR: "Nenhum (assistir a uma partida de IA)",
+    },
+
+    spectating: {
+        enUS: "Spectating...",
+        ptBR: "Assistindo...",
     },
 }
