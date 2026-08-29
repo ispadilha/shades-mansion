@@ -39,14 +39,18 @@ export const Coin: React.FC<CoinProps> = ({ face, size = 120, spinning = false }
 
                 {heads ? (
                     <>
-                        {/* Cara: silhueta de uma pessoa */}
-                        <circle cx="32" cy="26" r="7.5" fill="#5c460f" />
-                        <path d="M20 45 a12 12 0 0 1 24 0 z" fill="#5c460f" />
+                        {/* Cara: um círculo com dois olhos */}
+                        <circle cx="32" cy="32" r="11.5" fill="#5c460f" />
+                        <circle cx="27.6" cy="29.6" r="2.4" fill="#e8c265" />
+                        <circle cx="36.4" cy="29.6" r="2.4" fill="#e8c265" />
                     </>
                 ) : (
                     <>
-                        {/* Coroa: lua crescente */}
-                        <path d="M40 16 a17 17 0 1 0 0 32 a20 20 0 0 1 0 -32 z" fill="#4a3a12" />
+                        {/* Coroa: base retangular com três pontas */}
+                        <polygon
+                            points="23,41 41,41 41,35 38,27 35,35 32,25.5 29,35 26,27 23,35"
+                            fill="#4a3a12"
+                        />
                     </>
                 )}
             </svg>
