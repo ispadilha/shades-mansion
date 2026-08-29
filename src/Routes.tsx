@@ -8,6 +8,7 @@ import { RulesScreen } from "./screens/RulesScreen"
 import { RuleScreen } from "./screens/RuleScreen"
 import { OptionsScreen } from "./screens/OptionsScreen"
 import { ChooseSideScreen } from "./screens/ChooseSideScreen"
+import { InitiativeScreen } from "./screens/InitiativeScreen"
 import { GameScreen } from "./screens/GameScreen"
 import { EndScreen } from "./screens/EndScreen"
 
@@ -24,6 +25,7 @@ export const Routes: React.FC = () => {
 
             <Route path="/options" element={<OptionsScreen />} />
             <Route path="/choose-side" element={<ChooseSideScreen />} />
+            <Route path="/initiative" element={<InitiativeScreen />} />
             <Route path="/game" element={<GameScreen />} />
             <Route path="/end" element={<EndScreen />} />
 

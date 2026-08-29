@@ -328,4 +328,129 @@ export const texts_ui = {
         enUS: "Spectating...",
         ptBR: "Assistindo...",
     },
+
+    initiativeTitle: {
+        enUS: "Initiative",
+        ptBR: "Iniciativa",
+    },
+
+    initiativeSubtitle: {
+        enUS: "Every character rolls a d20 — the highest acts first",
+        ptBR: "Cada personagem rola um d20 — o maior age primeiro",
+    },
+
+    initiativeRoll: {
+        enUS: "Initiative roll",
+        ptBR: "Rolagem de iniciativa",
+    },
+
+    repeatedRoll: {
+        enUS: "Repeated — roll again!",
+        ptBR: "Repetido — rolar de novo!",
+    },
+
+    turnOrderReady: {
+        enUS: "Turn order set",
+        ptBR: "Ordem dos turnos definida",
+    },
+
+    skipRolls: {
+        enUS: "Skip rolls",
+        ptBR: "Pular rolagens",
+    },
+
+    preparingMansion: {
+        enUS: "Preparing the mansion...",
+        ptBR: "Preparando a mansão...",
+    },
+
+    enterMansion: {
+        enUS: "Enter the mansion",
+        ptBR: "Entrar na mansão",
+    },
+
+    round: {
+        enUS: "Round",
+        ptBR: "Rodada",
+    },
+
+    attackRoll: {
+        enUS: "Attack roll",
+        ptBR: "Rolagem de ataque",
+    },
+
+    coinHeads: {
+        enUS: "Heads",
+        ptBR: "Cara",
+    },
+
+    coinTails: {
+        enUS: "Tails",
+        ptBR: "Coroa",
+    },
+
+    attackHit: {
+        enUS: "Hit!",
+        ptBR: "Acertou!",
+    },
+
+    attackMiss: {
+        enUS: "Miss!",
+        ptBR: "Errou!",
+    },
+
+    verbHit: {
+        enUS: "hit",
+        ptBR: "acertou",
+    },
+
+    verbMissed: {
+        enUS: "missed",
+        ptBR: "errou",
+    },
+
+    alreadyActed: {
+        enUS: "Already acted",
+        ptBR: "Já agiu",
+    },
+
+    waitingTurn: {
+        enUS: "Waiting for its turn...",
+        ptBR: "Esperando a vez...",
+    },
+
+    clickToRoll: {
+        enUS: "Click to roll",
+        ptBR: "Clique para rolar",
+    },
+
+    manipulationRoll: {
+        enUS: "Manipulation roll",
+        ptBR: "Rolagem de manipulação",
+    },
+
+    manipulationWorked: {
+        enUS: "It worked!",
+        ptBR: "Funcionou!",
+    },
+
+    manipulationFailed: {
+        enUS: "It failed!",
+        ptBR: "Falhou!",
+    },
+
+    toManipulate: {
+        enUS: "to manipulate",
+        ptBR: "para manipular",
+    },
+
+    verbFellUnderManipulation: {
+        enUS: "fell under manipulation",
+        ptBR: "caiu sob manipulação",
+    },
+
+    verbResistedManipulation: {
+        enUS: "resisted the manipulation",
+        ptBR: "resistiu à manipulação",
+    },
 }

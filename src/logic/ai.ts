@@ -2,22 +2,14 @@ import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventori
 import { itemKeyColor } from "./types"
 import { reachableCells, findApproachCell, lineOfFire, pathLength, distanceMap, positionKey } from "./movement"
 import type { Maze } from "./maze"
+import type { PendingAttack } from "./combat"
 import { PIECE_STATS, isRanged } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
-export interface PendingDamage {
-    attackerId: string
-    targetId: string
-    damage: number
-    delayMs: number
-    // Preenchidos quando o dano vem de um item de manipulação — o item é consumido ao aplicar o dano
-    consumedItemKey?: SpecialItemKey
-    consumerColor?: PieceColor
-}
-
 export interface AIMoveResult {
     updatedPieces: PieceDefinition[]
-    pendingDamage?: PendingDamage
+    // Ataque decidido: quem chamou é que joga a moeda e aplica (ou não) o dano
+    pendingAttack?: PendingAttack
 }
 
 export interface HealResult {
@@ -48,12 +40,12 @@ export class SimpleAI {
 
     static makeMove(
         pieces: PieceDefinition[],
-        color: PieceColor,
+        activePiece: PieceDefinition,
         maze: Maze,
         items: SpecialItem[],
         inventories: Inventories,
     ): AIMoveResult {
-        const myPieces = pieces.filter((p) => p.color === color && !p.movedThisTurn)
+        const color = activePiece.color
         const enemyPieces = pieces.filter((p) => p.color !== color)
         const myInv: SpecialItemKey[] = inventories[color]
 
@@ -62,37 +54,31 @@ export class SimpleAI {
         if (manipulation) return manipulation
 
         // Prioridade 2: atacar qualquer inimigo no alcance
-        for (const myPiece of myPieces) {
-            const reach = this.findInRangeTargets(myPiece, enemyPieces, pieces, maze)
-            if (reach.length > 0) {
-                return this.buildAttack(myPiece, reach[0].target, reach[0].approach, pieces, maze)
-            }
+        const reach = this.findInRangeTargets(activePiece, enemyPieces, pieces, maze)
+        if (reach.length > 0) {
+            return this.buildAttack(activePiece, reach[0].target, reach[0].approach, pieces, maze)
         }
 
         // Prioridade 3: aproximar-se do item mais próximo (qualquer time)
         if (items.length > 0) {
-            const result = this.moveTowardItem(myPieces, items, pieces, maze)
+            const result = this.moveTowardItem([activePiece], items, pieces, maze)
             if (result) return result
         }
 
         // Prioridade 4: movimento aleatório
-        for (const myPiece of myPieces) {
-            const possibleMoves = reachableCells(myPiece, pieces, maze, PIECE_STATS[myPiece.type].moveRange)
-            if (possibleMoves.length > 0) {
-                const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)]
-                const updatedPieces = pieces.map((p) => (p.id === myPiece.id ? { ...p, position: randomMove, movedThisTurn: true } : p))
-                return { updatedPieces }
-            }
+        const possibleMoves = reachableCells(activePiece, pieces, maze, PIECE_STATS[activePiece.type].moveRange)
+        if (possibleMoves.length > 0) {
+            const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)]
+            const updatedPieces = pieces.map((p) =>
+                p.id === activePiece.id ? { ...p, position: randomMove, movedThisTurn: true } : p,
+            )
+            return { updatedPieces }
         }
 
-        // Sem ataque nem movimento possível: as peças restantes estão presas entre paredes
-        // e outras peças. Elas passam a vez — do contrário o turno da IA ficaria travado
-        // esperando uma ação que nunca acontece.
-        if (myPieces.length > 0) {
-            return { updatedPieces: pieces.map((p) => (p.color === color ? { ...p, movedThisTurn: true } : p)) }
-        }
-
-        return { updatedPieces: pieces }
+        // Sem ataque nem movimento possível: a peça está presa entre paredes e outras peças.
+        // Ela passa a vez — do contrário o turno ficaria travado esperando uma ação que
+        // nunca acontece.
+        return { updatedPieces: pieces.map((p) => (p.id === activePiece.id ? { ...p, movedThisTurn: true } : p)) }
     }
 
     // Para cada item de manipulação no inventário, verifica se a peça correspondente
@@ -120,12 +106,14 @@ export class SimpleAI {
             const best = reach.reduce((acc, r) => (r.target.hp < acc.target.hp ? r : acc))
 
             const moveSteps = pathLength(manipulated.position, best.approach, maze)
+            // Ser manipulada é uma ação anormal: a peça se move e ataca sem gastar a ação
+            // que ela ainda tem no próprio turno (movedThisTurn fica como está).
             const updatedPieces = pieces.map((p) =>
-                p.id === manipulated.id ? { ...p, position: best.approach, movedThisTurn: true } : p,
+                p.id === manipulated.id ? { ...p, position: best.approach } : p,
             )
             return {
                 updatedPieces,
-                pendingDamage: {
+                pendingAttack: {
                     attackerId: manipulated.id,
                     targetId: best.target.id,
                     damage,
@@ -187,7 +175,7 @@ export class SimpleAI {
         const updatedPieces = pieces.map((p) => (p.id === attacker.id ? { ...p, position: approach, movedThisTurn: true } : p))
         return {
             updatedPieces,
-            pendingDamage: {
+            pendingAttack: {
                 attackerId: attacker.id,
                 targetId: target.id,
                 damage,

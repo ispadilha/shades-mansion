@@ -10,11 +10,12 @@ interface ChooseSideScreenProps {}
 export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
     const navigate = useNavigate()
     const { t } = useLanguage()
-    const { setSelection } = useGame()
+    const { setSelection, setMatch } = useGame()
 
     const handleChooseSide = (selection: PlayerSelection) => {
         setSelection(selection)
-        navigate("/game")
+        setMatch(null)
+        navigate("/initiative")
     }
 
     return (

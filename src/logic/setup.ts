@@ -1,7 +1,7 @@
 import type { PieceColor, PieceDefinition, PiecePosition, PieceType, SpecialItem } from "./types"
 import { ALL_ITEM_KEYS } from "./types"
 import type { Maze } from "./maze"
-import { isWalkable } from "./maze"
+import { generateMaze, isWalkable } from "./maze"
 import { MAX_HP } from "../constants/gameRules"
 
 const cellKey = (p: PiecePosition) => `${p.x},${p.y}`
@@ -41,7 +41,23 @@ const nearestFreeCell = (maze: Maze, ideal: PiecePosition, occupied: Set<string>
     return null
 }
 
-const TEAM_TYPES: PieceType[] = ["A", "B", "C", "D"]
+export const TEAM_TYPES: PieceType[] = ["A", "B", "C", "D"]
+
+export const pieceId = (color: PieceColor, type: PieceType) => `${color[0]}${type}`
+
+// A "escalação" da partida: quem existe no tabuleiro, independente de labirinto.
+// A tela de iniciativa usa isso para rolar os dados antes de o mapa ficar pronto.
+export interface PieceSlot {
+    id: string
+    color: PieceColor
+    type: PieceType
+}
+
+export const LINEUP_COLORS: PieceColor[] = ["light", "gray", "dark"]
+
+export const ALL_PIECE_SLOTS: PieceSlot[] = LINEUP_COLORS.flatMap((color) =>
+    TEAM_TYPES.map((type) => ({ id: pieceId(color, type), color, type })),
+)
 
 // Linha inicial de cada time: escuras no topo, cinzas no meio, claras embaixo
 const teamRow = (color: PieceColor, size: number) =>
@@ -61,7 +77,7 @@ export function createInitialPieces(maze: Maze): PieceDefinition[] {
             if (!position) return
             occupied.add(cellKey(position))
             pieces.push({
-                id: `${color[0]}${type}`,
+                id: pieceId(color, type),
                 color,
                 type,
                 position,
@@ -104,4 +120,25 @@ export function placeItems(maze: Maze, pieces: PieceDefinition[]): SpecialItem[]
         }
     }
     return result
+}
+
+// Tudo o que uma partida precisa para começar. Montagem de uma vez fora da tela de jogo
+// (durante as rolagens de iniciativa) para que o tabuleiro apareça já pronto.
+export interface GameSetup {
+    maze: Maze
+    pieces: PieceDefinition[]
+    items: SpecialItem[]
+}
+
+// Setup + ordem dos turnos sorteada na iniciativa: o "contrato" entre a tela de
+// iniciativa e a tela de jogo.
+export interface MatchSetup extends GameSetup {
+    turnOrder: string[]
+}
+
+export function createGameSetup(boardSize: number, minRoomSize: number, maxRoomSize: number): GameSetup {
+    const maze = generateMaze(boardSize, minRoomSize, maxRoomSize)
+    const pieces = createInitialPieces(maze)
+    const items = placeItems(maze, pieces)
+    return { maze, pieces, items }
 }

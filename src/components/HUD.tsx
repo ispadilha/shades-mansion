@@ -1,11 +1,18 @@
 import React, { useEffect, useRef } from "react"
 import { Box, Button, Typography } from "@mui/material"
-import type { PieceColor, SpecialItemKey } from "../logic/types"
+import type { PieceDefinition, SpecialItemKey } from "../logic/types"
+import { TurnOrderBar } from "./initiative"
 import { useLanguage } from "../hooks/useLanguage"
 
 interface HUDProps {
-    turn: PieceColor
+    // Peça da vez na ordem de iniciativa (null só enquanto a partida está terminando)
+    activePiece: PieceDefinition | null
+    // Peças vivas na ordem de iniciativa, para a faixa de turnos
+    turnOrder: PieceDefinition[]
+    round: number
     isPlayerTurn: boolean
+    // Uma rolagem em andamento trava os controles até o resultado sair
+    busy: boolean
     spectating: boolean
     onEndTurn: () => void
     onQuit: () => void
@@ -17,8 +24,11 @@ interface HUDProps {
 }
 
 export const HUD: React.FC<HUDProps> = ({
-    turn,
+    activePiece,
+    turnOrder,
+    round,
     isPlayerTurn,
+    busy,
     spectating,
     onEndTurn,
     onQuit,
@@ -31,7 +41,9 @@ export const HUD: React.FC<HUDProps> = ({
     const { t } = useLanguage()
     const logRef = useRef<HTMLDivElement>(null)
 
-    const turnLabel = turn === "light" ? t("light") : turn === "dark" ? t("dark") : t("gray")
+    const turnLabel = activePiece
+        ? `${activePiece.id} (${activePiece.color === "light" ? t("light") : activePiece.color === "dark" ? t("dark") : t("gray")})`
+        : "—"
 
     // Mantém o log sempre rolado até a entrada mais recente (no rodapé da caixa)
     useEffect(() => {
@@ -40,6 +52,9 @@ export const HUD: React.FC<HUDProps> = ({
 
     return (
         <Box sx={{ width: "100%", bgcolor: "#222", flexShrink: 0, display: "flex", flexDirection: "column" }}>
+            {/* Ordem de iniciativa da partida */}
+            <TurnOrderBar order={turnOrder} activeId={activePiece?.id ?? null} round={round} />
+
             {/* Caixa de texto: log de jogadas (com banner de manipulação fixo no topo quando ativo) */}
             <Box sx={{ borderBottom: "1px solid #333", bgcolor: "#1a1a1a" }}>
                 {manipulationKey && (
@@ -93,7 +108,13 @@ export const HUD: React.FC<HUDProps> = ({
                         {t("turn")}: {turnLabel}
                     </Typography>
                     <Typography sx={{ color: isPlayerTurn ? "#4CAF50" : spectating ? "#aaa" : "#F44336", fontSize: 14 }}>
-                        {isPlayerTurn ? t("yourTurn") : spectating ? t("spectating") : t("wait")}
+                        {isPlayerTurn
+                            ? activePiece?.movedThisTurn
+                                ? t("alreadyActed")
+                                : t("yourTurn")
+                            : spectating
+                              ? t("spectating")
+                              : t("wait")}
                     </Typography>
                 </Box>
                 <Box sx={{ display: "flex", gap: 2 }}>
@@ -106,9 +127,9 @@ export const HUD: React.FC<HUDProps> = ({
                             <Button
                                 onClick={onEndTurn}
                                 variant="contained"
-                                disabled={!isPlayerTurn}
+                                disabled={!isPlayerTurn || busy}
                                 sx={{
-                                    bgcolor: isPlayerTurn ? "#444" : "#666",
+                                    bgcolor: isPlayerTurn && !busy ? "#444" : "#666",
                                     color: "#fff",
                                     "&:disabled": { color: "#999" },
                                 }}

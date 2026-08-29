@@ -3,16 +3,9 @@ import type { PieceColor, PiecePosition, PieceDefinition, SpecialItem } from "..
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { findPath } from "../logic/movement"
+import { PIECE_PALETTE, hex } from "../constants/palette"
 
 export const STEP_MS = 280
-
-type Palette = { clothing: number; outline: number; skin: number }
-
-const PIECE_PALETTE: Record<PieceColor, Palette> = {
-    light: { clothing: 0xf2f2f2, outline: 0x2a2a2a, skin: 0xf0c8a0 },
-    dark: { clothing: 0x1a1a1a, outline: 0xdedede, skin: 0xf0c8a0 },
-    gray: { clothing: 0x7a7a7a, outline: 0x2a2a2a, skin: 0xb8a890 },
-}
 
 type ItemPalette = { bg: number; outline: number; text: string; stroke: string }
 
@@ -160,7 +153,10 @@ export class BoardScene extends Phaser.Scene {
 
     private buildPiece(piece: PieceDefinition): Phaser.GameObjects.Container {
         const cs = this.cellSize
-        const { clothing, outline, skin } = PIECE_PALETTE[piece.color]
+        const palette = PIECE_PALETTE[piece.color]
+        const clothing = hex(palette.clothing)
+        const outline = hex(palette.outline)
+        const skin = hex(palette.skin)
 
         const container = this.add.container(0, 0)
         const shadow = this.add.ellipse(0, cs * 0.3, cs * 0.42, cs * 0.1, 0x000000, 0.45)
@@ -183,13 +179,12 @@ export class BoardScene extends Phaser.Scene {
         const leftEye = this.add.circle(-cs * 0.04, eyeY, eyeR, 0x111111)
         const rightEye = this.add.circle(cs * 0.04, eyeY, eyeR, 0x111111)
 
-        const isLight = piece.color === "light"
         const letter = this.add
             .text(0, 0, piece.type, {
                 fontFamily: "Arial Black",
                 fontSize: `${Math.max(10, Math.floor(cs * 0.18))}px`,
-                color: isLight ? "#1a1a1a" : "#ffffff",
-                stroke: isLight ? "#ffffff" : "#000000",
+                color: palette.letter,
+                stroke: palette.letterStroke,
                 strokeThickness: 2,
             })
             .setOrigin(0.5, 0.5)

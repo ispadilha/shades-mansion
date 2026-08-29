@@ -5,47 +5,63 @@ import { Board } from "../components/Board"
 import { HUD } from "../components/HUD"
 import { InventoryModal } from "../components/InventoryModal"
 import { ItemInfoModal } from "../components/ItemInfoModal"
+import { RollModal, type RollView } from "../components/rolls"
 import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, SpecialItemKey, Inventories, TextKey } from "../logic/types"
 import { itemKeyColor, controlledColorsFor } from "../logic/types"
 import { reachableCells, pathLength, findApproachCell, lineOfFire, meleeAttackCells } from "../logic/movement"
-import { generateMaze } from "../logic/maze"
-import { createInitialPieces, placeItems } from "../logic/setup"
+import { nextTurnIndex } from "../logic/initiative"
+import { rollAttack, rollManipulation, type PendingAttack } from "../logic/combat"
+import type { MatchSetup } from "../logic/setup"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
-import { useSettings } from "../hooks/useSettings"
 import { CELL_SIZE, PIECE_STATS, isRanged } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
-const TURN_ORDER: PieceColor[] = ["light", "dark", "gray"]
-const nextTurnColor = (turn: PieceColor): PieceColor => TURN_ORDER[(TURN_ORDER.indexOf(turn) + 1) % TURN_ORDER.length]
-
 const COLOR_LABEL: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
 const MAX_LOG_ENTRIES = 100
+// Intervalo entre as decisões da IA
+const AI_STEP_MS = 1000
+// Espera antes de a IA passar a vez depois de já ter agido
+const AI_END_TURN_MS = 600
 
 interface GameScreenProps {}
 
+// A partida é montada na tela de iniciativa (labirinto, peças, itens e ordem dos turnos).
+// Sem isso não há o que jogar e volta para a escolha de times.
 export const GameScreen: React.FC<GameScreenProps> = ({}) => {
+    const navigate = useNavigate()
+    const { match } = useGame()
+
+    useEffect(() => {
+        if (!match) navigate("/choose-side", { replace: true })
+    }, [match, navigate])
+
+    if (!match) return null
+    return <MatchScreen match={match} />
+}
+
+interface MatchScreenProps {
+    match: MatchSetup
+}
+
+const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
     const navigate = useNavigate()
     const { t } = useLanguage()
     const { selection, setWinner } = useGame()
-    const { boardSize, minRoomSize, maxRoomSize } = useSettings()
+
+    const { maze, turnOrder } = match
 
     // Times sob comando do jogador: um só, os três (multi-jogador local) ou nenhum (assistindo)
     const controlledColors = useMemo(() => controlledColorsFor(selection), [selection])
     const spectating = controlledColors.length === 0
 
-    // O labirinto é gerado uma vez por partida, com os tamanhos definidos nas opções.
-    // Peças e itens são posicionados depois dele, em casas livres.
-    const maze = useMemo(() => generateMaze(boardSize, minRoomSize, maxRoomSize), [boardSize, minRoomSize, maxRoomSize])
-    const initialPieces = useMemo<PieceDefinition[]>(() => createInitialPieces(maze), [maze])
-    const initialItems = useMemo<SpecialItem[]>(() => placeItems(maze, initialPieces), [maze, initialPieces])
-
-    const [pieces, setPieces] = useState<PieceDefinition[]>(initialPieces)
-    const [items, setItems] = useState<SpecialItem[]>(initialItems)
+    const [pieces, setPieces] = useState<PieceDefinition[]>(match.pieces)
+    const [items, setItems] = useState<SpecialItem[]>(match.items)
     const [inventories, setInventories] = useState<Inventories>({ light: [], dark: [], gray: [] })
-    const [turn, setTurn] = useState<PieceColor>("light")
+    const [turnIndex, setTurnIndex] = useState(0)
+    const [round, setRound] = useState(1)
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [highlighted, setHighlighted] = useState<PiecePosition[]>([])
     const [attackHighlighted, setAttackHighlighted] = useState<PiecePosition[]>([])
@@ -54,6 +70,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const [inventoryOpen, setInventoryOpen] = useState(false)
     const [manipulation, setManipulation] = useState<{ itemKey: SpecialItemKey } | null>(null)
     const [gameLog, setGameLog] = useState<string[]>([])
+    // Rolagem em andamento
+    const [roll, setRoll] = useState<RollView | null>(null)
+    // Uma rolagem em resolução trava a IA e os controles até terminar
+    const [resolvingRoll, setResolvingRoll] = useState(false)
     const [contextMenu, setContextMenu] = useState<{
         mouseX: number
         mouseY: number
@@ -62,21 +82,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         itemAtPos?: SpecialItem
     } | null>(null)
 
-    // Cor que o jogador comanda NESTE turno (null quando é a vez da IA ou quando ele só assiste).
-    // No multi-jogador local ela acompanha o turno; com um único time, só na vez dele.
-    const isPlayerTurn = controlledColors.includes(turn)
-    const activeColor = isPlayerTurn ? turn : null
+    // Peça da vez e o que ela permite ao jogador. `activeColor` é null quando quem age
+    // é a IA (ou quando o jogador só assiste).
+    const activePiece = pieces.find((p) => p.id === turnOrder[turnIndex]) ?? null
+    const isPlayerTurn = activePiece !== null && controlledColors.includes(activePiece.color)
+    const activeColor = isPlayerTurn ? activePiece!.color : null
     // Inventário exibido no HUD: quem comanda um único time consulta o seu a qualquer momento
     // (inclusive para curar durante o turno da IA); no multi-jogador local é sempre o do time da vez.
     const inventoryColor = controlledColors.length === 1 ? controlledColors[0] : activeColor
+    // Peças vivas na ordem de iniciativa, para a faixa de turnos do HUD
+    const orderedPieces = turnOrder.map((id) => pieces.find((p) => p.id === id)).filter((p): p is PieceDefinition => !!p)
+
+    // Rolagem de time comandado por jogador espera o clique no dado;
+    // as de times comandados por IA rolam automaticamente.
+    const isManualRoll = (color: PieceColor) => controlledColors.includes(color)
 
     const scrollRef = useRef<HTMLDivElement>(null)
-    useEdgeScroll(scrollRef, { edgeSize: 80, maxSpeed: 20, enabled: contextMenu === null && !infoPiece && !inventoryOpen })
+    useEdgeScroll(scrollRef, {
+        edgeSize: 80,
+        maxSpeed: 20,
+        enabled: contextMenu === null && !infoPiece && !inventoryOpen && roll === null,
+    })
 
     // Refs para sincronizar com tweens assíncronos (Phaser) e timeouts pendentes
-    const attackInProgressRef = useRef(false)
     const damageTimerRef = useRef<number | null>(null)
-    const healPhaseDoneRef = useRef<PieceColor | null>(null)
+    const healPhaseDoneRef = useRef<string | null>(null)
+    const rollDoneRef = useRef<(() => void) | null>(null)
     const itemsRef = useRef(items)
     useEffect(() => {
         itemsRef.current = items
@@ -88,8 +119,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         }
     }, [])
 
-    // Ao entrar no jogo, posiciona a viewport perto da base do jogador. Quem comanda todos os
-    // times ou só assiste não tem base própria: a câmera começa no meio do tabuleiro.
+    // Câmera: começa perto da base do jogador (quem comanda todos os times ou só assiste
+    // não tem base própria e começa no meio do tabuleiro) e depois acompanha a peça da vez.
     const focusColor = controlledColors.length === 1 ? controlledColors[0] : null
     useEffect(() => {
         const container = scrollRef.current
@@ -105,6 +136,25 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         container.scrollLeft = offsetX + focusX - container.clientWidth / 2
         container.scrollTop = focusY
     }, [focusColor, maze])
+
+    // Com os turnos indo peça a peça, a ação pode acontecer em qualquer canto do labirinto:
+    // a viewport segue quem está agindo.
+    const activePieceId = activePiece?.id ?? null
+    useEffect(() => {
+        const container = scrollRef.current
+        if (!container || !activePieceId) return
+        const piece = pieces.find((p) => p.id === activePieceId)
+        if (!piece) return
+
+        const offsetX = (container.scrollWidth - maze.size * CELL_SIZE) / 2
+        container.scrollTo({
+            left: offsetX + piece.position.x * CELL_SIZE + CELL_SIZE / 2 - container.clientWidth / 2,
+            top: piece.position.y * CELL_SIZE + CELL_SIZE / 2 - container.clientHeight / 2,
+            behavior: "smooth",
+        })
+        // Só ao trocar de peça da vez, pois seguir cada passo brigaria com a rolagem manual
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [activePieceId, maze])
 
     // Histórico de jogadas: aceita novas entradas e descarta as mais antigas além de MAX_LOG_ENTRIES
     const addLog = (entry: string) => {
@@ -123,6 +173,10 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     }
     const logHealed = (color: PieceColor, piece: string) => {
         addLog(`${teamLabel(color)} ${t("verbHealed")} ${piece}`)
+    }
+    // Resultado da moeda de ataque
+    const logAttackRoll = (attackerId: string, targetId: string, hit: boolean) => {
+        addLog(`${attackerId} ${t(hit ? "verbHit" : "verbMissed")} ${targetId}`)
     }
     // Eventos importantes:
     const logEliminated = (pieceId: string) => {
@@ -149,24 +203,110 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         }, delayMs)
     }
 
-    // Loop da IA: roda para todo time que o jogador não comanda. Executa uma ação por tick;
-    // a mudança de state (pieces/inventories) reentra o efeito até o turno terminar.
-    // No multi-jogador local, nunca roda. Assistindo a uma partida de IA, roda para os três times.
+    const removeFromInventory = (color: PieceColor, key: SpecialItemKey) => {
+        setInventories((prev) => {
+            const inv = [...prev[color]]
+            const idx = inv.indexOf(key)
+            if (idx >= 0) inv.splice(idx, 1)
+            return { ...prev, [color]: inv }
+        })
+    }
+
+    // Mostra uma rolagem no modal e devolve o controle a quem pediu quando ela termina
+    const showRoll = (view: RollView, onDone: () => void) => {
+        rollDoneRef.current = onDone
+        setRoll(view)
+    }
+
+    const finishRoll = () => {
+        const done = rollDoneRef.current
+        rollDoneRef.current = null
+        setRoll(null)
+        done?.()
+    }
+
+    // Toda tentativa de ataque (do jogador, da IA ou vinda de uma manipulação) passa por aqui:
+    const resolveAttack = (attack: PendingAttack) => {
+        const rollerColor = attack.consumerColor ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
+        setResolvingRoll(true)
+        damageTimerRef.current = window.setTimeout(() => {
+            damageTimerRef.current = null
+            const { face, success } = rollAttack()
+
+            showRoll(
+                {
+                    id: `attack-${attack.attackerId}-${attack.targetId}-${Date.now()}`,
+                    kind: "coin",
+                    value: face,
+                    title: t("attackRoll"),
+                    subtitle: `${attack.attackerId} → ${attack.targetId}`,
+                    outcome: { label: success ? t("attackHit") : t("attackMiss"), tone: success ? "good" : "bad" },
+                    manual: rollerColor !== null && isManualRoll(rollerColor),
+                },
+                () => {
+                    if (success) {
+                        setPieces((prev) =>
+                            prev
+                                .map((p) => (p.id === attack.targetId ? { ...p, hp: p.hp - attack.damage } : p))
+                                .filter((p) => p.hp > 0),
+                        )
+                    }
+                    logAttackRoll(attack.attackerId, attack.targetId, success)
+                    setResolvingRoll(false)
+                },
+            )
+        }, attack.delayMs)
+    }
+
+    // Tentativa de manipulação: o item já foi gasto por quem usou, e a moeda decide se a
+    // peça obedece. Devolve o resultado a quem chamou depois de encenar a rolagem.
+    const resolveManipulation = (color: PieceColor, itemKey: SpecialItemKey, onSettled: (success: boolean) => void) => {
+        const { face, success } = rollManipulation()
+        setResolvingRoll(true)
+        showRoll(
+            {
+                id: `manipulation-${itemKey}-${Date.now()}`,
+                kind: "coin",
+                value: face,
+                title: t("manipulationRoll"),
+                subtitle: itemKey,
+                outcome: {
+                    label: success ? t("manipulationWorked") : t("manipulationFailed"),
+                    tone: success ? "good" : "bad",
+                },
+                manual: isManualRoll(color),
+            },
+            () => {
+                addLog(`${itemKey} ${t(success ? "verbFellUnderManipulation" : "verbResistedManipulation")}`)
+                setResolvingRoll(false)
+                onSettled(success)
+            },
+        )
+    }
+
+    // Turno de IA: roda para a peça da vez sempre que ela for de um time que o jogador não
+    // comanda. Executa uma ação por tick; a mudança de state reentra o efeito até a peça
+    // encerrar o turno. No multi-jogador local, nunca roda. Assistindo, roda para todas.
     useEffect(() => {
+        if (!activePiece) return
         if (isPlayerTurn) {
             healPhaseDoneRef.current = null
             return
         }
-        if (attackInProgressRef.current) return
+        if (resolvingRoll) return
 
-        // Fase de cura: cada time tenta curar suas peças feridas no início do turno (uma vez)
-        if (healPhaseDoneRef.current !== turn) {
-            const heal = SimpleAI.applyHeals(pieces, turn, inventories)
-            healPhaseDoneRef.current = turn
+        const turnKey = `${round}-${turnIndex}`
+        const color = activePiece.color
+
+        // Fase de cura: no começo do turno, o time da peça da vez gasta os itens que tem
+        // para curar suas peças (uma vez por turno)
+        if (healPhaseDoneRef.current !== turnKey) {
+            const heal = SimpleAI.applyHeals(pieces, color, inventories)
+            healPhaseDoneRef.current = turnKey
             if (heal.healed) {
                 for (const p of pieces) {
                     const after = heal.pieces.find((q) => q.id === p.id)
-                    if (after && after.hp > p.hp) logHealed(turn, p.id)
+                    if (after && after.hp > p.hp) logHealed(color, p.id)
                 }
                 setPieces(heal.pieces)
                 setInventories(heal.inventories)
@@ -174,68 +314,70 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             }
         }
 
+        // A peça já agiu (movimento/ataque resolvido): só falta encerrar o turno dela
+        if (activePiece.movedThisTurn) {
+            const endTimer = setTimeout(endTurn, AI_END_TURN_MS)
+            return () => clearTimeout(endTimer)
+        }
+
         const timer = setTimeout(() => {
             const previousPieces = pieces
-            const { updatedPieces, pendingDamage } = SimpleAI.makeMove(pieces, turn, maze, items, inventories)
-            setPieces(updatedPieces)
+            const { updatedPieces, pendingAttack } = SimpleAI.makeMove(pieces, activePiece, maze, items, inventories)
 
-            // Identifica peça que mudou de posição neste tick (no máximo uma por chamada de makeMove)
-            const movedPiece = updatedPieces.find((p) => {
-                const old = previousPieces.find((q) => q.id === p.id)
-                return old && (old.position.x !== p.position.x || old.position.y !== p.position.y)
-            })
-
-            if (movedPiece) {
-                const old = previousPieces.find((q) => q.id === movedPiece.id)!
-                const delayMs = pathLength(old.position, movedPiece.position, maze) * STEP_MS + 50
-                schedulePickup(movedPiece.color, movedPiece.position, delayMs)
+            // Aplica a decisão da IA: posiciona as peças e agenda a coleta do item "pisado".
+            // Devolve a peça que mudou de casa (no máximo uma por chamada de makeMove).
+            const applyMove = () => {
+                setPieces(updatedPieces)
+                const movedPiece = updatedPieces.find((p) => {
+                    const old = previousPieces.find((q) => q.id === p.id)
+                    return old && (old.position.x !== p.position.x || old.position.y !== p.position.y)
+                })
+                if (movedPiece) {
+                    const old = previousPieces.find((q) => q.id === movedPiece.id)!
+                    const delayMs = pathLength(old.position, movedPiece.position, maze) * STEP_MS + 50
+                    schedulePickup(movedPiece.color, movedPiece.position, delayMs)
+                }
+                return movedPiece
             }
 
-            if (pendingDamage) {
-                // O dano só é aplicado depois que o tween de aproximação termina.
-                // Manipulação (consumedItemKey presente) loga como "manipulou X para atacar Y"; ataque comum como "usou X para atacar Y".
-                attackInProgressRef.current = true
-                const dmg = pendingDamage
-                if (dmg.consumedItemKey && dmg.consumerColor) {
-                    logManipulatedTo(dmg.consumerColor, dmg.consumedItemKey, "toAttack", dmg.targetId)
-                } else {
-                    logUsedTo(turn, dmg.attackerId, "toAttack", dmg.targetId)
+            if (pendingAttack) {
+                const forced =
+                    pendingAttack.consumedItemKey && pendingAttack.consumerColor
+                        ? { itemKey: pendingAttack.consumedItemKey, color: pendingAttack.consumerColor }
+                        : null
+
+                // Ataque forçado por item: primeiro a moeda decide se a peça obedece. O item
+                // é gasto na tentativa e a peça só sai do lugar se a manipulação pegar.
+                if (forced) {
+                    removeFromInventory(forced.color, forced.itemKey)
+                    logUsedTo(forced.color, forced.itemKey, "toManipulate")
+                    resolveManipulation(forced.color, forced.itemKey, (success) => {
+                        if (!success) return
+                        applyMove()
+                        logManipulatedTo(forced.color, pendingAttack.attackerId, "toAttack", pendingAttack.targetId)
+                        resolveAttack(pendingAttack)
+                    })
+                    return
                 }
-                damageTimerRef.current = window.setTimeout(() => {
-                    setPieces((prev) =>
-                        prev.map((p) => (p.id === dmg.targetId ? { ...p, hp: p.hp - dmg.damage } : p)).filter((p) => p.hp > 0),
-                    )
-                    if (dmg.consumedItemKey && dmg.consumerColor) {
-                        const color = dmg.consumerColor
-                        const key = dmg.consumedItemKey
-                        setInventories((prev) => {
-                            const inv = [...prev[color]]
-                            const idx = inv.indexOf(key)
-                            if (idx >= 0) inv.splice(idx, 1)
-                            return { ...prev, [color]: inv }
-                        })
-                    }
-                    attackInProgressRef.current = false
-                    damageTimerRef.current = null
-                }, dmg.delayMs)
+
+                applyMove()
+                logUsedTo(color, pendingAttack.attackerId, "toAttack", pendingAttack.targetId)
+                resolveAttack(pendingAttack)
                 return
             }
 
             // Movimento puro (sem ataque pendente): loga mover ou coletar baseado no destino
+            const movedPiece = applyMove()
             if (movedPiece) {
                 const { actionKey, target } = moveActionFor(movedPiece.position)
-                logUsedTo(turn, movedPiece.id, actionKey, target)
+                logUsedTo(movedPiece.color, movedPiece.id, actionKey, target)
             }
-
-            // Sem ações pendentes: se todas as peças da IA já se moveram, encerra o turno
-            const teamPieces = updatedPieces.filter((p) => p.color === turn)
-            if (teamPieces.length === 0 || teamPieces.every((p) => p.movedThisTurn)) endTurn()
-        }, 1000)
+        }, AI_STEP_MS)
 
         return () => clearTimeout(timer)
-        // endTurn fecha sobre `turn` (que está nas deps), então closure sempre atualizada
+        // endTurn fecha sobre `turnIndex`/`pieces` (ambos nas deps), então a closure está sempre atualizada
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [turn, pieces, isPlayerTurn, inventories, items])
+    }, [turnIndex, round, pieces, isPlayerTurn, inventories, items, resolvingRoll])
 
     // Recalcula células destacadas (movimento e ataque) sempre que a seleção muda
     useEffect(() => {
@@ -269,6 +411,14 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         }
     }, [pieces, manipulation])
 
+    // A peça da vez pode ser eliminada antes de agir (uma manipulação pode virar o alvo
+    // contra ela): nesse caso o turno passa para a próxima da ordem.
+    useEffect(() => {
+        if (pieces.length === 0 || resolvingRoll) return
+        if (!pieces.some((p) => p.id === turnOrder[turnIndex])) endTurn()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pieces, turnIndex, resolvingRoll])
+
     // Detecta peças eliminadas (id desapareceu) e times derrotados (cor desapareceu) entre renders
     const prevPiecesRef = useRef(pieces)
     useEffect(() => {
@@ -299,11 +449,21 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         navigate("/end")
     }, [pieces, navigate, setWinner])
 
+    // Passa a vez para a próxima peça viva da ordem de iniciativa. Quando a ordem dá a
+    // volta, começa uma nova rodada e todas as peças voltam a ter sua ação disponível.
     const endTurn = () => {
-        setPieces((prev) => prev.map((p) => ({ ...p, movedThisTurn: false })))
-        setTurn(nextTurnColor(turn))
         setSelectedId(null)
         setManipulation(null)
+
+        const alive = new Set(pieces.map((p) => p.id))
+        const next = nextTurnIndex(turnOrder, (id) => alive.has(id), turnIndex)
+        if (!next) return
+
+        if (next.newRound) {
+            setPieces((prev) => prev.map((p) => ({ ...p, movedThisTurn: false })))
+            setRound((prev) => prev + 1)
+        }
+        setTurnIndex(next.index)
     }
 
     const onCellClick = (pos: PiecePosition) => {
@@ -313,8 +473,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             setSelectedId(null)
             return
         }
-        // Peças próprias já movidas neste turno não podem ser re-selecionadas
-        if (clickedPiece.color === activeColor && clickedPiece.movedThisTurn) {
+        // A peça da vez que já agiu não pode ser re-selecionada (só lhe resta encerrar o turno)
+        if (clickedPiece.id === activePiece?.id && clickedPiece.movedThisTurn) {
             setSelectedId(null)
             return
         }
@@ -340,12 +500,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const itemAtPos = items.find((i) => i.position.x === pos.x && i.position.y === pos.y)
         const selectedPiece = pieces.find((p) => p.id === selectedId)
 
-        // Durante manipulação, a peça-alvo do item é tratada como "própria" para efeitos da ação
+        // Quem age é a peça da vez; durante a manipulação, a peça-alvo é tratada
+        // como "própria" para efeitos da ação forçada.
+        // A peça da vez precisa ainda ter sua ação, a manipulada não. Ser manipulada é
+        // uma ação anormal, fora do turno dela.
         const isManipulating = manipulation !== null
         const isOwnSelection =
             !readOnly &&
             !!selectedPiece &&
-            (selectedPiece.color === activeColor || (isManipulating && selectedPiece.id === manipulation.itemKey))
+            (isManipulating
+                ? selectedPiece.id === manipulation.itemKey
+                : selectedPiece.id === activePiece?.id && !selectedPiece.movedThisTurn)
         const inMoveRange = highlighted.some((h) => h.x === pos.x && h.y === pos.y)
 
         const canInfo = !selectedId && !!targetPiece && !isManipulating
@@ -367,18 +532,9 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
 
     const closeContextMenu = () => setContextMenu(null)
 
-    // Remove o item do inventário e sai do modo manipulação (log já foi feito no callsite)
-    const consumeManipulationItem = () => {
-        if (!activeColor || !manipulation) return
-        const key = manipulation.itemKey
-        setInventories((prev) => {
-            const inv = [...prev[activeColor]]
-            const idx = inv.indexOf(key)
-            if (idx >= 0) inv.splice(idx, 1)
-            return { ...prev, [activeColor]: inv }
-        })
-        setManipulation(null)
-    }
+    // Sai do modo manipulação depois da ação forçada. O item já foi gasto na tentativa
+    // (a moeda podia ter falhado), então aqui não há nada para consumir.
+    const endManipulation = () => setManipulation(null)
 
     const moveSelectedTo = (newPos: PiecePosition) => {
         if (!selectedId || !activeColor) return
@@ -387,14 +543,20 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         const delayMs = pathLength(piece.position, newPos, maze) * STEP_MS + 50
         const { actionKey, target } = moveActionFor(newPos)
 
-        setPieces((prev) => prev.map((p) => (p.id === selectedId ? { ...p, position: newPos, movedThisTurn: true } : p)))
+        // Ação forçada por manipulação não gasta a ação que a peça tem no próprio turno
+        const spendsAction = !manipulation
+        setPieces((prev) =>
+            prev.map((p) =>
+                p.id === selectedId ? { ...p, position: newPos, movedThisTurn: p.movedThisTurn || spendsAction } : p,
+            ),
+        )
         schedulePickup(piece.color, newPos, delayMs)
         setSelectedId(null)
         closeContextMenu()
 
         if (manipulation) {
             logManipulatedTo(activeColor, piece.id, actionKey, target)
-            consumeManipulationItem()
+            endManipulation()
         } else {
             logUsedTo(activeColor, piece.id, actionKey, target)
         }
@@ -418,22 +580,32 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             : (findApproachCell(attacker, target, pieces, maze, PIECE_STATS[attacker.type].attackRange) ?? attacker.position)
         const delayMs = pathLength(attacker.position, newPos, maze) * STEP_MS + 50
 
-        setPieces((prev) => prev.map((p) => (p.id === attacker.id ? { ...p, position: newPos, movedThisTurn: true } : p)))
+        // Ataque forçado por manipulação não gasta a ação que a peça tem no próprio turno
+        const forcedBy = manipulation ? activeColor : null
+        setPieces((prev) =>
+            prev.map((p) =>
+                p.id === attacker.id ? { ...p, position: newPos, movedThisTurn: p.movedThisTurn || !forcedBy } : p,
+            ),
+        )
         if (!ranged) schedulePickup(attacker.color, newPos, delayMs)
         setSelectedId(null)
         closeContextMenu()
 
-        if (manipulation) {
+        if (forcedBy) {
             logManipulatedTo(activeColor, attacker.id, "toAttack", targetId)
-            consumeManipulationItem()
+            endManipulation()
         } else {
             logUsedTo(activeColor, attacker.id, "toAttack", targetId)
         }
 
-        // O dano só é aplicado quando o tween de aproximação termina (elimination/defeat são logados pelo efeito de pieces)
-        window.setTimeout(() => {
-            setPieces((prev) => prev.map((p) => (p.id === targetId ? { ...p, hp: p.hp - damage } : p)).filter((p) => p.hp > 0))
-        }, delayMs)
+        // A moeda é jogada quando o atacante termina de se aproximar
+        resolveAttack({
+            attackerId: attacker.id,
+            targetId,
+            damage,
+            delayMs,
+            ...(forcedBy ? { consumedItemKey: attacker.id as SpecialItemKey, consumerColor: forcedBy } : {}),
+        })
     }
 
     const handleShowInfo = () => {
@@ -454,25 +626,27 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
         if (!target || target.hp >= target.maxHp) return
 
         setPieces((prev) => prev.map((p) => (p.id === key ? { ...p, hp: p.maxHp } : p)))
-        setInventories((prev) => {
-            const inv = [...prev[inventoryColor]]
-            const idx = inv.indexOf(key)
-            if (idx >= 0) inv.splice(idx, 1)
-            return { ...prev, [inventoryColor]: inv }
-        })
+        removeFromInventory(inventoryColor, key)
         logHealed(inventoryColor, key)
     }
 
     const handleUseManipulationItem = (key: SpecialItemKey) => {
-        if (!activeColor) return
+        if (!activeColor || resolvingRoll) return
         if (itemKeyColor(key) === activeColor) return
         if (!inventories[activeColor].includes(key)) return
         if (!pieces.some((p) => p.id === key)) return
 
-        // Entra no modo manipulação: a peça-alvo fica selecionada e o próximo move/attack consome o item
+        // O item é gasto na tentativa; a moeda decide se a peça obedece. Dando certo, ela
+        // fica selecionada e o próximo mover/atacar é a ação forçada.
+        const color = activeColor
         setInventoryOpen(false)
-        setManipulation({ itemKey: key })
-        setSelectedId(key)
+        removeFromInventory(color, key)
+        logUsedTo(color, key, "toManipulate")
+        resolveManipulation(color, key, (success) => {
+            if (!success) return
+            setManipulation({ itemKey: key })
+            setSelectedId(key)
+        })
     }
 
     const cancelManipulation = () => {
@@ -514,10 +688,13 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
             </Box>
 
             <HUD
-                turn={turn}
-                onEndTurn={() => isPlayerTurn && endTurn()}
+                activePiece={activePiece}
+                turnOrder={orderedPieces}
+                round={round}
+                onEndTurn={() => isPlayerTurn && !resolvingRoll && endTurn()}
                 onQuit={() => navigate("/")}
                 isPlayerTurn={isPlayerTurn}
+                busy={resolvingRoll}
                 spectating={spectating}
                 onOpenInventory={() => setInventoryOpen(true)}
                 inventoryCount={playerInventory.length}
@@ -596,6 +773,8 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
                     onUseManipulationItem={handleUseManipulationItem}
                 />
             )}
+
+            <RollModal roll={roll} onDone={finishRoll} />
         </Box>
     )
 }

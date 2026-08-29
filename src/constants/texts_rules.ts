@@ -7,10 +7,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "Three teams are shut inside the mansion and only one of them leaves. Light, Gray and Dark each field four pieces, and the match ends when a single team still has pieces on the board.\n\n" +
-                "Play is turn-based: on a team's turn each of its pieces may act once — move (collecting whatever it steps on) or attack. Nothing is hidden: the whole maze, every piece and every item on the floor are visible from the start.",
+                "Play is turn-based piece by piece, not team by team: the twelve characters roll for initiative before the match and act in that order for the whole game. On its turn a piece may act once — move (collecting whatever it steps on) or attack. Nothing is hidden: the whole maze, every piece and every item on the floor are visible from the start.",
             ptBR:
                 "Três times estão trancados na mansão e só um deles sai. Claro, cinza e escuro têm quatro peças cada, e a partida acaba quando um único time ainda tem peças no tabuleiro.\n\n" +
-                "O jogo é por turnos: no turno de um time, cada peça dele pode agir uma vez — mover (coletando o que houver na casa de destino) ou atacar. Nada fica escondido: o labirinto inteiro, todas as peças e todos os itens no chão são visíveis desde o começo.",
+                "O jogo é por turnos de peça, não de time: os doze personagens rolam iniciativa antes da partida e agem nessa ordem o jogo inteiro. No seu turno, a peça pode agir uma vez — mover (coletando o que houver na casa de destino) ou atacar. Nada fica escondido: o labirinto inteiro, todas as peças e todos os itens no chão são visíveis desde o começo.",
         },
     },
 
@@ -37,10 +37,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "Light, Gray and Dark each start with four pieces, one of each type: Agile (A), Balanced (B), Champion (C) and Distance shooter (D). Every piece holds 3 HP.\n\n" +
-                "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row; a piece whose starting cell fell inside a wall slides to the nearest free cell. Turns always follow the same order: Light, then Dark, then Gray.",
+                "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row; a piece whose starting cell fell inside a wall slides to the nearest free cell. Teams do not take turns as a block: the order of play is decided piece by piece, on the initiative roll.",
             ptBR:
                 "Claro, cinza e escuro começam com quatro peças cada, uma de cada tipo: Ágil (A), Balanceada (B), Campeão (C) e uma que atira à Distância (D). Toda peça tem 3 pontos de vida.\n\n" +
-                "As escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo; a peça cuja casa inicial caiu dentro de uma parede escorrega para a casa livre mais próxima. Os turnos seguem sempre a mesma ordem: claras, escuras e cinzas.",
+                "As escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo; a peça cuja casa inicial caiu dentro de uma parede escorrega para a casa livre mais próxima. Os times não jogam em bloco: a ordem das vezes é decidida peça a peça, na rolagem de iniciativa.",
         },
     },
 
@@ -59,6 +59,21 @@ export const texts_rules = {
         },
     },
 
+    initiative: {
+        name: {
+            enUS: "Initiative",
+            ptBR: "Iniciativa",
+        },
+        description: {
+            enUS:
+                "Between choosing your side and entering the mansion, the twelve characters line up — Light, Gray then Dark — and roll a d20 each, one at a time. A number already taken is refused and the character rolls again, so the twelve values are always different.\n\n" +
+                "The rolls are sorted from the highest to the lowest and that becomes the order of play for the whole match — teams are interleaved, and a team may well act twice in a row. The order never changes: eliminated pieces are simply skipped.",
+            ptBR:
+                "Entre a escolha de time e a entrada na mansão, os doze personagens se enfileiram — claras, cinzas e escuras — e rolam um d20 cada, um de cada vez. Um número que já saiu é recusado e o personagem rola de novo, então os doze valores são sempre diferentes.\n\n" +
+                "As rolagens são ordenadas do maior para o menor e isso vira a ordem das vezes na partida inteira — os times ficam intercalados, e pode ocorrer de um time agir duas vezes seguidas. A ordem nunca muda: as peças eliminadas são apenas puladas.",
+        },
+    },
+
     turns: {
         name: {
             enUS: "Turns and actions",
@@ -66,11 +81,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "On your turn, each of your pieces may act once: move or attack, not both. A melee attack already includes walking up to the target, so it counts as that piece's action for the turn.\n\n" +
-                "Click a piece to select it and see its ranges highlighted; right-click a cell for the available action. A piece that has already acted cannot be selected again until the next turn. End Turn passes play to the next team and refreshes every piece.",
+                "A turn belongs to a single piece — the next one in the initiative order — and in it that piece may act once: move or attack, not both. A melee attack already includes walking up to the target, so it counts as that piece's action. When the order reaches its end a new round starts and every piece has its action back.\n\n" +
+                "Click the piece of the turn to select it and see its ranges highlighted; right-click a cell for the available action. End Turn passes play to the next piece in the order. The bar above the log shows the whole order, with the piece of the turn highlighted and the ones that already acted faded.",
             ptBR:
-                "No seu turno, cada peça sua pode agir uma vez: mover ou atacar, nunca os dois. O ataque corpo a corpo já inclui a caminhada até o alvo, então ele conta como a ação daquela peça no turno.\n\n" +
-                "Clique em uma peça para selecioná-la e ver os alcances destacados; clique com o botão direito em uma casa para a ação disponível. Uma peça que já agiu não pode ser selecionada de novo até o próximo turno. \"Terminar turno\" passa a vez para o próximo time e libera todas as peças.",
+                "O turno é de uma peça só — a próxima da ordem de iniciativa — e nele ela pode agir uma vez: mover ou atacar, nunca os dois. O ataque corpo a corpo já inclui a caminhada até o alvo, então ele conta como a ação daquela peça. Quando a ordem chega ao fim, começa uma nova rodada e todas as peças recuperam sua ação.\n\n" +
+                "Clique na peça da vez para selecioná-la e ver os alcances destacados; clique com o botão direito em uma casa para a ação disponível. \"Terminar turno\" passa a vez para a próxima peça da ordem. A faixa acima do log mostra a ordem inteira, com a peça da vez destacada e as que já agiram apagadas.",
         },
     },
 
@@ -96,11 +111,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Melee pieces (agile, balanced and champion) attack by walking to a free cell next to the target — the eight neighbours count, diagonals included — and striking on arrival. The walk has to fit inside the piece's attack range, which is 7, 5 and 3 cells respectively.\n\n" +
-                "The distance shooter shoots from where it stands, up to 7 cells along its row, column and diagonals. The first piece in each direction is the target of that line and blocks everything behind it, so anyone standing in front of a shot is cover. Damage is 1 for the agile and the distance attacking characters, 2 for the balanced one and 3 for the champion; a piece that drops to 0 HP is removed from the board.",
+                "Melee pieces (agile, balanced and champion) attack by walking to a free cell next to the target — the eight neighbours count, diagonals included — and striking on arrival. The walk has to fit inside the piece's attack range.\n\n" +
+                "The distance shooter shoots from where it stands, up to 7 cells along its row, column and diagonals. The first piece in each direction is the target of that line and blocks everything behind it, so anyone standing in front of a shot is cover. No attack is certain: whoever attacks flips a coin and only lands the blow on heads. A piece that drops to 0 HP is removed from the board.",
             ptBR:
-                "As peças corpo a corpo (ágil, balanceada e campeã) atacam caminhando até uma casa livre ao lado do alvo — as oito vizinhas valem, inclusive as diagonais — e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça, que é de 7, 5 e 3 casas respectivamente.\n\n" +
-                "O atirador à distância acerta de onde está, a até 7 casas pela linha, pela coluna e pelas diagonais. A primeira peça de cada direção é o alvo daquela linha e bloqueia tudo o que está atrás dela, então quem estiver na frente de um tiro serve de cobertura. O dano é 1 para o personagem ágil e o atirador à distância, 2 para a balanceada e 3 para o campeão; a peça que chega a 0 ponto de vida sai do tabuleiro.",
+                "As peças corpo a corpo (ágil, balanceada e campeã) atacam caminhando até uma casa livre ao lado do alvo — as oito vizinhas valem, inclusive as diagonais — e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça.\n\n" +
+                "O atirador à distância acerta de onde está, a até 7 casas pela linha, pela coluna e pelas diagonais. A primeira peça de cada direção é o alvo daquela linha e bloqueia tudo o que está atrás dela, então quem estiver na frente de um tiro serve de cobertura. Nenhum ataque é garantido: quem ataca joga uma moeda e só acerta o golpe se der cara. A peça que chega a 0 ponto de vida sai do tabuleiro.",
         },
     },
 
@@ -127,10 +142,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "An item of your own colour belongs to one specific piece of your team — the one that shares its letter — and using it restores that piece to full HP. The item is consumed.\n\n" +
-                "It heals nothing if the piece is already at full health or has been eliminated, so an item held too long can be lost with its owner. The AI teams open their turn by spending whatever heals they are holding.",
+                "It heals nothing if the piece is already at full health or has been eliminated, so an item held too long can be lost with its owner. An AI team spends whatever heals it is holding at the start of each of its pieces' turns.",
             ptBR:
                 "Um item da sua própria cor pertence a uma peça específica do seu time — a que compartilha a letra dele — e usá-lo devolve a vida cheia àquela peça. O item é consumido.\n\n" +
-                "Ele não cura nada se a peça já estiver com a vida cheia ou tiver sido eliminada, então um item guardado tempo demais pode se perder junto com o dono. Os times de IA começam o turno gastando as curas que estiverem no inventário.",
+                "Ele não cura nada se a peça já estiver com a vida cheia ou tiver sido eliminada, então um item guardado tempo demais pode se perder junto com o dono. Um time de IA gasta as curas que tiver no inventário no começo do turno de cada peça dele.",
         },
     },
 
@@ -141,11 +156,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "An item of another team's colour is a hold over the piece that shares its letter. Using it on your turn puts that enemy piece under your command for a single action — one move or one attack — and consumes the item.\n\n" +
-                "A manipulated piece obeys its own ranges and its own attack style, but not its loyalties: it can be turned against its own team. The item is only spent when the forced action happens, so a manipulation can be cancelled before that; if the piece is eliminated mid-manipulation, the hold simply ends.",
+                "An item of another team's colour is a hold over the piece that shares its letter. Using it on your turn flips a coin: on heads that enemy piece falls under your command for a single action — one move or one attack — and on tails it resists. Either way the item is spent.\n\n" +
+                "A manipulated piece obeys its own ranges and its own attack style, but not its loyalties: it can be turned against its own team. Being manipulated is an abnormal action and costs the piece nothing: it still has its own action when its turn comes, and a piece that has already acted can be manipulated all the same. If the piece is eliminated mid-manipulation, the hold simply ends.",
             ptBR:
-                "Um item da cor de outro time é um domínio sobre a peça que compartilha a letra dele. Usá-lo no seu turno coloca aquela peça inimiga sob o seu comando por uma única ação — um movimento ou um ataque — e consome o item.\n\n" +
-                "A peça manipulada obedece aos próprios alcances e ao próprio estilo de ataque, mas não às próprias lealdades: ela pode ser virada contra o time dela. O item só é gasto quando a ação forçada acontece, então dá para cancelar a manipulação antes disso; se a peça for eliminada durante a manipulação, o domínio simplesmente acaba.",
+                "Um item da cor de outro time é um domínio sobre a peça que compartilha a letra dele. Usá-lo no seu turno joga uma moeda: dando cara, aquela peça inimiga cai sob o seu comando por uma única ação — um movimento ou um ataque — e dando coroa, ela resiste. Nos dois casos o item é gasto.\n\n" +
+                "A peça manipulada obedece aos próprios alcances e ao próprio estilo de ataque, mas não às próprias lealdades: ela pode ser virada contra o time dela. Ser manipulada é uma ação anormal e não custa nada à peça: ela continua com a ação dela quando chegar a sua vez, e uma peça que já agiu pode ser manipulada do mesmo jeito. Se a peça for eliminada durante a manipulação, o domínio simplesmente acaba.",
         },
     },
 
