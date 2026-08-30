@@ -130,7 +130,7 @@ export const HUD: React.FC<HUDProps> = ({
                     </Typography>
                     <Typography
                         sx={{
-                            color: isPlayerTurn ? "#4CAF50" : spectating ? "#aaa" : "#F44336",
+                            color: spectating || (isPlayerTurn && activePiece?.movedThisTurn) ? "#aaa" : isPlayerTurn ? "#4CAF50" : "#F44336",
                             fontSize: 14,
                             whiteSpace: "nowrap",
                         }}

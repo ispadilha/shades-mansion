@@ -161,8 +161,13 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
         setGameLog((prev) => [...prev.slice(-(MAX_LOG_ENTRIES - 1)), entry])
     }
     const teamLabel = (color: PieceColor) => t(COLOR_LABEL[color])
-    // Formato: "{time} usaram {peça} para {ação} [{alvo}]"
+    // Formato: "{time} usou {peça} para {ação} [{alvo}]".
+    // Movimento simples é a exceção: "{time} moveu {peça}".
     const logUsedTo = (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => {
+        if (actionKey === "toMove") {
+            addLog(`${teamLabel(color)} ${t("verbMoved")} ${piece}`)
+            return
+        }
         const base = `${teamLabel(color)} ${t("verbUsed")} ${piece} ${t(actionKey)}`
         addLog(target ? `${base} ${target}` : base)
     }

@@ -51,12 +51,12 @@ export const texts_ui = {
 
     light: {
         enUS: "Light",
-        ptBR: "Peças claras",
+        ptBR: "Claro",
     },
 
     dark: {
         enUS: "Dark",
-        ptBR: "Peças escuras",
+        ptBR: "Escuro",
     },
 
     info: {
@@ -126,7 +126,7 @@ export const texts_ui = {
 
     gray: {
         enUS: "Gray",
-        ptBR: "Peças cinzas",
+        ptBR: "Cinza",
     },
 
     team: {
@@ -251,17 +251,22 @@ export const texts_ui = {
 
     verbUsed: {
         enUS: "used",
-        ptBR: "usaram",
+        ptBR: "usou",
+    },
+
+    verbMoved: {
+        enUS: "moved",
+        ptBR: "moveu",
     },
 
     verbManipulated: {
         enUS: "manipulated",
-        ptBR: "manipularam",
+        ptBR: "manipulou",
     },
 
     verbHealed: {
         enUS: "healed",
-        ptBR: "curaram",
+        ptBR: "curou",
     },
 
     toMove: {
@@ -286,7 +291,7 @@ export const texts_ui = {
 
     wasDefeated: {
         enUS: "was defeated",
-        ptBR: "foram derrotadas",
+        ptBR: "foi derrotado",
     },
 
     mazeSettings: {
