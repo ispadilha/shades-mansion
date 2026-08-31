@@ -146,46 +146,75 @@ export function meleeAttackCells(
     return cells
 }
 
-// As 8 direções que formam as linhas, colunas e diagonais de uma peça
-const LINE_DIRECTIONS: Array<{ dx: number; dy: number }> = [
-    { dx: 1, dy: 0 },
-    { dx: -1, dy: 0 },
-    { dx: 0, dy: 1 },
-    { dx: 0, dy: -1 },
-    { dx: 1, dy: 1 },
-    { dx: 1, dy: -1 },
-    { dx: -1, dy: 1 },
-    { dx: -1, dy: -1 },
-]
+// Coordenada da linha de tiro em um dos eixos. Normalmente ela cai
+// dentro de uma casa, mas pode cair exatamente na divisa entre duas — e aí as duas
+// contam. A conta é feita com inteiros para que a divisa seja reconhecida sem erro de
+// arredondamento.
+function axisCells(origin: number, delta: number, step: number, steps: number): number[] {
+    const numerator = delta * step
+    const quotient = Math.floor(numerator / steps)
+    const remainder = numerator - quotient * steps
 
-// Ataque à distância: percorre as 8 direções até "range" casas.
-// A primeira peça encontrada em cada direção é o alvo daquela linha
-// e bloqueia o restante dela — peças no caminho "protegem" quem está atrás.
-// Paredes interrompem qualquer linha de tiro.
-// `cells` inclui as casas percorridas (para destacar no tabuleiro)
-// e `targets`, as peças atingíveis.
+    if (remainder * 2 === steps) return [origin + quotient, origin + quotient + 1]
+    return [origin + quotient + (remainder * 2 > steps ? 1 : 0)]
+}
+
+// As casas que a linha reta entre duas posições atravessa, passo a passo, sem a origem
+// nem o destino. A linha é percorrida pelo eixo de maior variação — um passo por casa
+// andada nesse eixo — e cada passo devolve a casa em que ela caiu, ou o par de casas
+// quando ela passa bem na divisa entre duas.
+function shotSteps(from: PiecePosition, to: PiecePosition): PiecePosition[][] {
+    const dx = to.x - from.x
+    const dy = to.y - from.y
+    const steps = Math.max(Math.abs(dx), Math.abs(dy))
+
+    const groups: PiecePosition[][] = []
+    for (let step = 1; step < steps; step++) {
+        const xs = axisCells(from.x, dx, step, steps)
+        const ys = axisCells(from.y, dy, step, steps)
+        groups.push(xs.flatMap((x) => ys.map((y) => ({ x, y }))))
+    }
+    return groups
+}
+
+// A linha de tiro só passa enquanto sobrar por onde passar: em cada passo basta uma das
+// casas do par estar livre. Quando a linha corre na divisa entre duas casas e as duas
+// estão bloqueadas, o tiro para ali.
+function hasClearShot(from: PiecePosition, to: PiecePosition, blocked: (cell: PiecePosition) => boolean): boolean {
+    return shotSteps(from, to).every((group) => group.some((cell) => !blocked(cell)))
+}
+
+// Ataque à distância: a peça acerta qualquer casa a até "range" passos (contados em
+// linha reta, na diagonal inclusive) cuja linha de tiro chegue inteira até lá — não
+// precisa ser pela linha, pela coluna ou pela diagonal. Paredes e outras peças
+// interrompem a linha, então quem está atrás delas fica coberto.
+// `cells` são as casas visadas (para destacar no tabuleiro) e `targets`, as peças que
+// estão nelas.
 export function lineOfFire(
     piece: PieceDefinition,
     pieces: PieceDefinition[],
     maze: Maze,
     range: number,
 ): { cells: PiecePosition[]; targets: PieceDefinition[] } {
+    const others = pieces.filter((p) => p.id !== piece.id)
+    const occupants = new Map(others.map((p) => [positionKey(p.position), p]))
+    const blocked = (cell: PiecePosition) =>
+        !isWalkable(maze, cell.x, cell.y) || occupants.has(positionKey(cell))
+
     const cells: PiecePosition[] = []
     const targets: PieceDefinition[] = []
 
-    for (const { dx, dy } of LINE_DIRECTIONS) {
-        for (let step = 1; step <= range; step++) {
-            const nx = piece.position.x + dx * step
-            const ny = piece.position.y + dy * step
-            if (!isWalkable(maze, nx, ny)) break
+    for (let dy = -range; dy <= range; dy++) {
+        for (let dx = -range; dx <= range; dx++) {
+            if (dx === 0 && dy === 0) continue
 
-            cells.push({ x: nx, y: ny })
+            const cell = { x: piece.position.x + dx, y: piece.position.y + dy }
+            if (!isWalkable(maze, cell.x, cell.y)) continue
+            if (!hasClearShot(piece.position, cell, blocked)) continue
 
-            const occupant = pieces.find((p) => p.position.x === nx && p.position.y === ny)
-            if (occupant) {
-                if (occupant.id !== piece.id) targets.push(occupant)
-                break
-            }
+            cells.push(cell)
+            const occupant = occupants.get(positionKey(cell))
+            if (occupant) targets.push(occupant)
         }
     }
 

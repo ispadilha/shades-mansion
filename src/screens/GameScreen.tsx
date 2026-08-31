@@ -396,7 +396,8 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
         const stats = PIECE_STATS[p.type]
         setHighlighted(reachableCells(p, pieces, maze, stats.moveRange))
 
-        // Peças de ataque à distância destacam as próprias linhas, colunas e diagonais
+        // Peças de ataque à distância destacam tudo o que estiver na mira: as casas até onde
+        // a linha de tiro chega livre
         if (isRanged(p.type)) {
             setAttackHighlighted(lineOfFire(p, pieces, maze, stats.attackRange).cells)
             return
@@ -486,8 +487,8 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
         setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
     }
 
-    // Peças de ataque à distância atingem quem estiver na sua linha, coluna ou diagonal
-    // (a primeira peça de cada direção); as demais precisam de uma casa livre adjacente ao alvo.
+    // Peças de ataque à distância atingem quem estiver na mira, com a linha de tiro livre
+    // (paredes e outras peças cobrem o alvo); as demais precisam de uma casa livre adjacente ao alvo.
     const canHitTarget = (attacker: PieceDefinition, target: PieceDefinition) => {
         const { attackRange } = PIECE_STATS[attacker.type]
         if (isRanged(attacker.type)) {
