@@ -14,3 +14,10 @@ export const rollDie = (sides: DieSides): number => 1 + Math.floor(Math.random()
 export const rollD12 = (): number => rollDie(12)
 
 export const rollD20 = (): number => rollDie(20)
+
+// Uma rolagem com vários dados: todos caem juntos e o resultado é a soma. Devolve o
+// valor de cada dado, na ordem em que devem aparecer na tela.
+export const rollDice = (count: number, sides: DieSides): number[] =>
+    Array.from({ length: count }, () => rollDie(sides))
+
+export const sumDice = (dice: number[]): number => dice.reduce((total, value) => total + value, 0)

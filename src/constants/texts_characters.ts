@@ -52,10 +52,40 @@ export const texts_characters = {
         description: {
             enUS:
                 "Tenebra learned the mansion as a set of straight lines and treats everything else as scenery. A closed door is a relief; an open corridor is an invitation.\n\n" +
-                "The only ranged piece of the Dark team: hits from where it stands; walls and other pieces interrupt its line of fire.",
+                "The long-range shooter of the Dark team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire.",
             ptBR:
                 "Tenebra aprendeu a mansão como um conjunto de retas e trata todo o resto como cenário. Uma porta fechada é um alívio; um corredor aberto é um convite.\n\n" +
-                "É a única peça à distância do time escuro: acerta de onde está; paredes e outras peças interrompem sua linha de tiro.",
+                "É a peça de tiro longo do time escuro: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro.",
+        },
+    },
+
+    dE: {
+        name: {
+            enUS: "Noctua, the Exotic",
+            ptBR: "Noctua, a Exótica",
+        },
+        description: {
+            enUS:
+                "Nobody on the Dark side is quite sure what Noctua is. Noctua does not seem to mind.\n\n" +
+                "For now it plays exactly like the balanced piece of the Dark team — what else it does has not been decided yet.",
+            ptBR:
+                "Ninguém no lado escuro sabe direito o que Noctua é. Noctua não parece se incomodar.\n\n" +
+                "Por enquanto, joga exatamente como a peça balanceada do time escuro — o que mais ela faz ainda não foi decidido.",
+        },
+    },
+
+    dF: {
+        name: {
+            enUS: "Pyrrha, the Firestarter",
+            ptBR: "Pyrrha, a Incendiária",
+        },
+        description: {
+            enUS:
+                "Pyrrha was let into the Dark team on one condition: never to stand close to anyone the team cannot lose. The condition has already been broken twice.\n\n" +
+                "The firestarter of the Dark team: shoots from where it stands, and the shot sets a square around the target on fire.",
+            ptBR:
+                "Pyrrha foi aceita no time escuro sob uma condição: nunca ficar perto de quem o time não pode perder. A condição já foi quebrada duas vezes.\n\n" +
+                "É a incendiária do time escuro: atira de onde está, e o tiro incendeia um quadrado em volta do alvo.",
         },
     },
 
@@ -112,24 +142,54 @@ export const texts_characters = {
         description: {
             enUS:
                 "Fumus prefers the far end of a long room and has opinions about which rooms qualify. Both other teams have learned to enter those rooms sideways.\n\n" +
-                "The only ranged piece of the Gray team: hits from where it stands; walls and other pieces interrupt its line of fire.",
+                "The long-range shooter of the Gray team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire.",
             ptBR:
                 "Fumus prefere o fundo de uma sala comprida e tem opiniões sobre quais salas se qualificam. Os dois outros times aprenderam a entrar nessas salas de lado.\n\n" +
-                "É a única peça à distância do time cinza: acerta de onde está; paredes e outras peças interrompem sua linha de tiro.",
+                "É a peça de tiro longo do time cinza: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro.",
+        },
+    },
+
+    gE: {
+        name: {
+            enUS: "Aenigma, the Exotic",
+            ptBR: "Aenigma, a Exótica",
+        },
+        description: {
+            enUS:
+                "Aenigma answers the questions the Gray team has not asked yet and refuses the ones it has. Nobody has decided whether that is useful.\n\n" +
+                "For now it plays exactly like the balanced piece of the Gray team — what else it does has not been decided yet.",
+            ptBR:
+                "Aenigma responde as perguntas que o time cinza ainda não fez e recusa as que já fez. Ninguém decidiu se isso é útil.\n\n" +
+                "Por enquanto, joga exatamente como a peça balanceada do time cinza — o que mais ela faz ainda não foi decidido.",
+        },
+    },
+
+    gF: {
+        name: {
+            enUS: "Favilla, the Firestarter",
+            ptBR: "Favilla, a Incendiária",
+        },
+        description: {
+            enUS:
+                "Favilla keeps what is left of every room the Gray team has walked through, and would gladly add a few more to the collection.\n\n" +
+                "The firestarter of the Gray team: shoots from where it stands, and the shot sets a square around the target on fire.",
+            ptBR:
+                "Favilla guarda o que sobrou de cada sala por onde o time cinza passou, e acrescentaria mais algumas à coleção com prazer.\n\n" +
+                "É a incendiária do time cinza: atira de onde está, e o tiro incendeia um quadrado em volta do alvo.",
         },
     },
 
     lA: {
         name: {
-            enUS: "Lumen, the Agile",
-            ptBR: "Lumen, o Ágil",
+            enUS: "Scintilla, the Agile",
+            ptBR: "Scintilla, o Ágil",
         },
         description: {
             enUS:
-                "Lumen carries the last lamp still burning inside the mansion and claims to know every corridor by the way its echo answers. Where Lumen passes, the Light side learns which doors still open — and which rooms have already been given up.\n\n" +
+                "Scintilla carries the last lamp still burning inside the mansion and claims to know every corridor by the way its echo answers. Where Scintilla passes, the Light side learns which doors still open — and which rooms have already been given up.\n\n" +
                 "The fastest piece of the Light team.",
             ptBR:
-                "Lumen carrega a última lamparina ainda acesa dentro da mansão e diz conhecer cada corredor pelo jeito como o eco responde. Por onde Lumen passa, o lado claro descobre quais portas ainda abrem — e quais salas já foram entregues.\n\n" +
+                "Scintilla carrega a última lamparina ainda acesa dentro da mansão e diz conhecer cada corredor pelo jeito como o eco responde. Por onde Scintilla passa, o lado claro descobre quais portas ainda abrem — e quais salas já foram entregues.\n\n" +
                 "É a peça mais rápida do time claro.",
         },
     },
@@ -151,15 +211,15 @@ export const texts_characters = {
 
     lC: {
         name: {
-            enUS: "Ignis, the Champion",
-            ptBR: "Ignis, o Campeão",
+            enUS: "Lumen, the Champion",
+            ptBR: "Lumen, o Campeão",
         },
         description: {
             enUS:
-                "Ignis moves slowly because there is nothing in the mansion worth arriving early for. What Ignis reaches, Ignis breaks — the Light side keeps this one for the doors and the shades that refuse to give way.\n\n" +
+                "Lumen moves slowly because there is nothing in the mansion worth arriving early for. What Lumen reaches, Lumen breaks — the Light side keeps this one for the doors and the shades that refuse to give way.\n\n" +
                 "The heaviest hitter of the Light team.",
             ptBR:
-                "Ignis anda devagar porque não há nada na mansão que valha a pena alcançar cedo. O que Ignis alcança, Ignis quebra — o lado claro guarda essa peça para as portas e para as sombras que se recusam a sair do caminho.\n\n" +
+                "Lumen anda devagar porque não há nada na mansão que valha a pena alcançar cedo. O que Lumen alcança, Lumen quebra — o lado claro guarda essa peça para as portas e para as sombras que se recusam a sair do caminho.\n\n" +
                 "É a peça mais forte do time claro.",
         },
     },
@@ -172,10 +232,41 @@ export const texts_characters = {
         description: {
             enUS:
                 "Vesper never learned the mansion's floor plan, only its sight lines. Standing still in the right room is worth more, to Vesper, than any amount of walking.\n\n" +
-                "The only ranged piece of the Light team: hits from where it stands; walls and other pieces interrupt its line of fire.",
+                "The long-range shooter of the Light team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire.",
             ptBR:
                 "Vesper nunca aprendeu a planta da mansão, só as linhas de visão dela. Ficar parado na sala certa vale mais, para Vesper, do que qualquer quantidade de caminhada.\n\n" +
-                "É a única peça à distância do time claro: acerta de onde está; paredes e outras peças interrompem sua linha de tiro.",
+                "É a peça de tiro longo do time claro: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro.",
+        },
+    },
+
+    lE: {
+        name: {
+            enUS: "Iris, the Exotic",
+            ptBR: "Iris, a Exótica",
+        },
+        description: {
+            enUS:
+                "Iris arrived with the Light team and was never introduced. The others treat that as an oversight; Iris treats it as an arrangement.\n\n" +
+                "For now it plays exactly like the balanced piece of the Light team — what else it does has not been decided yet.",
+            ptBR:
+                "Iris chegou com o time claro e nunca foi apresentada. Os outros tratam isso como um descuido; Iris trata como um acordo.\n\n" +
+                "Por enquanto, joga exatamente como a peça balanceada do time claro — o que mais ela faz ainda não foi decidido.",
+        },
+    },
+
+    lF: {
+        name: {
+            enUS: "Ignis, the Firestarter",
+            ptBR: "Ignis, a Incendiária",
+        },
+        description: {
+            enUS:
+                "Every briefing ends by reminding Ignis to look at who is standing around the target. Ignis always says yes, and looks at the target.\n\n" +
+                "The firestarter of the Light team: shoots from where it stands, and the shot sets a square around the target on fire.",
+            ptBR:
+                "Toda instrução termina lembrando Ignis de olhar quem está em volta do alvo. Ignis sempre diz que sim, e olha para o alvo.\n\n" +
+                "É a incendiária do time claro: atira de onde está, e o tiro incendeia um quadrado em volta do alvo.",
+
         },
     },
 }

@@ -31,9 +31,12 @@ interface DieProps {
     value: number
     size?: number
     spinning?: boolean
+    // Defasagem do giro: com vários dados na mesa, eles caem juntos mas não em sincronia
+    // perfeita, o que fica mais natural do que dois desenhos idênticos girando.
+    spinOffsetMs?: number
 }
 
-export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = false }) => {
+export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = false, spinOffsetMs = 0 }) => {
     const shape = SHAPES[sides]
 
     return (
@@ -42,6 +45,7 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                 width: size,
                 height: size,
                 animation: `${spinning ? tumble : land} ${spinning ? "420ms" : "280ms"} ${spinning ? "linear infinite" : "ease-out"}`,
+                animationDelay: `${-spinOffsetMs}ms`,
             }}
         >
             <svg viewBox="0 0 64 64" width={size} height={size}>

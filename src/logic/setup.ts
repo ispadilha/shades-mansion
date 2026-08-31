@@ -1,17 +1,15 @@
 import type { PieceColor, PieceDefinition, PiecePosition, PieceType, SpecialItem } from "./types"
-import { ALL_ITEM_KEYS } from "./types"
+import { ALL_ITEM_KEYS, ALL_PIECE_TYPES } from "./types"
 import type { Maze } from "./maze"
 import { generateMaze, isWalkable } from "./maze"
 import { MAX_HP } from "../constants/gameRules"
 
 const cellKey = (p: PiecePosition) => `${p.x},${p.y}`
 
-// Cópias de cada item especial espalhadas pelo tabuleiro (reduzidas se o labirinto
-// configurado for pequeno demais para todas caberem)
 const ITEM_COPIES = 2
 
 // Distribui "count" posições em uma linha começando e terminando nos extremos,
-// com espaçamento equivalente entre elas (ex.: 4 peças em 20 casas -> 0, 6, 13, 19).
+// com espaçamento equivalente entre elas.
 const spreadColumns = (count: number, size: number): number[] => {
     if (count <= 1) return [Math.floor((size - 1) / 2)]
     return Array.from({ length: count }, (_, i) => Math.round((i * (size - 1)) / (count - 1)))
@@ -41,7 +39,7 @@ const nearestFreeCell = (maze: Maze, ideal: PiecePosition, occupied: Set<string>
     return null
 }
 
-export const TEAM_TYPES: PieceType[] = ["A", "B", "C", "D"]
+export const TEAM_TYPES: PieceType[] = ALL_PIECE_TYPES
 
 export const pieceId = (color: PieceColor, type: PieceType) => `${color[0]}${type}`
 
@@ -107,12 +105,10 @@ export function placeItems(maze: Maze, pieces: PieceDefinition[]): SpecialItem[]
         ;[available[i], available[j]] = [available[j], available[i]]
     }
 
-    // Em um labirinto apertado é melhor distribuir menos cópias de todos os itens, do que
-    // "truncar" e deixar os últimos da lista de fora.
-    const copies = Math.min(ITEM_COPIES, Math.max(1, Math.floor(available.length / ALL_ITEM_KEYS.length)))
-
+    // O tabuleiro mínimo é grande o bastante para as duas cópias de cada item; a saída
+    // antecipada abaixo é só uma rede de segurança para um labirinto sem casas livres.
     const result: SpecialItem[] = []
-    for (let copy = 0; copy < copies; copy++) {
+    for (let copy = 0; copy < ITEM_COPIES; copy++) {
         for (const key of ALL_ITEM_KEYS) {
             const position = available.pop()
             if (!position) return result

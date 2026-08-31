@@ -4,7 +4,9 @@ import type { texts_rules } from "../constants/texts_rules"
 
 export type PieceColor = "light" | "dark" | "gray"
 
-export type PieceType = "A" | "B" | "C" | "D"
+export type PieceType = "A" | "B" | "C" | "D" | "E" | "F"
+
+export const ALL_PIECE_TYPES: PieceType[] = ["A", "B", "C", "D", "E", "F"]
 
 export interface PiecePosition {
     x: number
@@ -21,19 +23,13 @@ export interface PieceDefinition {
     maxHp: number
 }
 
-export type SpecialItemKey =
-    | "dA"
-    | "dB"
-    | "dC"
-    | "dD"
-    | "gA"
-    | "gB"
-    | "gC"
-    | "gD"
-    | "lA"
-    | "lB"
-    | "lC"
-    | "lD"
+// A chave do item é o id da peça a que ele pertence: inicial do time + tipo ("lA", "dF"...),
+// então cada peça nova traz o seu item junto, sem lista para manter à parte.
+export type ItemPrefix = "d" | "g" | "l"
+
+export type SpecialItemKey = `${ItemPrefix}${PieceType}`
+
+const ITEM_PREFIXES: ItemPrefix[] = ["d", "g", "l"]
 
 export interface SpecialItem {
     id: string
@@ -44,7 +40,9 @@ export interface SpecialItem {
 export type TeamInventory = SpecialItemKey[]
 export type Inventories = Record<PieceColor, TeamInventory>
 
-export const ALL_ITEM_KEYS: SpecialItemKey[] = ["dA", "dB", "dC", "dD", "gA", "gB", "gC", "gD", "lA", "lB", "lC", "lD"]
+export const ALL_ITEM_KEYS: SpecialItemKey[] = ITEM_PREFIXES.flatMap((prefix) =>
+    ALL_PIECE_TYPES.map((type): SpecialItemKey => `${prefix}${type}`),
+)
 
 export const itemKeyColor = (key: SpecialItemKey): PieceColor =>
     key[0] === "l" ? "light" : key[0] === "d" ? "dark" : "gray"

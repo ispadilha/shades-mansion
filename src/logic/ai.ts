@@ -2,7 +2,7 @@ import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventori
 import { itemKeyColor } from "./types"
 import { reachableCells, findApproachCell, lineOfFire, pathLength, distanceMap, positionKey } from "./movement"
 import type { Maze } from "./maze"
-import type { PendingAttack } from "./combat"
+import { alliesInBlast, attackArea, type PendingAttack } from "./combat"
 import { PIECE_STATS, isRanged } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
@@ -54,7 +54,7 @@ export class SimpleAI {
         if (manipulation) return manipulation
 
         // Prioridade 2: atacar qualquer inimigo no alcance
-        const reach = this.findInRangeTargets(activePiece, enemyPieces, pieces, maze)
+        const reach = this.findInRangeTargets(activePiece, enemyPieces, pieces, maze, color)
         if (reach.length > 0) {
             return this.buildAttack(activePiece, reach[0].target, reach[0].approach, pieces, maze)
         }
@@ -99,13 +99,14 @@ export class SimpleAI {
 
             // Alvos possíveis: qualquer peça que não seja da IA nem a própria peça manipulada
             const candidates = pieces.filter((p) => p.id !== manipulated.id && p.color !== color)
-            const reach = this.findInRangeTargets(manipulated, candidates, pieces, maze)
+            const reach = this.findInRangeTargets(manipulated, candidates, pieces, maze, color)
             if (reach.length === 0) continue
 
             // Escolhe o alvo de menor HP (mais chance de eliminá-lo)
             const best = reach.reduce((acc, r) => (r.target.hp < acc.target.hp ? r : acc))
 
             const moveSteps = pathLength(manipulated.position, best.approach, maze)
+            const area = attackArea(manipulated, best.target.position)
             // Ser manipulada é uma ação anormal: a peça se move e ataca sem gastar a ação
             // que ela ainda tem no próprio turno (movedThisTurn fica como está).
             const updatedPieces = pieces.map((p) =>
@@ -118,6 +119,7 @@ export class SimpleAI {
                     targetId: best.target.id,
                     damage,
                     delayMs: moveSteps * STEP_MS + 50,
+                    ...(area ? { area } : {}),
                     consumedItemKey: itemKey,
                     consumerColor: color,
                 },
@@ -172,6 +174,7 @@ export class SimpleAI {
     ): AIMoveResult {
         const moveSteps = pathLength(attacker.position, approach, maze)
         const damage = PIECE_STATS[attacker.type].attackDamage
+        const area = attackArea(attacker, target.position)
         const updatedPieces = pieces.map((p) => (p.id === attacker.id ? { ...p, position: approach, movedThisTurn: true } : p))
         return {
             updatedPieces,
@@ -180,22 +183,31 @@ export class SimpleAI {
                 targetId: target.id,
                 damage,
                 delayMs: moveSteps * STEP_MS + 50,
+                ...(area ? { area } : {}),
             },
         }
     }
 
+    // Alvos que "myPiece" consegue atingir agora, com a casa de onde o golpe sai.
+    // `friendlyColor` é o time que a jogada não pode prejudicar: um ataque em área que
+    // pegaria peças dessa cor é descartado, então a IA não queima as próprias peças —
+    // nem ao manipular a incendiária de outro time.
     private static findInRangeTargets(
         myPiece: PieceDefinition,
         enemyPieces: PieceDefinition[],
         pieces: PieceDefinition[],
         maze: Maze,
+        friendlyColor: PieceColor,
     ): Array<{ target: PieceDefinition; approach: PiecePosition }> {
         const range = PIECE_STATS[myPiece.type].attackRange
+        const sparesAllies = (target: PieceDefinition) =>
+            alliesInBlast(myPiece, target, pieces, maze, friendlyColor).length === 0
 
         if (isRanged(myPiece.type)) {
             const { targets } = lineOfFire(myPiece, pieces, maze, range)
             return targets
                 .filter((target) => enemyPieces.some((e) => e.id === target.id))
+                .filter(sparesAllies)
                 .map((target) => ({ target, approach: myPiece.position }))
         }
 

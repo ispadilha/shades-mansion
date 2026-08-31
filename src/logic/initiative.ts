@@ -1,12 +1,16 @@
-import { rollD20 } from "./rolls"
+import { rollDice, sumDice, type DieSides } from "./rolls"
 
-export const INITIATIVE_DIE = 20
+export const INITIATIVE_DIE: DieSides = 20
+export const INITIATIVE_DICE = 2
 
-// Uma jogada do dado. As recusadas (accepted: false) ficam no histórico porque a tela
+const DISTINCT_TOTALS = INITIATIVE_DICE * INITIATIVE_DIE - INITIATIVE_DICE + 1
+
+// Uma jogada dos dados. As recusadas (accepted: false) ficam no histórico porque a tela
 // de iniciativa mostra a re-rolagem acontecendo.
 export interface InitiativeAttempt {
     pieceId: string
-    value: number
+    dice: number[]
+    total: number
     accepted: boolean
 }
 
@@ -24,19 +28,24 @@ export function rollInitiative(pieceIds: string[]): InitiativeResult {
     const values: Record<string, number> = {}
     const taken = new Set<number>()
 
+    const roll = () => {
+        const dice = rollDice(INITIATIVE_DICE, INITIATIVE_DIE)
+        return { dice, total: sumDice(dice) }
+    }
+
     for (const pieceId of pieceIds) {
-        let value = rollD20()
-        // Com mais peças do que faces não sobraria número livre:
+        let attempt = roll()
+        // Com mais peças do que somas possíveis não sobraria número livre:
         // aí o valor repetido seria aceito,
         // e o desempate seria a ordem em que as peças rolaram.
-        while (taken.has(value) && taken.size < INITIATIVE_DIE) {
-            attempts.push({ pieceId, value, accepted: false })
-            value = rollD20()
+        while (taken.has(attempt.total) && taken.size < DISTINCT_TOTALS) {
+            attempts.push({ pieceId, ...attempt, accepted: false })
+            attempt = roll()
         }
 
-        attempts.push({ pieceId, value, accepted: true })
-        taken.add(value)
-        values[pieceId] = value
+        attempts.push({ pieceId, ...attempt, accepted: true })
+        taken.add(attempt.total)
+        values[pieceId] = attempt.total
     }
 
     // Ordenação estável: em um empate (só possível no caso acima) quem rolou antes age antes

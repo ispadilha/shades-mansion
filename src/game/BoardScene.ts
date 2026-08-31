@@ -2,10 +2,15 @@ import Phaser from "phaser"
 import type { PieceColor, PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
+import type { FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
 import { PIECE_PALETTE, hex } from "../constants/palette"
 
 export const STEP_MS = 280
+
+const FIRE_BURST_MS = 900
+const FLAMES_PER_CELL = 2
+const FIRE_COLORS = [0xfff0a5, 0xffc043, 0xff8c1a, 0xe63b1e]
 
 type ItemPalette = { bg: number; outline: number; text: string; stroke: string }
 
@@ -24,6 +29,7 @@ export class BoardScene extends Phaser.Scene {
     // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
     private pendingPieces: PieceDefinition[] | null = null
     private pendingItems: SpecialItem[] | null = null
+    private pendingBursts: FireBurst[] = []
     private isReady = false
 
     constructor(cellSize: number, maze: Maze) {
@@ -42,6 +48,8 @@ export class BoardScene extends Phaser.Scene {
             this.applyPieces(this.pendingPieces)
             this.pendingPieces = null
         }
+        for (const burst of this.pendingBursts) this.spawnFireBurst(burst)
+        this.pendingBursts = []
     }
 
     syncPieces(pieces: PieceDefinition[]) {
@@ -58,6 +66,17 @@ export class BoardScene extends Phaser.Scene {
             return
         }
         this.applyItems(items)
+    }
+
+    // Clarão de fogo do ataque em área.
+    // Cada explosão é tocada uma vez só.
+    // Quem chama é que controla isso (a cena só desenha).
+    playFireBurst(burst: FireBurst) {
+        if (!this.isReady) {
+            this.pendingBursts.push(burst)
+            return
+        }
+        this.spawnFireBurst(burst)
     }
 
     private applyItems(items: SpecialItem[]) {
@@ -142,6 +161,85 @@ export class BoardScene extends Phaser.Scene {
                 onComplete: () => sprite.destroy(),
             })
         }
+    }
+
+    // Desenha o fogo do ataque em área: a brasa marcando o quadrado que queimou e, por
+    // cima, chamas que sobem tremulando e apagam. É tudo tween sobre formas
+    // simples — nenhuma textura para carregar, por enquanto.
+    private spawnFireBurst(burst: FireBurst) {
+        const cs = this.cellSize
+        const center = this.cellToPixel(burst.center)
+        const container = this.add.container(center.x, center.y).setDepth(10)
+
+        let reach = 1
+        for (const cell of burst.cells) {
+            const ox = (cell.x - burst.center.x) * cs
+            const oy = (cell.y - burst.center.y) * cs
+            reach = Math.max(reach, Math.abs(cell.x - burst.center.x), Math.abs(cell.y - burst.center.y))
+
+            const ember = this.add.rectangle(ox, oy, cs, cs, 0xff7a18, 0.34).setStrokeStyle(1, 0xffd166, 0.55)
+            container.add(ember)
+            this.tweens.add({ targets: ember, alpha: 0, duration: FIRE_BURST_MS, ease: "Quad.easeIn" })
+        }
+
+        // Estouro inicial: um clarão claro que abre e some depressa
+        const flash = this.add.circle(0, 0, cs * 0.3, 0xfff3c4, 0.9)
+        container.add(flash)
+        this.tweens.add({
+            targets: flash,
+            scale: (2 * reach + 1) * 1.1,
+            alpha: 0,
+            duration: 260,
+            ease: "Cubic.easeOut",
+        })
+
+        // Chamas sorteadas dentro de cada casa que queimou
+        for (const cell of burst.cells) {
+            const ox = (cell.x - burst.center.x) * cs
+            const oy = (cell.y - burst.center.y) * cs
+
+            for (let i = 0; i < FLAMES_PER_CELL; i++) {
+                const x = ox + (Math.random() - 0.5) * cs * 0.8
+                const y = oy + (Math.random() - 0.5) * cs * 0.8
+                const height = cs * (0.45 + Math.random() * 0.5)
+                const width = height * (0.45 + Math.random() * 0.2)
+                const color = FIRE_COLORS[Math.floor(Math.random() * FIRE_COLORS.length)]
+
+                // Chama: base larga embaixo e ponta para cima. Os pontos do triângulo
+                // do Phaser são medidos a partir do canto do próprio desenho, não do centro.
+                const flame = this.add.triangle(x, y, 0, height, width / 2, 0, width, height, color).setAlpha(0)
+                container.add(flame)
+
+                const delay = Math.random() * (FIRE_BURST_MS * 0.35)
+                // Sobe encolhendo até apagar
+                this.tweens.add({
+                    targets: flame,
+                    y: y - cs * 0.55,
+                    scaleY: { from: 0.35, to: 1.15 },
+                    alpha: { from: 0.95, to: 0 },
+                    delay,
+                    duration: FIRE_BURST_MS - delay,
+                    ease: "Sine.easeOut",
+                })
+                // Tremulação: a largura vai e volta enquanto a chama vive
+                this.tweens.add({
+                    targets: flame,
+                    scaleX: 0.6,
+                    delay,
+                    duration: 120 + Math.random() * 90,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: "Sine.easeInOut",
+                })
+            }
+        }
+
+        // As chamas tremulam em loop até aqui: matar os tweens antes de destruir evita
+        // que eles continuem mexendo em objetos que já saíram da cena.
+        this.time.delayedCall(FIRE_BURST_MS + 120, () => {
+            this.tweens.killTweensOf(container.list)
+            container.destroy()
+        })
     }
 
     private cellToPixel(cell: PiecePosition): PiecePosition {

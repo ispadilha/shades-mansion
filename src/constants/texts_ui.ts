@@ -174,6 +174,11 @@ export const texts_ui = {
         ptBR: "À distância",
     },
 
+    attackArea: {
+        enUS: "Area of effect",
+        ptBR: "Área de efeito",
+    },
+
     turn: {
         enUS: "Turn",
         ptBR: "Turno",
@@ -284,6 +289,11 @@ export const texts_ui = {
         ptBR: "para coletar o item",
     },
 
+    wasBurned: {
+        enUS: "was caught in the fire",
+        ptBR: "foi pega pelo fogo",
+    },
+
     wasEliminated: {
         enUS: "was eliminated",
         ptBR: "foi eliminada",
@@ -340,8 +350,8 @@ export const texts_ui = {
     },
 
     initiativeSubtitle: {
-        enUS: "Every character rolls a d20 — the highest acts first",
-        ptBR: "Cada personagem rola um d20 — o maior age primeiro",
+        enUS: "Every character rolls 2d20 — the highest total acts first",
+        ptBR: "Cada personagem rola 2d20 — o maior total age primeiro",
     },
 
     initiativeRoll: {

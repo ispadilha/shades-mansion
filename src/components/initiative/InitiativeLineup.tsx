@@ -4,13 +4,13 @@ import { PieceToken } from "./PieceToken"
 import type { PieceSlot } from "../../logic/setup"
 
 interface InitiativeLineupProps {
-    // As 12 peças, na ordem em que devem aparecer na fila
+    // Todas as peças, na ordem em que devem aparecer na fila
     slots: PieceSlot[]
     // Peça que está rolando o dado agora
     activeId: string | null
     // Valor já travado de cada peça (as que ainda não rolaram estão sem número)
     values: Record<string, number>
-    // Numera as peças de 1 a 12 — usado quando a ordem final já está definida
+    // Numera as peças da primeira à última — usado quando a ordem final já está definida
     showRank?: boolean
 }
 

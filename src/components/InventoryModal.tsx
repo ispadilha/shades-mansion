@@ -86,7 +86,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
 
                     {aggregated.length === 0 && <Typography sx={{ color: "#666" }}>{t("noItems")}</Typography>}
 
-                    <Stack gap={1}>
+                    <Stack gap={1} sx={{ maxHeight: "55vh", overflowY: "auto" }}>
                         {aggregated.map(({ key, count }) => {
                             const usable = canHeal(key) || canManipulate(key)
                             return (

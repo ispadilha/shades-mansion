@@ -3,7 +3,7 @@ import { Box, Modal, Typography } from "@mui/material"
 import { keyframes } from "@emotion/react"
 import { Coin } from "./Coin"
 import { Die } from "./Die"
-import { COIN_FACES, rollDie, type CoinFace, type DieSides, type RollKind } from "../../logic/rolls"
+import { COIN_FACES, rollDice, sumDice, type CoinFace, type DieSides, type RollKind } from "../../logic/rolls"
 import { useLanguage } from "../../hooks/useLanguage"
 
 export const ROLL_SPIN_MS = 550
@@ -31,7 +31,9 @@ export interface RollView {
     // Muda a cada rolagem — é o que faz a animação recomeçar em uma sequência de rolagens
     id: string
     kind: RollKind
-    value: number | CoinFace
+    // Moeda: a face que saiu. Dados: o valor de cada um deles, na ordem em que aparecem —
+    // uma rolagem só, com todos os dados caindo juntos, e o resultado é a soma.
+    value: CoinFace | number[]
     title: string
     subtitle?: string
     // Leitura do resultado
@@ -53,10 +55,15 @@ interface RollModalProps {
 
 const sidesOf = (kind: RollKind): DieSides => (kind === "d20" ? 20 : 12)
 
+// Com mais de um dado na mesa, cada um encolhe um pouco para os dois caberem lado a lado
+const dieSizeFor = (count: number) => (count > 1 ? 96 : 120)
+// Defasagem entre os giros de dados vizinhos: eles caem juntos, mas não idênticos
+const DIE_SPIN_OFFSET_MS = 140
+
 export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) => {
     const { t } = useLanguage()
     const [phase, setPhase] = useState<"waiting" | "spinning" | "revealed">("spinning")
-    const [preview, setPreview] = useState<number | CoinFace>(1)
+    const [preview, setPreview] = useState<CoinFace | number[]>([1])
 
     // onDone muda de identidade a cada render do pai; guardá-lo em ref evita reiniciar os timers
     const onDoneRef = useRef(onDone)
@@ -67,13 +74,19 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
     const rollId = roll?.id ?? null
     const kind = roll?.kind
 
-    const randomFace = (): number | CoinFace =>
-        kind === "coin" ? COIN_FACES[Math.floor(Math.random() * COIN_FACES.length)] : rollDie(sidesOf(kind ?? "d12"))
+    // Quantos dados esta rolagem tem (a moeda não tem nenhum)
+    const diceCount = Array.isArray(roll?.value) ? roll.value.length : 0
+
+    // Faces falsas do giro: todos os dados embaralham juntos, como caem juntos
+    const randomFaces = (): CoinFace | number[] =>
+        kind === "coin"
+            ? COIN_FACES[Math.floor(Math.random() * COIN_FACES.length)]
+            : rollDice(Math.max(1, diceCount), sidesOf(kind ?? "d12"))
 
     // Rolagem nova: a do jogador nasce parada esperando o clique; as outras já saem girando
     useEffect(() => {
         if (!roll) return
-        setPreview(randomFace())
+        setPreview(randomFaces())
         setPhase(roll.manual ? "waiting" : "spinning")
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rollId])
@@ -82,7 +95,7 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
     useEffect(() => {
         if (!roll || phase !== "spinning") return
 
-        const shuffle = window.setInterval(() => setPreview(randomFace()), SHUFFLE_MS)
+        const shuffle = window.setInterval(() => setPreview(randomFaces()), SHUFFLE_MS)
         const timer = window.setTimeout(() => setPhase("revealed"), roll.spinMs ?? ROLL_SPIN_MS)
 
         return () => {
@@ -108,7 +121,9 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
     }
 
     const spinning = phase === "spinning"
-    const shown = phase === "revealed" ? (roll?.value ?? 1) : preview
+    const shown = phase === "revealed" ? (roll?.value ?? preview) : preview
+    const shownDice = Array.isArray(shown) ? shown : []
+    const dieSize = dieSizeFor(shownDice.length)
 
     return (
         <Modal
@@ -143,11 +158,20 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                 </Typography>
                 {roll?.subtitle && <Typography sx={{ color: "#8f85a8", fontSize: 13 }}>{roll.subtitle}</Typography>}
 
-                <Box sx={{ my: 1 }}>
+                <Box sx={{ my: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
                     {kind === "coin" ? (
                         <Coin face={shown as CoinFace} spinning={spinning} />
                     ) : (
-                        <Die sides={sidesOf(kind ?? "d12")} value={shown as number} spinning={spinning} />
+                        shownDice.map((die, index) => (
+                            <Die
+                                key={index}
+                                sides={sidesOf(kind ?? "d12")}
+                                value={die}
+                                size={dieSize}
+                                spinning={spinning}
+                                spinOffsetMs={index * DIE_SPIN_OFFSET_MS}
+                            />
+                        ))
                     )}
                 </Box>
 
@@ -156,7 +180,7 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                         ? ""
                         : kind === "coin"
                           ? t(roll?.value === "heads" ? "coinHeads" : "coinTails")
-                          : String(roll?.value ?? "")}
+                          : String(sumDice(shownDice))}
                 </Typography>
 
                 {phase === "waiting" ? (

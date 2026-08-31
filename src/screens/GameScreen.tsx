@@ -10,13 +10,21 @@ import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, SpecialIt
 import { itemKeyColor, controlledColorsFor } from "../logic/types"
 import { reachableCells, pathLength, findApproachCell, lineOfFire, meleeAttackCells } from "../logic/movement"
 import { nextTurnIndex } from "../logic/initiative"
-import { rollAttack, rollManipulation, type PendingAttack } from "../logic/combat"
+import {
+    areaCells,
+    attackArea,
+    piecesInCells,
+    rollAttack,
+    rollManipulation,
+    type FireBurst,
+    type PendingAttack,
+} from "../logic/combat"
 import type { MatchSetup } from "../logic/setup"
 import { SimpleAI } from "../logic/ai"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
-import { CELL_SIZE, PIECE_STATS, isRanged } from "../constants/gameRules"
+import { CELL_SIZE, FIRE_AREA_SIDE, PIECE_STATS, isAreaAttack, isRanged } from "../constants/gameRules"
 import { STEP_MS } from "../game/BoardScene"
 
 const COLOR_LABEL: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
@@ -25,6 +33,8 @@ const MAX_LOG_ENTRIES = 100
 const AI_STEP_MS = 1000
 // Espera antes de a IA passar a vez depois de já ter agido
 const AI_END_TURN_MS = 600
+// Explosões de fogo guardadas no estado (só para a cena não reanimar as antigas)
+const MAX_FIRE_BURSTS = 8
 
 interface GameScreenProps {}
 
@@ -65,6 +75,8 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
     const [selectedId, setSelectedId] = useState<string | null>(null)
     const [highlighted, setHighlighted] = useState<PiecePosition[]>([])
     const [attackHighlighted, setAttackHighlighted] = useState<PiecePosition[]>([])
+    // Explosões de fogo já resolvidas, para a cena animar (o tabuleiro ignora as repetidas)
+    const [fireBursts, setFireBursts] = useState<FireBurst[]>([])
     const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<SpecialItemKey | null>(null)
     const [inventoryOpen, setInventoryOpen] = useState(false)
@@ -183,6 +195,11 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
     const logAttackRoll = (attackerId: string, targetId: string, hit: boolean) => {
         addLog(`${attackerId} ${t(hit ? "verbHit" : "verbMissed")} ${targetId}`)
     }
+    // Peças pegas de tabela pelo fogo do ataque em área (o alvo principal já entrou no
+    // log pela moeda de ataque)
+    const logBurned = (pieceIds: string[]) => {
+        for (const id of pieceIds) addLog(`${id} ${t("wasBurned")}`)
+    }
     // Eventos importantes:
     const logEliminated = (pieceId: string) => {
         addLog(`${pieceId} ${t("wasEliminated")}!`)
@@ -250,11 +267,31 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
                 },
                 () => {
                     if (success) {
+                        // O fogo pega todo mundo que estiver nas casas em chamas.
+                        // As casas e quem está nelas são decididas
+                        // agora, com as posições atuais.
+                        const burning = attack.area ? areaCells(maze, attack.area.center, attack.area.side) : []
+                        const burned = piecesInCells(pieces, burning)
+                            .filter((p) => p.id !== attack.targetId)
+                            .map((p) => p.id)
+                        const hit = new Set([attack.targetId, ...burned])
+
                         setPieces((prev) =>
                             prev
-                                .map((p) => (p.id === attack.targetId ? { ...p, hp: p.hp - attack.damage } : p))
+                                .map((p) => (hit.has(p.id) ? { ...p, hp: p.hp - attack.damage } : p))
                                 .filter((p) => p.hp > 0),
                         )
+                        if (attack.area) {
+                            const { center } = attack.area
+                            setFireBursts((prev) => [
+                                ...prev.slice(-MAX_FIRE_BURSTS + 1),
+                                { id: `fire-${attack.attackerId}-${Date.now()}`, center, cells: burning },
+                            ])
+                        }
+                        logAttackRoll(attack.attackerId, attack.targetId, success)
+                        logBurned(burned)
+                        setResolvingRoll(false)
+                        return
                     }
                     logAttackRoll(attack.attackerId, attack.targetId, success)
                     setResolvingRoll(false)
@@ -579,6 +616,7 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
         const target = contextMenu.targetPiece
         const damage = PIECE_STATS[attacker.type].attackDamage
         const targetId = target.id
+        const area = attackArea(attacker, target.position)
         // Ataque à distância acerta de onde a peça está; os outros tipos se aproximam do alvo antes
         const ranged = isRanged(attacker.type)
         const newPos = ranged
@@ -610,6 +648,7 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
             targetId,
             damage,
             delayMs,
+            ...(area ? { area } : {}),
             ...(forcedBy ? { consumedItemKey: attacker.id as SpecialItemKey, consumerColor: forcedBy } : {}),
         })
     }
@@ -686,6 +725,7 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
                         items={items}
                         highlighted={highlighted}
                         attackHighlighted={attackHighlighted}
+                        fireBursts={fireBursts}
                         onCellClick={onCellClick}
                         selectedPieceId={selectedId}
                         onCellContextMenu={onCellContextMenu}
@@ -756,6 +796,11 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
                             <Typography>
                                 {t("attackStyle")}: {t(isRanged(infoPiece.type) ? "attackStyleRanged" : "attackStyleMelee")}
                             </Typography>
+                            {isAreaAttack(infoPiece.type) && (
+                                <Typography>
+                                    {t("attackArea")}: {FIRE_AREA_SIDE} × {FIRE_AREA_SIDE}
+                                </Typography>
+                            )}
                         </>
                     )}
                 </Box>

@@ -56,7 +56,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     const lockedValues = useMemo(() => {
         const values: Record<string, number> = {}
         for (const attempt of attempts.slice(0, stepIndex)) {
-            if (attempt.accepted) values[attempt.pieceId] = attempt.value
+            if (attempt.accepted) values[attempt.pieceId] = attempt.total
         }
         return values
     }, [attempts, stepIndex])
@@ -71,7 +71,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     const roll: RollView | null = current && {
         id: `initiative-${stepIndex}`,
         kind: "d20",
-        value: current.value,
+        value: current.dice,
         title: t("initiativeRoll"),
         subtitle: current.pieceId,
         outcome: current.accepted ? undefined : { label: t("repeatedRoll"), tone: "bad" },

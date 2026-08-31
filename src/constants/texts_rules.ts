@@ -6,10 +6,10 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Three teams compete inside the mansion and only one of them will conquer it. Light, Gray and Dark each field four pieces, and the match ends when a single team still has pieces on the board.\n\n" +
+                "Three teams compete for the mansion and only one of them will conquer it. Light, Gray and Dark each field six pieces, and the match ends when a single team still has pieces on the board.\n\n" +
                 "Play is turn-based piece by piece.",
             ptBR:
-                "Três times estão trancados na mansão e só um deles sai. Claro, cinza e escuro têm quatro peças cada, e a partida acaba quando um único time ainda tem peças no tabuleiro.\n\n" +
+                "Três times competem pela mansão e só um deles a conquistará. Os times Claro, Cinza e Escuro têm seis peças cada, e a partida acaba quando um único time ainda tem peças no tabuleiro.\n\n" +
                 "O jogo é por turnos, peça a peça.",
         },
     },
@@ -22,10 +22,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "The mansion is never the same twice: a new maze of rooms and corridors is generated at the start of every match, and no two matches share a floor plan.\n\n" +
-                "Rooms are square and always separated by at least one wall, connected by one-cell corridors — with a few extra corridors beyond the strict minimum, so there is usually more than one way around. Walls block movement and also block lines of fire.",
+                "Rooms are square and always separated by at least one wall. They are connected by one-cell corridors, with a few extra corridors beyond the strict minimum, so there is usually more than one way around. Walls block movement and lines of fire, and hold back flames.",
             ptBR:
                 "A mansão nunca é a mesma duas vezes: um novo labirinto de salas e corredores é gerado no começo de cada partida, e duas partidas não repetem a mesma planta.\n\n" +
-                "As salas são quadradas e sempre separadas por pelo menos uma parede, ligadas por corredores de uma casa — com alguns corredores extras além do mínimo, então quase sempre há mais de um caminho. As paredes bloqueiam o movimento e também as linhas de tiro.",
+                "As salas são quadradas e sempre separadas por pelo menos uma parede. Elas são ligadas por corredores de uma casa, com alguns corredores extras além do mínimo, então quase sempre há mais de um caminho. As paredes bloqueiam o movimento, as linhas de tiro e o avanço das chamas.",
         },
     },
 
@@ -36,26 +36,26 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Light, Gray and Dark each start with four pieces, one of each type: Agile (A), Balanced (B), Champion (C) and Distance shooter (D).\n\n" +
+                "Light, Gray and Dark each start with six pieces, one of each type: Agile (A), Balanced (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
                 "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row.",
             ptBR:
-                "Claro, cinza e escuro começam com quatro peças cada, uma de cada tipo: Ágil (A), Balanceada (B), Campeão (C) e uma que atira à Distância (D).\n\n" +
-                "As escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
+                "Claro, Cinza e Escuro começam com seis peças cada, uma de cada tipo: Ágil (A), Balanceada (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
+                "As peças escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
         },
     },
 
     gameModes: {
         name: {
-            enUS: "Commanding a side",
-            ptBR: "Comandar um lado",
+            enUS: "Commanding a team",
+            ptBR: "Comandar um time",
         },
         description: {
             enUS:
                 "Before the match you choose what to command. Taking a single team leaves the other two to the AI. Taking all of them turns the match into local multiplayer.\n\n" +
-                "You may also command none of them and simply watch three AI teams fight over the mansion. While spectating, the right-click menu still opens, but only with the information entries — nothing that changes the game.",
+                "You may also command none of them and simply watch three AI teams fight over the mansion. While spectating, the right-click menu still opens, but only with the information entries. Nothing that changes the game.",
             ptBR:
                 "Antes da partida você escolhe o que vai comandar. Pegar um único time deixa os outros dois para a IA. Pegar todos transforma a partida em multi-jogador local.\n\n" +
-                "Você também pode não comandar nenhum e apenas assistir a três times de IA disputando a mansão. Assistindo, o menu do botão direito ainda abre, mas só com as opções de informação — nada que altere o jogo.",
+                "Você também pode não comandar nenhum e apenas assistir a três times de IA disputando a mansão. Assistindo, o menu do botão direito ainda abre, mas só com as opções de informação. Nada que altere o jogo.",
         },
     },
 
@@ -66,10 +66,10 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Between choosing your side and entering the mansion, all the characters line up — Light, Gray then Dark — and roll a d20 each, one at a time. A number already taken is refused and the character rolls again, so the values are always different.\n\n" +
+                "Between choosing your side and entering the mansion, all the characters line up — Light, Gray then Dark — and roll their initiative one at a time: two d20 thrown together, counted as their sum. A total already taken is refused and the character rolls again, so the values are always different.\n\n" +
                 "The rolls are sorted from the highest to the lowest and that becomes the order of play for the whole match. The order never changes: eliminated pieces are simply skipped.",
             ptBR:
-                "Entre a escolha de time e a entrada na mansão, todos os personagens se enfileiram — Claros, Cinzas e Escuros — e rolam um d20 cada, um de cada vez. Um número que já saiu é recusado e o personagem rola de novo, então os valores são sempre diferentes.\n\n" +
+                "Entre a escolha de time e a entrada na mansão, todos os personagens se enfileiram — Claros, Cinzas e Escuros — e rolam a iniciativa um de cada vez: dois d20 jogados juntos, valendo a soma. Um total que já saiu é recusado e o personagem rola de novo, então os valores são sempre diferentes.\n\n" +
                 "As rolagens são ordenadas do maior para o menor e isso vira a ordem das vezes na partida inteira. A ordem nunca muda: as peças eliminadas são apenas puladas.",
         },
     },
@@ -111,11 +111,30 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Melee pieces (agile, balanced and champion) attack by walking to a free cell next to the target and striking on arrival. The walk has to fit inside the piece's attack range.\n\n" +
-                "The distance shooter attacks from where it stands, at anything with a clear line of fire. A piece that drops to 0 HP is removed from the board.",
+                "Melee pieces attack by walking to a free cell next to the target and striking on arrival. The walk has to fit inside the piece's attack range.\n\n" +
+                "The shooter and the firestarter attack from where they stand, at anything with a clear line of fire.\n\n" +
+                "A piece that drops to 0 HP is removed from the board.",
             ptBR:
-                "As peças corpo a corpo (ágil, balanceada e campeã) atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça.\n\n" +
-                "O atirador à distância ataca de onde está, qualquer alvo com a linha de tiro livre. A peça que chega a 0 ponto de vida sai do tabuleiro.",
+                "As peças corpo a corpo atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça.\n\n" +
+                "A peça atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre.\n\n" +
+                "A peça que chega a 0 ponto de vida sai do tabuleiro.",
+        },
+    },
+
+    areaDamage: {
+        name: {
+            enUS: "Fire and area damage",
+            ptBR: "Fogo e dano em área",
+        },
+        description: {
+            enUS:
+                "The firestarter shoots from a distance, and where the shot lands an area catches fire.\n\n" +
+                "The fire does not tell friend from foe: every piece standing on a burning cell takes the attack damage, including the firestarter's own team and the firestarter itself when it fires at something too close.\n\n" +
+                "Strategy often involves caution.",
+            ptBR:
+                "A peça incendiária atira a alguma distância, e onde o tiro cai uma área pega fogo.\n\n" +
+                "O fogo não distingue amigo de inimigo: toda peça em uma casa em chamas leva o dano do ataque, inclusive as do próprio time da incendiária e até ela mesma, quando atira em algo perto demais.\n\n" +
+                "A estratégia muitas vezes envolve cautela.",
         },
     },
 
@@ -171,11 +190,9 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The mansion will be conquered by one team only. When two of the three sides have lost every piece, the last one still standing wins, however few pieces it has left.\n\n" +
-                "The log above the board records every move, attack, heal and elimination along the way.",
+                "The mansion will be conquered by one team only. When two of the three sides have lost every piece, the last one still standing wins, however few pieces it has left.\n\n",
             ptBR:
-                "A mansão será conquistada por um time só. Quando dois dos três lados perdem todas as peças, o último de pé vence, por menos peças que ainda tenha.\n\n" +
-                "O log acima do tabuleiro registra cada movimento, ataque, cura e eliminação no caminho.",
+                "A mansão será conquistada por um time só. Quando dois dos três lados perdem todas as peças, o último de pé vence, por menos peças que ainda tenha.\n\n",
         },
     },
 }
