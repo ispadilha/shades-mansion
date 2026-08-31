@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material"
 import { PieceToken } from "./PieceToken"
 import type { PieceDefinition } from "../../logic/types"
 import { useLanguage } from "../../hooks/useLanguage"
-import { AURA_PALETTE, type AuraKind } from "../../constants/palette"
+import { AURA_PALETTE, INITIATIVE_PALETTE, type AuraKind } from "../../constants/palette"
 
 interface TurnOrderBarProps {
     // Peças vivas, já na ordem de iniciativa
@@ -19,7 +19,7 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, activeId, man
 
     return (
         <Box sx={{ height: "100%", minWidth: 0, display: "flex", alignItems: "center", gap: 1, px: 2 }}>
-            <Typography sx={{ color: "#8f85a8", fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
+            <Typography sx={{ color: INITIATIVE_PALETTE.rank, fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
                 {t("round")} {round}
             </Typography>
 
@@ -50,7 +50,7 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, activeId, man
                                 aura={aura}
                                 dimmed={piece.movedThisTurn && !aura}
                             />
-                            <Typography sx={{ color: aura ? AURA_PALETTE[aura].color : "#777", fontSize: 10 }}>
+                            <Typography sx={{ color: aura ? AURA_PALETTE[aura].color : INITIATIVE_PALETTE.idleId, fontSize: 10 }}>
                                 {piece.id}
                             </Typography>
                         </Box>

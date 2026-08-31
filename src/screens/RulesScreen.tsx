@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import { ruleKeys } from "../constants/texts_rules"
 import { useLanguage } from "../hooks/useLanguage"
+import { UI_PALETTE } from "../constants/palette"
 
 interface RulesScreenProps {}
 
@@ -15,7 +16,7 @@ export const RulesScreen: React.FC<RulesScreenProps> = ({}) => {
             sx={{
                 width: "100vw",
                 height: "100vh",
-                bgcolor: "#000",
+                bgcolor: UI_PALETTE.screenBg,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -26,7 +27,7 @@ export const RulesScreen: React.FC<RulesScreenProps> = ({}) => {
                 overflow: "auto",
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 32 }}>{t("rules")}</Typography>
+            <Typography sx={{ color: UI_PALETTE.text, fontSize: 32 }}>{t("rules")}</Typography>
 
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center", width: 720, maxWidth: "90vw" }}>
                 {ruleKeys.map((key) => (
@@ -34,14 +35,14 @@ export const RulesScreen: React.FC<RulesScreenProps> = ({}) => {
                         key={key}
                         variant="contained"
                         onClick={() => navigate(`/library/rules/${key}`)}
-                        sx={{ bgcolor: "#222", color: "#fff", textTransform: "none" }}
+                        sx={{ bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text, textTransform: "none" }}
                     >
                         {tRule(key, "name")}
                     </Button>
                 ))}
             </Box>
 
-            <Button onClick={() => navigate("/library")} sx={{ mt: 3, color: "#fff" }}>
+            <Button onClick={() => navigate("/library")} sx={{ mt: 3, color: UI_PALETTE.text }}>
                 {t("goBack")}
             </Button>
         </Box>

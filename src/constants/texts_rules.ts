@@ -138,6 +138,21 @@ export const texts_rules = {
         },
     },
 
+    highlights: {
+        name: {
+            enUS: "Highlighted cells",
+            ptBR: "Casas destacadas",
+        },
+        description: {
+            enUS:
+                "Selecting a piece paints the cells around it in three colors: yellow for the ones it can walk to, red for the ones its attack reaches, and orange for the ones that are both: where it can end its move and also strike.\n\n" +
+                "Yellow is ground the piece can take but not threaten. Red is a target it can hit without standing there: an occupied cell, or a spot further than its legs but still within its reach. Orange is where the two overlap.\n\n",
+            ptBR:
+                "Selecionar uma peça pinta as casas em volta dela em três cores: amarelo nas que ela consegue alcançar andando, vermelho nas que o ataque dela alcança, e laranja nas que são as duas coisas: onde ela pode terminar o movimento e também atacar.\n\n" +
+                "O amarelo é terreno que a peça toma, mas não ameaça. O vermelho é alvo que ela atinge sem pisar ali: uma casa ocupada, ou um ponto além das pernas dela mas ainda ao alcance. O laranja é onde os dois se sobrepõem.\n\n",
+        },
+    },
+
     items: {
         name: {
             enUS: "Special items",

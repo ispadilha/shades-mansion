@@ -2,6 +2,7 @@ import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import { useLanguage } from "../hooks/useLanguage"
+import { UI_PALETTE } from "../constants/palette"
 
 interface LibraryScreenProps {}
 
@@ -14,7 +15,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({}) => {
             sx={{
                 width: "100vw",
                 height: "100vh",
-                bgcolor: "#000",
+                bgcolor: UI_PALETTE.screenBg,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -22,22 +23,22 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({}) => {
                 gap: 4,
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 36 }}>{t("library")}</Typography>
+            <Typography sx={{ color: UI_PALETTE.text, fontSize: 36 }}>{t("library")}</Typography>
             <Button
                 variant="contained"
                 onClick={() => navigate("/library/characters")}
-                sx={{ bgcolor: "#222", color: "#fff", px: 4, py: 1.5 }}
+                sx={{ bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text, px: 4, py: 1.5 }}
             >
                 {t("characters")}
             </Button>
             <Button
                 variant="contained"
                 onClick={() => navigate("/library/rules")}
-                sx={{ bgcolor: "#222", color: "#fff", px: 4, py: 1.5 }}
+                sx={{ bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text, px: 4, py: 1.5 }}
             >
                 {t("rules")}
             </Button>
-            <Button onClick={() => navigate("/")} sx={{ mt: 3, color: "#fff" }}>
+            <Button onClick={() => navigate("/")} sx={{ mt: 3, color: UI_PALETTE.text }}>
                 {t("goBack")}
             </Button>
         </Box>

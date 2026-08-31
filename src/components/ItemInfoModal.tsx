@@ -3,12 +3,7 @@ import { Box, Button, Modal, Typography } from "@mui/material"
 import type { PieceColor, SpecialItemKey } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
-
-const PALETTE: Record<PieceColor, { bg: string; outline: string; text: string }> = {
-    dark: { bg: "#2a2a2a", outline: "#222", text: "#ffffff" },
-    light: { bg: "#eeeeee", outline: "#222", text: "#111111" },
-    gray: { bg: "#888888", outline: "#222", text: "#ffffff" },
-}
+import { HUD_PALETTE, ITEM_INFO_PALETTE } from "../constants/palette"
 
 const HEAL_HEAD: Record<PieceColor, "itemDescHealLight" | "itemDescHealDark" | "itemDescHealGray"> = {
     light: "itemDescHealLight",
@@ -23,7 +18,7 @@ const MANIPULATE_HEAD: Record<PieceColor, "itemDescManipulateLight" | "itemDescM
 }
 
 export const ItemBadge: React.FC<{ k: SpecialItemKey; size?: number }> = ({ k, size = 28 }) => {
-    const colors = PALETTE[itemKeyColor(k)]
+    const colors = ITEM_INFO_PALETTE[itemKeyColor(k)]
     return (
         <Box
             sx={{
@@ -88,7 +83,7 @@ export const ItemInfoModal: React.FC<ItemInfoModalProps> = ({ open, onClose, ite
                         <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                             <ItemBadge k={itemKey} size={72} />
                         </Box>
-                        <Typography sx={{ fontSize: 14, color: "#444" }}>{describe(itemKey)}</Typography>
+                        <Typography sx={{ fontSize: 14, color: HUD_PALETTE.itemInfoText }}>{describe(itemKey)}</Typography>
                         <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
                             <Button onClick={onClose}>{t("close")}</Button>
                         </Box>

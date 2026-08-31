@@ -2,6 +2,7 @@ import React from "react"
 import { Box, Typography } from "@mui/material"
 import { PieceToken } from "./PieceToken"
 import type { PieceSlot } from "../../logic/setup"
+import { INITIATIVE_PALETTE } from "../../constants/palette"
 
 interface InitiativeLineupProps {
     // Todas as peças, na ordem em que devem aparecer na fila
@@ -27,17 +28,17 @@ export const InitiativeLineup: React.FC<InitiativeLineupProps> = ({ slots, activ
                             key={slot.id}
                             sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5, width: 62 }}
                         >
-                            {showRank && <Typography sx={{ color: "#8f85a8", fontSize: 12 }}>#{index + 1}</Typography>}
+                            {showRank && <Typography sx={{ color: INITIATIVE_PALETTE.rank, fontSize: 12 }}>#{index + 1}</Typography>}
                             <PieceToken
                                 color={slot.color}
                                 type={slot.type}
                                 aura={slot.id === activeId ? "active" : null}
                                 dimmed={!rolled && slot.id !== activeId}
                             />
-                            <Typography sx={{ color: "#bbb", fontSize: 12 }}>{slot.id}</Typography>
+                            <Typography sx={{ color: INITIATIVE_PALETTE.pieceId, fontSize: 12 }}>{slot.id}</Typography>
                             <Typography
                                 sx={{
-                                    color: rolled ? "#ffe9a8" : "#544c66",
+                                    color: rolled ? INITIATIVE_PALETTE.value : INITIATIVE_PALETTE.valuePending,
                                     fontSize: 18,
                                     fontWeight: 700,
                                     lineHeight: 1.1,

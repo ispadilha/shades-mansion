@@ -2,6 +2,7 @@ import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import { useLanguage } from "../hooks/useLanguage"
+import { UI_PALETTE } from "../constants/palette"
 import { useGame } from "../hooks/useGame"
 
 interface EndScreenProps {}
@@ -21,8 +22,8 @@ export const EndScreen: React.FC<EndScreenProps> = ({}) => {
             sx={{
                 width: "100vw",
                 height: "100vh",
-                bgcolor: "#000",
-                color: "#fff",
+                bgcolor: UI_PALETTE.screenBg,
+                color: UI_PALETTE.text,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -32,7 +33,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({}) => {
             <Typography sx={{ fontSize: 36, mb: 2 }}>
                 {winner === "light" ? t("lightWon") : winner === "dark" ? t("darkWon") : t("grayWon")}
             </Typography>
-            <Button onClick={handleRestart} sx={{ bgcolor: "#222", color: "#fff" }}>
+            <Button onClick={handleRestart} sx={{ bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text }}>
                 {t("playAgain")}
             </Button>
         </Box>

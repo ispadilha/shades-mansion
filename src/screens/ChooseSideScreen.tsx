@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import type { PlayerSelection } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
+import { UI_PALETTE } from "../constants/palette"
+import { TEAM_BUTTON_PALETTE } from "../constants/palette"
 import { useGame } from "../hooks/useGame"
 
 interface ChooseSideScreenProps {}
@@ -23,7 +25,7 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
             sx={{
                 width: "100vw",
                 height: "100vh",
-                bgcolor: "#000",
+                bgcolor: UI_PALETTE.screenBg,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -31,17 +33,17 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
                 flexDirection: "column",
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 28 }}>{t("chooseTeams")}</Typography>
+            <Typography sx={{ color: UI_PALETTE.text, fontSize: 28 }}>{t("chooseTeams")}</Typography>
             
             {/* Escolhas para comandar um dos times (claro, cinza ou escuro) */}
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Button onClick={() => handleChooseSide("light")} sx={{ bgcolor: "#ddd", color: "#000" }}>
+                <Button onClick={() => handleChooseSide("light")} sx={{ bgcolor: TEAM_BUTTON_PALETTE.light.bg, color: TEAM_BUTTON_PALETTE.light.text }}>
                     {t("light")}
                 </Button>
-                <Button onClick={() => handleChooseSide("gray")} sx={{ bgcolor: "#888", color: "#fff" }}>
+                <Button onClick={() => handleChooseSide("gray")} sx={{ bgcolor: TEAM_BUTTON_PALETTE.gray.bg, color: TEAM_BUTTON_PALETTE.gray.text }}>
                     {t("gray")}
                 </Button>
-                <Button onClick={() => handleChooseSide("dark")} sx={{ bgcolor: "#111", color: "#fff" }}>
+                <Button onClick={() => handleChooseSide("dark")} sx={{ bgcolor: TEAM_BUTTON_PALETTE.dark.bg, color: TEAM_BUTTON_PALETTE.dark.text }}>
                     {t("dark")}
                 </Button>
             </Box>
@@ -49,14 +51,14 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
             {/* Escolhas para comandar os três times (multi-jogador local)
             ou não comandar nenhum (assistir a uma partida de IA) */}
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Button onClick={() => handleChooseSide("all")} sx={{ bgcolor: "#2a2a3a", color: "#fff" }}>
+                <Button onClick={() => handleChooseSide("all")} sx={{ bgcolor: UI_PALETTE.buttonAltBg, color: UI_PALETTE.text }}>
                     {t("allTeams")}
                 </Button>
-                <Button onClick={() => handleChooseSide("none")} sx={{ bgcolor: "#2a2a3a", color: "#fff" }}>
+                <Button onClick={() => handleChooseSide("none")} sx={{ bgcolor: UI_PALETTE.buttonAltBg, color: UI_PALETTE.text }}>
                     {t("noTeam")}
                 </Button>
             </Box>
-            <Button onClick={() => navigate("/")} sx={{ mt: 3, color: "#fff" }}>
+            <Button onClick={() => navigate("/")} sx={{ mt: 3, color: UI_PALETTE.text }}>
                 {t("goBack")}
             </Button>
         </Box>

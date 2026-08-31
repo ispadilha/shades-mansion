@@ -1,6 +1,7 @@
 import React from "react"
 import { Box } from "@mui/material"
 import type { PiecePosition } from "../logic/types"
+import { BOARD_PALETTE, RANGE_PALETTE } from "../constants/palette"
 
 interface CellProps {
     x: number
@@ -15,9 +16,21 @@ interface CellProps {
 }
 
 export const Cell: React.FC<CellProps> = ({ x, y, size, isWall, isHighlighted, isAttackHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
-    const base = (x + y) % 2 === 0 ? "#4b2f26" : "#3b241c"
-    const bg = isWall ? "#000" : isAttackHighlighted ? "#a63a3a" : isHighlighted ? "#a6763a" : base
-    const border = isWall ? "1px solid #000" : isSelected ? "2px solid #ffd700" : "1px solid rgba(0,0,0,0.2)"
+    const base = (x + y) % 2 === 0 ? BOARD_PALETTE.floorLight : BOARD_PALETTE.floorDark
+    const range =
+        isHighlighted && isAttackHighlighted
+            ? RANGE_PALETTE.both
+            : isAttackHighlighted
+              ? RANGE_PALETTE.attack
+              : isHighlighted
+                ? RANGE_PALETTE.move
+                : null
+    const bg = isWall ? BOARD_PALETTE.wall : (range ?? base)
+    const border = isWall
+        ? `1px solid ${BOARD_PALETTE.wall}`
+        : isSelected
+          ? `2px solid ${BOARD_PALETTE.selected}`
+          : `1px solid ${BOARD_PALETTE.cellBorder}`
 
     return (
         <Box

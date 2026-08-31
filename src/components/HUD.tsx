@@ -3,10 +3,11 @@ import { Box, Button, Typography } from "@mui/material"
 import type { PieceDefinition, SpecialItemKey } from "../logic/types"
 import { TurnOrderBar } from "./initiative"
 import { useLanguage } from "../hooks/useLanguage"
+import { HUD_PALETTE } from "../constants/palette"
 
 // O HUD é feito de faixas horizontais de mesma altura e mesma cor.
 const BAND_HEIGHT = 76
-const BAND_BG = "#222"
+const BAND_BG = HUD_PALETTE.bandBg
 
 const TURN_ORDER_WIDTH = "75%"
 
@@ -71,18 +72,18 @@ export const HUD: React.FC<HUDProps> = ({
                         gap: 2,
                         px: 3,
                         py: 0.75,
-                        bgcolor: "#3a2a10",
-                        borderBottom: "1px solid #555",
+                        bgcolor: HUD_PALETTE.manipulationBg,
+                        borderBottom: `1px solid ${HUD_PALETTE.outline}`,
                     }}
                 >
-                    <Typography sx={{ color: "#ffd27a", fontSize: 13 }}>
+                    <Typography sx={{ color: HUD_PALETTE.manipulationText, fontSize: 13 }}>
                         {t("manipulatingPiece")}: {manipulationKey}
                     </Typography>
                     <Button
                         size="small"
                         variant="outlined"
                         onClick={onCancelManipulation}
-                        sx={{ color: "#fff", borderColor: "#777", py: 0.25 }}
+                        sx={{ color: HUD_PALETTE.text, borderColor: HUD_PALETTE.manipulationOutline, py: 0.25 }}
                     >
                         {t("cancelManipulation")}
                     </Button>
@@ -90,7 +91,7 @@ export const HUD: React.FC<HUDProps> = ({
             )}
 
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}
-            <Box sx={{ display: "flex", height: BAND_HEIGHT, borderBottom: "1px solid #333" }}>
+            <Box sx={{ display: "flex", height: BAND_HEIGHT, borderBottom: `1px solid ${HUD_PALETTE.bandBorder}` }}>
                 <Box sx={{ width: TURN_ORDER_WIDTH, flexShrink: 0, overflow: "hidden" }}>
                     <TurnOrderBar
                         order={turnOrder}
@@ -105,7 +106,7 @@ export const HUD: React.FC<HUDProps> = ({
                     sx={{
                         flex: 1,
                         minWidth: 0,
-                        borderLeft: "1px solid #333",
+                        borderLeft: `1px solid ${HUD_PALETTE.bandBorder}`,
                         overflowY: "auto",
                         overflowWrap: "anywhere",
                         px: 2,
@@ -113,7 +114,7 @@ export const HUD: React.FC<HUDProps> = ({
                     }}
                 >
                     {log.map((entry, i) => (
-                        <Typography key={i} sx={{ color: "#bbb", fontSize: 13, lineHeight: 1.4 }}>
+                        <Typography key={i} sx={{ color: HUD_PALETTE.logText, fontSize: 13, lineHeight: 1.4 }}>
                             {entry}
                         </Typography>
                     ))}
@@ -133,12 +134,17 @@ export const HUD: React.FC<HUDProps> = ({
                 }}
             >
                 <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ color: "#fff", whiteSpace: "nowrap" }}>
+                    <Typography sx={{ color: HUD_PALETTE.text, whiteSpace: "nowrap" }}>
                         {t("turn")}: {turnLabel}
                     </Typography>
                     <Typography
                         sx={{
-                            color: spectating || (isPlayerTurn && activePiece?.movedThisTurn) ? "#aaa" : isPlayerTurn ? "#4CAF50" : "#F44336",
+                            color:
+                                spectating || (isPlayerTurn && activePiece?.movedThisTurn)
+                                    ? HUD_PALETTE.statusIdle
+                                    : isPlayerTurn
+                                      ? HUD_PALETTE.statusReady
+                                      : HUD_PALETTE.statusWaiting,
                             fontSize: 14,
                             whiteSpace: "nowrap",
                         }}
@@ -156,7 +162,11 @@ export const HUD: React.FC<HUDProps> = ({
                     {/* Quem só assiste não tem inventário nem turno para encerrar */}
                     {!spectating && (
                         <>
-                            <Button onClick={onOpenInventory} variant="outlined" sx={{ color: "#fff", borderColor: "#555" }}>
+                            <Button
+                                onClick={onOpenInventory}
+                                variant="outlined"
+                                sx={{ color: HUD_PALETTE.text, borderColor: HUD_PALETTE.outline }}
+                            >
                                 {t("inventory")} ({inventoryCount})
                             </Button>
                             <Button
@@ -164,16 +174,16 @@ export const HUD: React.FC<HUDProps> = ({
                                 variant="contained"
                                 disabled={!isPlayerTurn || busy}
                                 sx={{
-                                    bgcolor: isPlayerTurn && !busy ? "#444" : "#666",
-                                    color: "#fff",
-                                    "&:disabled": { color: "#999" },
+                                    bgcolor: isPlayerTurn && !busy ? HUD_PALETTE.endTurnBg : HUD_PALETTE.endTurnBusyBg,
+                                    color: HUD_PALETTE.text,
+                                    "&:disabled": { color: HUD_PALETTE.endTurnDisabledText },
                                 }}
                             >
                                 {t("endTurn")}
                             </Button>
                         </>
                     )}
-                    <Button onClick={onQuit} variant="outlined" sx={{ color: "#fff", borderColor: "#555" }}>
+                    <Button onClick={onQuit} variant="outlined" sx={{ color: HUD_PALETTE.text, borderColor: HUD_PALETTE.outline }}>
                         {t("quit")}
                     </Button>
                 </Box>

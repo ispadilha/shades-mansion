@@ -25,6 +25,7 @@ import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
 import { CELL_SIZE, FIRE_AREA_SIDE, PIECE_STATS, isAreaAttack, isRanged } from "../constants/gameRules"
+import { UI_PALETTE } from "../constants/palette"
 import { STEP_MS, type PieceAuras } from "../game/BoardScene"
 
 const COLOR_LABEL: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
@@ -745,7 +746,7 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
     const selectedPiece = selectedId ? pieces.find((p) => p.id === selectedId) : undefined
 
     return (
-        <Box sx={{ width: "100vw", height: "100vh", bgcolor: "#000", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <Box sx={{ width: "100vw", height: "100vh", bgcolor: UI_PALETTE.screenBg, display: "flex", flexDirection: "column", overflow: "hidden" }}>
             <Box ref={scrollRef} sx={{ flex: 1, overflow: "auto", position: "relative" }}>
                 <Box
                     sx={{

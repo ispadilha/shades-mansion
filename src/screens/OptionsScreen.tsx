@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
 import { useLanguage } from "../hooks/useLanguage"
 import { useSettings } from "../hooks/useSettings"
+import { UI_PALETTE } from "../constants/palette"
 import { BOARD_SIZE_RANGE, ROOM_SIZE_RANGE } from "../constants/gameRules"
 
 interface NumberSettingProps {
@@ -17,25 +18,25 @@ interface NumberSettingProps {
 // Opções com botões "-" e "+"; os botões desligam nos limites
 const NumberSetting: React.FC<NumberSettingProps> = ({ label, unit, value, min, max, onChange }) => (
     <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
-        <Typography sx={{ color: "#ccc", flex: 1, textAlign: "right" }}>{label}</Typography>
+        <Typography sx={{ color: UI_PALETTE.textBody, flex: 1, textAlign: "right" }}>{label}</Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Button
                 onClick={() => onChange(value - 1)}
                 disabled={value <= min}
-                sx={{ minWidth: 36, bgcolor: "#222", color: "#fff", "&.Mui-disabled": { color: "#555" } }}
+                sx={{ minWidth: 36, bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text, "&.Mui-disabled": { color: UI_PALETTE.buttonDisabledText } }}
             >
                 −
             </Button>
-            <Typography sx={{ color: "#fff", width: 36, textAlign: "center", fontSize: 20 }}>{value}</Typography>
+            <Typography sx={{ color: UI_PALETTE.text, width: 36, textAlign: "center", fontSize: 20 }}>{value}</Typography>
             <Button
                 onClick={() => onChange(value + 1)}
                 disabled={value >= max}
-                sx={{ minWidth: 36, bgcolor: "#222", color: "#fff", "&.Mui-disabled": { color: "#555" } }}
+                sx={{ minWidth: 36, bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text, "&.Mui-disabled": { color: UI_PALETTE.buttonDisabledText } }}
             >
                 +
             </Button>
         </Box>
-        <Typography sx={{ color: "#777", flex: 1 }}>{unit}</Typography>
+        <Typography sx={{ color: UI_PALETTE.textMuted, flex: 1 }}>{unit}</Typography>
     </Box>
 )
 
@@ -54,7 +55,7 @@ export const OptionsScreen: React.FC<OptionsScreenProps> = ({}) => {
             sx={{
                 width: "100vw",
                 height: "100vh",
-                bgcolor: "#000",
+                bgcolor: UI_PALETTE.screenBg,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -63,17 +64,17 @@ export const OptionsScreen: React.FC<OptionsScreenProps> = ({}) => {
                 overflow: "auto",
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 28 }}>{t("languageSettings")}</Typography>
+            <Typography sx={{ color: UI_PALETTE.text, fontSize: 28 }}>{t("languageSettings")}</Typography>
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Button onClick={() => setLanguage("enUS")} sx={{ bgcolor: "#001", color: "#faa" }}>
+                <Button onClick={() => setLanguage("enUS")} sx={{ bgcolor: UI_PALETTE.languageEn.bg, color: UI_PALETTE.languageEn.text }}>
                     {t("enUS")}
                 </Button>
-                <Button onClick={() => setLanguage("ptBR")} sx={{ bgcolor: "#010", color: "#ffa" }}>
+                <Button onClick={() => setLanguage("ptBR")} sx={{ bgcolor: UI_PALETTE.languagePt.bg, color: UI_PALETTE.languagePt.text }}>
                     {t("ptBR")}
                 </Button>
             </Box>
 
-            <Typography sx={{ color: "#fff", fontSize: 28, mt: 2 }}>{t("mazeSettings")}</Typography>
+            <Typography sx={{ color: UI_PALETTE.text, fontSize: 28, mt: 2 }}>{t("mazeSettings")}</Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2, width: 560, maxWidth: "90vw" }}>
                 <NumberSetting
                     label={t("boardSide")}
@@ -101,7 +102,7 @@ export const OptionsScreen: React.FC<OptionsScreenProps> = ({}) => {
                 />
             </Box>
 
-            <Button onClick={() => navigate(-1)} sx={{ mt: 3, color: "#fff" }}>
+            <Button onClick={() => navigate(-1)} sx={{ mt: 3, color: UI_PALETTE.text }}>
                 {t("goBack")}
             </Button>
         </Box>

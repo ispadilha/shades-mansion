@@ -1,18 +1,26 @@
 import Phaser from "phaser"
-import type { PieceColor, PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
+import type { PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
-import { AURA_PALETTE, PIECE_PALETTE, hex, rgba, type AuraKind } from "../constants/palette"
+import {
+    AURA_PALETTE,
+    FIRE_PALETTE,
+    ITEM_PALETTE,
+    PIECE_DETAIL_PALETTE,
+    PIECE_PALETTE,
+    hex,
+    rgba,
+    type AuraKind,
+} from "../constants/palette"
 
 export const STEP_MS = 280
 
 const FIRE_BURST_MS = 900
 const FLAMES_PER_CELL = 2
-const FIRE_COLORS = [0xfff0a5, 0xffc043, 0xff8c1a, 0xe63b1e]
+const FIRE_COLORS = FIRE_PALETTE.flames.map(hex)
 
-type ItemPalette = { bg: number; outline: number; text: string; stroke: string }
 
 // Quem está em destaque no tabuleiro agora: a peça (por id) e o tipo de aura dela
 export type PieceAuras = Record<string, AuraKind>
@@ -20,12 +28,6 @@ export type PieceAuras = Record<string, AuraKind>
 // Lado da textura do brilho, em pixels. É desenhada uma vez por tipo de aura e depois
 // esticada para o tamanho pedido na paleta.
 const AURA_TEXTURE_SIZE = 128
-
-const ITEM_PALETTE: Record<PieceColor, ItemPalette> = {
-    dark: { bg: 0x2a2a2a, outline: 0xeeeeee, text: "#ffffff", stroke: "#000000" },
-    light: { bg: 0xeeeeee, outline: 0x222222, text: "#1a1a1a", stroke: "#ffffff" },
-    gray: { bg: 0x888888, outline: 0x222222, text: "#ffffff", stroke: "#000000" },
-}
 
 export class BoardScene extends Phaser.Scene {
     private cellSize: number
@@ -203,13 +205,15 @@ export class BoardScene extends Phaser.Scene {
             const oy = (cell.y - burst.center.y) * cs
             reach = Math.max(reach, Math.abs(cell.x - burst.center.x), Math.abs(cell.y - burst.center.y))
 
-            const ember = this.add.rectangle(ox, oy, cs, cs, 0xff7a18, 0.34).setStrokeStyle(1, 0xffd166, 0.55)
+            const ember = this.add
+                .rectangle(ox, oy, cs, cs, hex(FIRE_PALETTE.ember), 0.34)
+                .setStrokeStyle(1, hex(FIRE_PALETTE.emberEdge), 0.55)
             container.add(ember)
             this.tweens.add({ targets: ember, alpha: 0, duration: FIRE_BURST_MS, ease: "Quad.easeIn" })
         }
 
         // Estouro inicial: um clarão claro que abre e some depressa
-        const flash = this.add.circle(0, 0, cs * 0.3, 0xfff3c4, 0.9)
+        const flash = this.add.circle(0, 0, cs * 0.3, hex(FIRE_PALETTE.flash), 0.9)
         container.add(flash)
         this.tweens.add({
             targets: flash,
@@ -356,7 +360,7 @@ export class BoardScene extends Phaser.Scene {
         const skin = hex(palette.skin)
 
         const container = this.add.container(0, 0)
-        const shadow = this.add.ellipse(0, cs * 0.3, cs * 0.42, cs * 0.1, 0x000000, 0.45)
+        const shadow = this.add.ellipse(0, cs * 0.3, cs * 0.42, cs * 0.1, hex(PIECE_DETAIL_PALETTE.shadow), 0.45)
 
         const legY = cs * 0.2
         const leftLeg = this.add.rectangle(-cs * 0.07, legY, cs * 0.09, cs * 0.14, clothing).setStrokeStyle(1, outline)
@@ -373,8 +377,9 @@ export class BoardScene extends Phaser.Scene {
 
         const eyeR = Math.max(1, cs * 0.014)
         const eyeY = headY - cs * 0.01
-        const leftEye = this.add.circle(-cs * 0.04, eyeY, eyeR, 0x111111)
-        const rightEye = this.add.circle(cs * 0.04, eyeY, eyeR, 0x111111)
+        const eyeColor = hex(PIECE_DETAIL_PALETTE.eyes)
+        const leftEye = this.add.circle(-cs * 0.04, eyeY, eyeR, eyeColor)
+        const rightEye = this.add.circle(cs * 0.04, eyeY, eyeR, eyeColor)
 
         const letter = this.add
             .text(0, 0, piece.type, {
@@ -395,14 +400,14 @@ export class BoardScene extends Phaser.Scene {
         const colors = ITEM_PALETTE[itemKeyColor(item.key)]
 
         const container = this.add.container(0, 0)
-        const ring = this.add.circle(0, 0, cs * 0.22, 0x000000, 0.25)
-        const circle = this.add.circle(0, 0, cs * 0.18, colors.bg).setStrokeStyle(2, colors.outline)
+        const ring = this.add.circle(0, 0, cs * 0.22, hex(PIECE_DETAIL_PALETTE.shadow), 0.25)
+        const circle = this.add.circle(0, 0, cs * 0.18, hex(colors.bg)).setStrokeStyle(2, hex(colors.outline))
         const letter = this.add
             .text(0, 0, item.key[1], {
                 fontFamily: "Arial Black",
                 fontSize: `${Math.max(10, Math.floor(cs * 0.18))}px`,
                 color: colors.text,
-                stroke: colors.stroke,
+                stroke: colors.textStroke,
                 strokeThickness: 2,
             })
             .setOrigin(0.5, 0.5)

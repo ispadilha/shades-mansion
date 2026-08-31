@@ -2,6 +2,7 @@ import React from "react"
 import { Box } from "@mui/material"
 import { keyframes } from "@emotion/react"
 import type { DieSides } from "../../logic/rolls"
+import { DIE_PALETTE } from "../../constants/palette"
 
 const tumble = keyframes`
     0% { transform: rotate(0deg) scale(1) }
@@ -49,8 +50,20 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
             }}
         >
             <svg viewBox="0 0 64 64" width={size} height={size}>
-                <polygon points={shape.outer} fill="#2f2438" stroke="#c9b06a" strokeWidth="2" strokeLinejoin="round" />
-                <polygon points={shape.inner} fill="#453758" stroke="#8d7ab0" strokeWidth="1" strokeLinejoin="round" />
+                <polygon
+                    points={shape.outer}
+                    fill={DIE_PALETTE.face}
+                    stroke={DIE_PALETTE.faceEdge}
+                    strokeWidth="2"
+                    strokeLinejoin="round"
+                />
+                <polygon
+                    points={shape.inner}
+                    fill={DIE_PALETTE.inner}
+                    stroke={DIE_PALETTE.innerEdge}
+                    strokeWidth="1"
+                    strokeLinejoin="round"
+                />
                 <text
                     x="32"
                     y={sides === 20 ? 38 : 36}
@@ -58,8 +71,8 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                     dominantBaseline="middle"
                     fontFamily="Arial Black"
                     fontSize="20"
-                    fill="#ffe9a8"
-                    stroke="#2a1f36"
+                    fill={DIE_PALETTE.value}
+                    stroke={DIE_PALETTE.valueStroke}
                     strokeWidth="0.8"
                 >
                     {value}

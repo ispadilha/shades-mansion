@@ -1,23 +1,25 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Box, Button, Typography } from "@mui/material"
-import type { TextKey } from "../logic/types"
+import type { PieceColor, TextKey } from "../logic/types"
 import { characterKeys } from "../constants/texts_characters"
 import { useLanguage } from "../hooks/useLanguage"
+import { UI_PALETTE } from "../constants/palette"
+import { TEAM_BUTTON_PALETTE } from "../constants/palette"
 
 interface TeamSection {
     // Título da seção (reaproveita os rótulos dos times já existentes)
     label: TextKey
     // Primeira letra do id das peças do time ("lA", "gB", "dC"...)
     prefix: string
-    bg: string
-    fg: string
+    // Time da seção: dá as cores do botão de cada personagem
+    color: PieceColor
 }
 
 const TEAM_SECTIONS: TeamSection[] = [
-    { label: "dark", prefix: "d", bg: "#111", fg: "#fff" },
-    { label: "gray", prefix: "g", bg: "#888", fg: "#fff" },
-    { label: "light", prefix: "l", bg: "#ddd", fg: "#000" },
+    { label: "dark", prefix: "d", color: "dark" },
+    { label: "gray", prefix: "g", color: "gray" },
+    { label: "light", prefix: "l", color: "light" },
 ]
 
 interface CharactersScreenProps {}
@@ -31,7 +33,7 @@ export const CharactersScreen: React.FC<CharactersScreenProps> = ({}) => {
             sx={{
                 width: "100vw",
                 height: "100vh",
-                bgcolor: "#000",
+                bgcolor: UI_PALETTE.screenBg,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -42,11 +44,11 @@ export const CharactersScreen: React.FC<CharactersScreenProps> = ({}) => {
                 overflow: "auto",
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 32 }}>{t("characters")}</Typography>
+            <Typography sx={{ color: UI_PALETTE.text, fontSize: 32 }}>{t("characters")}</Typography>
 
             {TEAM_SECTIONS.map((section) => (
                 <Box key={section.prefix} sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
-                    <Typography sx={{ color: "#777", fontSize: 16 }}>{t(section.label)}</Typography>
+                    <Typography sx={{ color: UI_PALETTE.textMuted, fontSize: 16 }}>{t(section.label)}</Typography>
                     <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
                         {characterKeys
                             .filter((key) => key.startsWith(section.prefix))
@@ -54,7 +56,11 @@ export const CharactersScreen: React.FC<CharactersScreenProps> = ({}) => {
                                 <Button
                                     key={key}
                                     onClick={() => navigate(`/library/characters/${key}`)}
-                                    sx={{ bgcolor: section.bg, color: section.fg, textTransform: "none" }}
+                                    sx={{
+                                        bgcolor: TEAM_BUTTON_PALETTE[section.color].bg,
+                                        color: TEAM_BUTTON_PALETTE[section.color].text,
+                                        textTransform: "none",
+                                    }}
                                 >
                                     {tCharacter(key, "name")}
                                 </Button>
@@ -63,7 +69,7 @@ export const CharactersScreen: React.FC<CharactersScreenProps> = ({}) => {
                 </Box>
             ))}
 
-            <Button onClick={() => navigate("/library")} sx={{ mt: 3, color: "#fff" }}>
+            <Button onClick={() => navigate("/library")} sx={{ mt: 3, color: UI_PALETTE.text }}>
                 {t("goBack")}
             </Button>
         </Box>

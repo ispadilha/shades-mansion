@@ -8,6 +8,7 @@ import { ALL_PIECE_SLOTS, createGameSetup, type GameSetup, type PieceSlot } from
 import { controlledColorsFor } from "../logic/types"
 import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
+import { UI_PALETTE } from "../constants/palette"
 import { useSettings } from "../hooks/useSettings"
 
 const ACCEPTED_SPIN_MS = 320
@@ -93,7 +94,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
             sx={{
                 width: "100vw",
                 height: "100vh",
-                bgcolor: "#000",
+                bgcolor: UI_PALETTE.screenBg,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -103,8 +104,8 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
                 boxSizing: "border-box",
             }}
         >
-            <Typography sx={{ color: "#fff", fontSize: 30 }}>{t("initiativeTitle")}</Typography>
-            <Typography sx={{ color: "#8f85a8", fontSize: 15 }}>
+            <Typography sx={{ color: UI_PALETTE.text, fontSize: 30 }}>{t("initiativeTitle")}</Typography>
+            <Typography sx={{ color: UI_PALETTE.accentMuted, fontSize: 15 }}>
                 {finished ? t("turnOrderReady") : t("initiativeSubtitle")}
             </Typography>
 
@@ -123,11 +124,11 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
                         variant="contained"
                         disabled={!setup}
                         onClick={handleEnter}
-                        sx={{ bgcolor: "#2a2a3a", color: "#fff", px: 4, py: 1.5, "&:disabled": { color: "#777" } }}
+                        sx={{ bgcolor: UI_PALETTE.buttonAltBg, color: UI_PALETTE.text, px: 4, py: 1.5, "&:disabled": { color: UI_PALETTE.textMuted } }}
                     >
                         {setup ? t("enterMansion") : t("preparingMansion")}
                     </Button>
-                    <Button onClick={() => navigate("/choose-side")} sx={{ color: "#888" }}>
+                    <Button onClick={() => navigate("/choose-side")} sx={{ color: UI_PALETTE.textDim }}>
                         {t("goBack")}
                     </Button>
                 </Box>
@@ -137,7 +138,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
                 roll={roll}
                 onDone={() => setStepIndex((index) => index + 1)}
                 footer={
-                    <Button size="small" onClick={() => setStepIndex(attempts.length)} sx={{ color: "#8f85a8" }}>
+                    <Button size="small" onClick={() => setStepIndex(attempts.length)} sx={{ color: UI_PALETTE.accentMuted }}>
                         {t("skipRolls")}
                     </Button>
                 }

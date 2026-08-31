@@ -1,7 +1,7 @@
 import React from "react"
 import { Box } from "@mui/material"
 import type { PieceColor, PieceType } from "../../logic/types"
-import { AURA_PALETTE, PIECE_PALETTE, rgba, type AuraKind } from "../../constants/palette"
+import { AURA_PALETTE, PIECE_DETAIL_PALETTE, PIECE_PALETTE, rgba, type AuraKind } from "../../constants/palette"
 
 interface PieceTokenProps {
     color: PieceColor
@@ -34,7 +34,7 @@ export const PieceToken: React.FC<PieceTokenProps> = ({ color, type, size = 56, 
             }}
         >
             <svg viewBox="0 0 64 64" width="100%" height="100%">
-                <ellipse cx="32" cy="51.2" rx="13.4" ry="3.2" fill="#000" opacity="0.45" />
+                <ellipse cx="32" cy="51.2" rx="13.4" ry="3.2" fill={PIECE_DETAIL_PALETTE.shadow} opacity="0.45" />
 
                 {/* Pernas */}
                 <rect x="26.2" y="40.3" width="5.8" height="9" fill={palette.clothing} stroke={palette.outline} strokeWidth="1" />
@@ -49,8 +49,8 @@ export const PieceToken: React.FC<PieceTokenProps> = ({ color, type, size = 56, 
 
                 {/* Cabeça e olhos */}
                 <circle cx="32" cy="17.9" r="8.3" fill={palette.skin} stroke={palette.outline} strokeWidth="1.5" />
-                <circle cx="29.4" cy="17.3" r="0.9" fill="#111" />
-                <circle cx="34.6" cy="17.3" r="0.9" fill="#111" />
+                <circle cx="29.4" cy="17.3" r="0.9" fill={PIECE_DETAIL_PALETTE.eyes} />
+                <circle cx="34.6" cy="17.3" r="0.9" fill={PIECE_DETAIL_PALETTE.eyes} />
 
                 <text
                     x="32"

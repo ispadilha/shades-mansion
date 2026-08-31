@@ -5,6 +5,7 @@ import { Coin } from "./Coin"
 import { Die } from "./Die"
 import { COIN_FACES, rollDice, sumDice, type CoinFace, type DieSides, type RollKind } from "../../logic/rolls"
 import { useLanguage } from "../../hooks/useLanguage"
+import { ROLL_PALETTE } from "../../constants/palette"
 
 export const ROLL_SPIN_MS = 550
 export const ROLL_HOLD_MS = 800
@@ -20,9 +21,9 @@ const pulse = keyframes`
 export type RollTone = "good" | "bad" | "neutral"
 
 const TONE_COLOR: Record<RollTone, string> = {
-    good: "#7fd18a",
-    bad: "#e07a7a",
-    neutral: "#e8d9a8",
+    good: ROLL_PALETTE.good,
+    bad: ROLL_PALETTE.bad,
+    neutral: ROLL_PALETTE.neutral,
 }
 
 // Uma rolagem para exibir. O resultado já foi sorteado por quem chamou (logic/rolls):
@@ -129,7 +130,7 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
         <Modal
             open={roll !== null}
             disableEscapeKeyDown
-            slotProps={{ backdrop: { sx: { bgcolor: "rgba(0,0,0,0.6)" } } }}
+            slotProps={{ backdrop: { sx: { bgcolor: ROLL_PALETTE.backdrop } } }}
         >
             <Box
                 onClick={handleClick}
@@ -141,8 +142,8 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                     minWidth: 260,
                     px: 4,
                     py: 3,
-                    bgcolor: "#17131f",
-                    border: "1px solid #4a3f5e",
+                    bgcolor: ROLL_PALETTE.bg,
+                    border: `1px solid ${ROLL_PALETTE.border}`,
                     borderRadius: 2,
                     outline: "none",
                     display: "flex",
@@ -153,10 +154,10 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                     userSelect: "none",
                 }}
             >
-                <Typography sx={{ color: "#cfc2ec", fontSize: 15, letterSpacing: 1, textTransform: "uppercase" }}>
+                <Typography sx={{ color: ROLL_PALETTE.title, fontSize: 15, letterSpacing: 1, textTransform: "uppercase" }}>
                     {roll?.title}
                 </Typography>
-                {roll?.subtitle && <Typography sx={{ color: "#8f85a8", fontSize: 13 }}>{roll.subtitle}</Typography>}
+                {roll?.subtitle && <Typography sx={{ color: ROLL_PALETTE.subtitle, fontSize: 13 }}>{roll.subtitle}</Typography>}
 
                 <Box sx={{ my: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 1 }}>
                     {kind === "coin" ? (
@@ -175,7 +176,7 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                     )}
                 </Box>
 
-                <Typography sx={{ color: "#ffe9a8", fontSize: 22, fontWeight: 700, minHeight: 30 }}>
+                <Typography sx={{ color: ROLL_PALETTE.result, fontSize: 22, fontWeight: 700, minHeight: 30 }}>
                     {phase !== "revealed"
                         ? ""
                         : kind === "coin"
@@ -184,7 +185,7 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                 </Typography>
 
                 {phase === "waiting" ? (
-                    <Typography sx={{ color: "#cfc2ec", fontSize: 16, minHeight: 24, animation: `${pulse} 1.4s ease-in-out infinite` }}>
+                    <Typography sx={{ color: ROLL_PALETTE.title, fontSize: 16, minHeight: 24, animation: `${pulse} 1.4s ease-in-out infinite` }}>
                         {t("clickToRoll")}
                     </Typography>
                 ) : (
