@@ -25,6 +25,8 @@ interface HUDProps {
     onOpenInventory: () => void
     inventoryCount: number
     log: string[]
+    // Peça sob manipulação
+    manipulatedId: string | null
     manipulationKey: SpecialItemKey | null
     onCancelManipulation: () => void
 }
@@ -41,6 +43,7 @@ export const HUD: React.FC<HUDProps> = ({
     onOpenInventory,
     inventoryCount,
     log,
+    manipulatedId,
     manipulationKey,
     onCancelManipulation,
 }) => {
@@ -89,7 +92,12 @@ export const HUD: React.FC<HUDProps> = ({
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}
             <Box sx={{ display: "flex", height: BAND_HEIGHT, borderBottom: "1px solid #333" }}>
                 <Box sx={{ width: TURN_ORDER_WIDTH, flexShrink: 0, overflow: "hidden" }}>
-                    <TurnOrderBar order={turnOrder} activeId={activePiece?.id ?? null} round={round} />
+                    <TurnOrderBar
+                        order={turnOrder}
+                        activeId={activePiece?.id ?? null}
+                        manipulatedId={manipulatedId}
+                        round={round}
+                    />
                 </Box>
 
                 <Box

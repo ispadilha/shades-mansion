@@ -4,7 +4,7 @@ import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
-import { PIECE_PALETTE, hex } from "../constants/palette"
+import { AURA_PALETTE, PIECE_PALETTE, hex, rgba, type AuraKind } from "../constants/palette"
 
 export const STEP_MS = 280
 
@@ -13,6 +13,13 @@ const FLAMES_PER_CELL = 2
 const FIRE_COLORS = [0xfff0a5, 0xffc043, 0xff8c1a, 0xe63b1e]
 
 type ItemPalette = { bg: number; outline: number; text: string; stroke: string }
+
+// Quem está em destaque no tabuleiro agora: a peça (por id) e o tipo de aura dela
+export type PieceAuras = Record<string, AuraKind>
+
+// Lado da textura do brilho, em pixels. É desenhada uma vez por tipo de aura e depois
+// esticada para o tamanho pedido na paleta.
+const AURA_TEXTURE_SIZE = 128
 
 const ITEM_PALETTE: Record<PieceColor, ItemPalette> = {
     dark: { bg: 0x2a2a2a, outline: 0xeeeeee, text: "#ffffff", stroke: "#000000" },
@@ -26,10 +33,14 @@ export class BoardScene extends Phaser.Scene {
     private sprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private itemSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private lastCells: Map<string, PiecePosition> = new Map()
+    // Auras em cena, por peça. O desenho fica dentro do container da peça, então acompanha
+    // a caminhada dela sem precisar de sincronia nenhuma.
+    private auras: Map<string, { kind: AuraKind; sprite: Phaser.GameObjects.Image }> = new Map()
     // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
     private pendingPieces: PieceDefinition[] | null = null
     private pendingItems: SpecialItem[] | null = null
     private pendingBursts: FireBurst[] = []
+    private pendingAuras: PieceAuras | null = null
     private isReady = false
 
     constructor(cellSize: number, maze: Maze) {
@@ -47,6 +58,11 @@ export class BoardScene extends Phaser.Scene {
         if (this.pendingPieces) {
             this.applyPieces(this.pendingPieces)
             this.pendingPieces = null
+        }
+        // Depois das peças: a aura é desenhada dentro do container de cada uma
+        if (this.pendingAuras) {
+            this.applyAuras(this.pendingAuras)
+            this.pendingAuras = null
         }
         for (const burst of this.pendingBursts) this.spawnFireBurst(burst)
         this.pendingBursts = []
@@ -77,6 +93,14 @@ export class BoardScene extends Phaser.Scene {
             return
         }
         this.spawnFireBurst(burst)
+    }
+
+    syncAuras(auras: PieceAuras) {
+        if (!this.isReady) {
+            this.pendingAuras = auras
+            return
+        }
+        this.applyAuras(auras)
     }
 
     private applyItems(items: SpecialItem[]) {
@@ -152,6 +176,8 @@ export class BoardScene extends Phaser.Scene {
             if (seen.has(id)) continue
             this.sprites.delete(id)
             this.lastCells.delete(id)
+            // O brilho é filho do container: some junto com a peça, sem tween próprio
+            this.auras.delete(id)
             this.tweens.killTweensOf(sprite)
             this.tweens.add({
                 targets: sprite,
@@ -240,6 +266,79 @@ export class BoardScene extends Phaser.Scene {
             this.tweens.killTweensOf(container.list)
             container.destroy()
         })
+    }
+
+    private applyAuras(auras: PieceAuras) {
+        // Sai quem perdeu o destaque (ou trocou de tipo de aura)
+        for (const [pieceId, current] of this.auras) {
+            if (auras[pieceId] === current.kind) continue
+            this.auras.delete(pieceId)
+            this.tweens.killTweensOf(current.sprite)
+            this.tweens.add({
+                targets: current.sprite,
+                alpha: 0,
+                duration: 200,
+                onComplete: () => current.sprite.destroy(),
+            })
+        }
+
+        // Entra quem ganhou
+        for (const [pieceId, kind] of Object.entries(auras)) {
+            if (this.auras.get(pieceId)?.kind === kind) continue
+            const container = this.sprites.get(pieceId)
+            if (!container) continue
+
+            const sprite = this.buildAura(kind)
+            // Na primeira posição do container: o brilho fica atrás do desenho da peça
+            container.addAt(sprite, 0)
+            this.auras.set(pieceId, { kind, sprite })
+        }
+    }
+
+    // O brilho em si: um disco que se dissolve até a borda, pulsando devagar
+    private buildAura(kind: AuraKind): Phaser.GameObjects.Image {
+        const { strength, radius, pulseMs } = AURA_PALETTE[kind]
+        const scale = (radius * 2 * this.cellSize) / AURA_TEXTURE_SIZE
+
+        const sprite = this.add.image(0, 0, this.auraTexture(kind)).setScale(scale).setAlpha(strength * 0.5)
+        this.tweens.add({
+            targets: sprite,
+            alpha: strength,
+            scale: scale * 1.08,
+            duration: pulseMs / 2,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut",
+        })
+
+        return sprite
+    }
+
+    // Textura do brilho, uma por tipo de aura (a cor já vai pintada nela, o que dispensa
+    // tingir o sprite e sai igual em qualquer renderizador)
+    private auraTexture(kind: AuraKind): string {
+        const { color } = AURA_PALETTE[kind]
+        // A cor entra na chave: mexer na paleta gera uma textura nova em vez de reaproveitar
+        // a antiga, que já está pintada
+        const key = `aura-${kind}-${color}`
+        if (this.textures.exists(key)) return key
+
+        const texture = this.textures.createCanvas(key, AURA_TEXTURE_SIZE, AURA_TEXTURE_SIZE)
+        if (!texture) return key
+
+        const half = AURA_TEXTURE_SIZE / 2
+        const context = texture.getContext()
+        const gradient = context.createRadialGradient(half, half, 0, half, half, half)
+        // Mais forte na altura da peça e sumindo para fora: vira um halo, não um disco chapado
+        gradient.addColorStop(0, rgba(color, 0.45))
+        gradient.addColorStop(0.45, rgba(color, 0.75))
+        gradient.addColorStop(0.75, rgba(color, 0.3))
+        gradient.addColorStop(1, rgba(color, 0))
+        context.fillStyle = gradient
+        context.fillRect(0, 0, AURA_TEXTURE_SIZE, AURA_TEXTURE_SIZE)
+        texture.refresh()
+
+        return key
     }
 
     private cellToPixel(cell: PiecePosition): PiecePosition {

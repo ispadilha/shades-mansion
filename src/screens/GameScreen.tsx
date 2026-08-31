@@ -25,7 +25,7 @@ import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
 import { CELL_SIZE, FIRE_AREA_SIDE, PIECE_STATS, isAreaAttack, isRanged } from "../constants/gameRules"
-import { STEP_MS } from "../game/BoardScene"
+import { STEP_MS, type PieceAuras } from "../game/BoardScene"
 
 const COLOR_LABEL: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
 const MAX_LOG_ENTRIES = 100
@@ -81,6 +81,12 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
     const [itemInfoKey, setItemInfoKey] = useState<SpecialItemKey | null>(null)
     const [inventoryOpen, setInventoryOpen] = useState(false)
     const [manipulation, setManipulation] = useState<{ itemKey: SpecialItemKey } | null>(null)
+    // Peça sob manipulação, do lançamento da moeda até a ação forçada acabar: é ela que a
+    // câmera segue e quem ganha a aura de manipulação
+    const [manipulatedId, setManipulatedId] = useState<string | null>(null)
+    // Instante até o qual a câmera fica presa nela mesmo sem rolagem em andamento: é o caso
+    // do mover forçado, que só tem a caminhada para mostrar
+    const [focusHeldUntil, setFocusHeldUntil] = useState(0)
     const [gameLog, setGameLog] = useState<string[]>([])
     // Rolagem em andamento
     const [roll, setRoll] = useState<RollView | null>(null)
@@ -151,22 +157,45 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
 
     // Com os turnos indo peça a peça, a ação pode acontecer em qualquer canto do labirinto:
     // a viewport segue quem está agindo.
-    const activePieceId = activePiece?.id ?? null
+    // Uma manipulação rouba esse foco: quem age é a peça manipulada.
+    const focusPieceId = manipulatedId ?? activePiece?.id ?? null
+    const focusPiece = pieces.find((p) => p.id === focusPieceId)
+    // O que faz a câmera se mexer. Em um turno comum é só a troca da peça da vez. Seguir
+    // cada jogada brigaria com a rolagem manual do jogador. Durante uma manipulação a
+    // casa entra na conta e a câmera vai junto.
+    const focusKey = manipulatedId
+        ? `${focusPieceId}:${focusPiece?.position.x},${focusPiece?.position.y}`
+        : focusPieceId
+
     useEffect(() => {
         const container = scrollRef.current
-        if (!container || !activePieceId) return
-        const piece = pieces.find((p) => p.id === activePieceId)
-        if (!piece) return
+        if (!container || !focusPiece) return
 
         const offsetX = (container.scrollWidth - maze.size * CELL_SIZE) / 2
         container.scrollTo({
-            left: offsetX + piece.position.x * CELL_SIZE + CELL_SIZE / 2 - container.clientWidth / 2,
-            top: piece.position.y * CELL_SIZE + CELL_SIZE / 2 - container.clientHeight / 2,
+            left: offsetX + focusPiece.position.x * CELL_SIZE + CELL_SIZE / 2 - container.clientWidth / 2,
+            top: focusPiece.position.y * CELL_SIZE + CELL_SIZE / 2 - container.clientHeight / 2,
             behavior: "smooth",
         })
-        // Só ao trocar de peça da vez, pois seguir cada passo brigaria com a rolagem manual
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activePieceId, maze])
+    }, [focusKey, maze])
+
+    // Devolve o foco à peça da vez quando a manipulação se encerra: a peça manipulada saiu
+    // do comando (resistiu a manipulação, ou já fez a ação forçada) e não há mais rolagem
+    // para acompanhar. Enquanto a moeda de manipulação ou a de ataque estiver em jogo,
+    // `resolvingRoll` segura a câmera onde a ação está acontecendo.
+    useEffect(() => {
+        if (!manipulatedId || manipulation || resolvingRoll) return
+
+        const remaining = focusHeldUntil - Date.now()
+        if (remaining <= 0) {
+            setManipulatedId(null)
+            return
+        }
+
+        const timer = window.setTimeout(() => setManipulatedId(null), remaining)
+        return () => clearTimeout(timer)
+    }, [manipulatedId, manipulation, resolvingRoll, focusHeldUntil])
 
     // Histórico de jogadas: aceita novas entradas e descarta as mais antigas além de MAX_LOG_ENTRIES
     const addLog = (entry: string) => {
@@ -305,6 +334,7 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
     const resolveManipulation = (color: PieceColor, itemKey: SpecialItemKey, onSettled: (success: boolean) => void) => {
         const { face, success } = rollManipulation()
         setResolvingRoll(true)
+        setManipulatedId(itemKey)
         showRoll(
             {
                 id: `manipulation-${itemKey}-${Date.now()}`,
@@ -600,6 +630,8 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
         if (manipulation) {
             logManipulatedTo(activeColor, piece.id, actionKey, target)
             endManipulation()
+            // A peça manipulada ainda vai caminhar até o destino: a câmera vai com ela
+            setFocusHeldUntil(Date.now() + delayMs)
         } else {
             logUsedTo(activeColor, piece.id, actionKey, target)
         }
@@ -699,6 +731,15 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
         setSelectedId(null)
     }
 
+    // Destaques do tabuleiro: a peça da vez e, por cima dela, a que está sob manipulação
+    const activePieceId = activePiece?.id ?? null
+    const auras = useMemo<PieceAuras>(() => {
+        const result: PieceAuras = {}
+        if (activePieceId) result[activePieceId] = "active"
+        if (manipulatedId) result[manipulatedId] = "manipulated"
+        return result
+    }, [activePieceId, manipulatedId])
+
     const labelForColor = (color: PieceColor) => t(COLOR_LABEL[color])
     const playerInventory = inventoryColor ? inventories[inventoryColor] : []
     const selectedPiece = selectedId ? pieces.find((p) => p.id === selectedId) : undefined
@@ -726,6 +767,7 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
                         highlighted={highlighted}
                         attackHighlighted={attackHighlighted}
                         fireBursts={fireBursts}
+                        auras={auras}
                         onCellClick={onCellClick}
                         selectedPieceId={selectedId}
                         onCellContextMenu={onCellContextMenu}
@@ -745,6 +787,7 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
                 onOpenInventory={() => setInventoryOpen(true)}
                 inventoryCount={playerInventory.length}
                 log={gameLog}
+                manipulatedId={manipulatedId}
                 manipulationKey={manipulation?.itemKey ?? null}
                 onCancelManipulation={cancelManipulation}
             />

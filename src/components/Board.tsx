@@ -2,6 +2,7 @@ import React, { type JSX } from "react"
 import { Box } from "@mui/material"
 import { Cell } from "./Cell"
 import { PhaserBoard } from "./PhaserBoard"
+import type { PieceAuras } from "../game/BoardScene"
 import type { PieceDefinition, SpecialItem } from "../logic/types"
 import type { FireBurst } from "../logic/combat"
 import type { PiecePosition } from "../logic/types"
@@ -16,6 +17,7 @@ interface BoardProps {
     highlighted: PiecePosition[]
     attackHighlighted: PiecePosition[]
     fireBursts: FireBurst[]
+    auras: PieceAuras
     selectedPieceId: string | null
     onCellClick: (pos: PiecePosition) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
@@ -29,6 +31,7 @@ export const Board: React.FC<BoardProps> = ({
     highlighted,
     attackHighlighted,
     fireBursts,
+    auras,
     selectedPieceId,
     onCellClick,
     onCellContextMenu,
@@ -61,7 +64,14 @@ export const Board: React.FC<BoardProps> = ({
     return (
         <Box sx={{ position: "relative", width: maze.size * cellSize, height: maze.size * cellSize }}>
             {cells}
-            <PhaserBoard cellSize={cellSize} maze={maze} pieces={pieces} items={items} fireBursts={fireBursts} />
+            <PhaserBoard
+                cellSize={cellSize}
+                maze={maze}
+                pieces={pieces}
+                items={items}
+                fireBursts={fireBursts}
+                auras={auras}
+            />
         </Box>
     )
 }

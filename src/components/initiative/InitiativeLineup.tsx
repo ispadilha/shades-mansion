@@ -31,7 +31,7 @@ export const InitiativeLineup: React.FC<InitiativeLineupProps> = ({ slots, activ
                             <PieceToken
                                 color={slot.color}
                                 type={slot.type}
-                                active={slot.id === activeId}
+                                aura={slot.id === activeId ? "active" : null}
                                 dimmed={!rolled && slot.id !== activeId}
                             />
                             <Typography sx={{ color: "#bbb", fontSize: 12 }}>{slot.id}</Typography>

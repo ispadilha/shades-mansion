@@ -1,20 +1,21 @@
 import React from "react"
 import { Box } from "@mui/material"
 import type { PieceColor, PieceType } from "../../logic/types"
-import { PIECE_PALETTE } from "../../constants/palette"
+import { AURA_PALETTE, PIECE_PALETTE, rgba, type AuraKind } from "../../constants/palette"
 
 interface PieceTokenProps {
     color: PieceColor
     type: PieceType
     size?: number
-    // Peça da vez: em destaque com um anel dourado
-    active?: boolean
+    // Destaque da peça: o mesmo brilho que ela recebe no tabuleiro (null = sem destaque)
+    aura?: AuraKind | null
     // Peça que já agiu na rodada: fica apagada
     dimmed?: boolean
 }
 
-export const PieceToken: React.FC<PieceTokenProps> = ({ color, type, size = 56, active = false, dimmed = false }) => {
+export const PieceToken: React.FC<PieceTokenProps> = ({ color, type, size = 56, aura = null, dimmed = false }) => {
     const palette = PIECE_PALETTE[color]
+    const highlight = aura ? AURA_PALETTE[aura] : null
 
     return (
         <Box
@@ -23,7 +24,10 @@ export const PieceToken: React.FC<PieceTokenProps> = ({ color, type, size = 56, 
                 height: size,
                 borderRadius: "50%",
                 boxSizing: "border-box",
-                border: active ? "2px solid #ffd700" : "2px solid transparent",
+                border: highlight ? `2px solid ${highlight.color}` : "2px solid transparent",
+                boxShadow: highlight
+                    ? `inset 0 0 ${size * 0.3}px ${size * 0.06}px ${rgba(highlight.color, highlight.strength)}`
+                    : "none",
                 opacity: dimmed ? 0.35 : 1,
                 transition: "opacity 200ms, box-shadow 200ms, border-color 200ms",
                 flexShrink: 0,
