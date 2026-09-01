@@ -1,11 +1,9 @@
 import type { PieceColor, PieceDefinition, PiecePosition, SpecialItemKey } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
-import { positionKey } from "./movement"
+import { neighbors, positionKey } from "./grid"
 import { flipCoin, type CoinFace } from "./rolls"
-import { FIRE_AREA_SIDE, isAreaAttack } from "../constants/gameRules"
-
-export const SUCCESS_FACE: CoinFace = "heads"
+import { FIRE_AREA_SIDE, SUCCESS_FACE, isAreaAttack } from "../constants/rules"
 
 export interface CoinCheck {
     face: CoinFace
@@ -41,8 +39,7 @@ export function areaCells(maze: Maze, center: PiecePosition, side: number): Piec
         const cell = queue.shift()!
         burning.push(cell)
 
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-            const next = { x: cell.x + dx, y: cell.y + dy }
+        for (const next of neighbors(cell)) {
             if (!inSquare(next) || !isWalkable(maze, next.x, next.y)) continue
             const key = positionKey(next)
             if (seen.has(key)) continue

@@ -1,16 +1,18 @@
 import React from "react"
 import { Route, Routes as ReactRoutes, Navigate } from "react-router-dom"
-import { HomeScreen } from "./screens/HomeScreen"
-import { LibraryScreen } from "./screens/LibraryScreen"
-import { CharactersScreen } from "./screens/CharactersScreen"
-import { CharacterScreen } from "./screens/CharacterScreen"
-import { RulesScreen } from "./screens/RulesScreen"
-import { RuleScreen } from "./screens/RuleScreen"
-import { OptionsScreen } from "./screens/OptionsScreen"
-import { ChooseSideScreen } from "./screens/ChooseSideScreen"
-import { InitiativeScreen } from "./screens/InitiativeScreen"
-import { GameScreen } from "./screens/GameScreen"
-import { EndScreen } from "./screens/EndScreen"
+import {
+    CharacterScreen,
+    CharactersScreen,
+    ChooseSideScreen,
+    EndScreen,
+    GameScreen,
+    HomeScreen,
+    InitiativeScreen,
+    LibraryScreen,
+    OptionsScreen,
+    RuleScreen,
+    RulesScreen,
+} from "./screens"
 
 export const Routes: React.FC = () => {
     return (

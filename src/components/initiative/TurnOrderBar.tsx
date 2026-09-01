@@ -1,9 +1,9 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import { PieceToken } from "./PieceToken"
-import type { PieceDefinition } from "../../logic/types"
+import { PieceToken } from "../pieces"
+import type { AuraKind, PieceDefinition } from "../../logic/types"
 import { useLanguage } from "../../hooks/useLanguage"
-import { AURA_PALETTE, INITIATIVE_PALETTE, type AuraKind } from "../../constants/palette"
+import { AURA_PALETTE, INITIATIVE_PALETTE } from "../../constants/palette"
 
 interface TurnOrderBarProps {
     // Peças vivas, já na ordem de iniciativa

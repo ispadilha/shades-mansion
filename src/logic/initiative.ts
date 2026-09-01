@@ -1,7 +1,5 @@
-import { rollDice, sumDice, type DieSides } from "./rolls"
-
-export const INITIATIVE_DIE: DieSides = 20
-export const INITIATIVE_DICE = 2
+import { rollDice, sumDice } from "./rolls"
+import { INITIATIVE_DICE, INITIATIVE_DIE } from "../constants/rules"
 
 const DISTINCT_TOTALS = INITIATIVE_DICE * INITIATIVE_DIE - INITIATIVE_DICE + 1
 

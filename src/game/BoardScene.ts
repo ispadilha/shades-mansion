@@ -1,33 +1,23 @@
 import Phaser from "phaser"
-import type { PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
+import type { AuraKind, PieceAuras, PiecePosition, PieceDefinition, SpecialItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
+import { pickRandom, randomInt } from "../logic/random"
+import { AURA_PALETTE, FIRE_PALETTE, ITEM_PALETTE, PIECE_DETAIL_PALETTE, PIECE_PALETTE, hex, rgba } from "../constants/palette"
 import {
-    AURA_PALETTE,
-    FIRE_PALETTE,
-    ITEM_PALETTE,
-    PIECE_DETAIL_PALETTE,
-    PIECE_PALETTE,
-    hex,
-    rgba,
-    type AuraKind,
-} from "../constants/palette"
+    ALPHA_TWEEN_MS,
+    AURA_TEXTURE_SIZE,
+    FIRE_BURST_MS,
+    FLAMES_PER_CELL,
+    ITEM_FADE_MS,
+    MOVED_PIECE_ALPHA,
+    PIECE_FADE_MS,
+    STEP_MS,
+} from "../constants/rules"
 
-export const STEP_MS = 280
-
-const FIRE_BURST_MS = 900
-const FLAMES_PER_CELL = 2
 const FIRE_COLORS = FIRE_PALETTE.flames.map(hex)
-
-
-// Quem está em destaque no tabuleiro agora: a peça (por id) e o tipo de aura dela
-export type PieceAuras = Record<string, AuraKind>
-
-// Lado da textura do brilho, em pixels. É desenhada uma vez por tipo de aura e depois
-// esticada para o tamanho pedido na paleta.
-const AURA_TEXTURE_SIZE = 128
 
 export class BoardScene extends Phaser.Scene {
     private cellSize: number
@@ -125,7 +115,7 @@ export class BoardScene extends Phaser.Scene {
                 targets: sprite,
                 alpha: 0,
                 scale: 0.4,
-                duration: 220,
+                duration: ITEM_FADE_MS,
                 onComplete: () => sprite.destroy(),
             })
         }
@@ -138,7 +128,7 @@ export class BoardScene extends Phaser.Scene {
             seen.add(piece.id)
             const targetPx = this.cellToPixel(piece.position)
             // Peças que já se moveram no turno ficam translúcidas para indicar isso
-            const targetAlpha = piece.movedThisTurn ? 0.55 : 1
+            const targetAlpha = piece.movedThisTurn ? MOVED_PIECE_ALPHA : 1
 
             let sprite = this.sprites.get(piece.id)
             if (!sprite) {
@@ -169,7 +159,7 @@ export class BoardScene extends Phaser.Scene {
             }
 
             if (Math.abs(sprite.alpha - targetAlpha) > 0.01) {
-                this.tweens.add({ targets: sprite, alpha: targetAlpha, duration: 200 })
+                this.tweens.add({ targets: sprite, alpha: targetAlpha, duration: ALPHA_TWEEN_MS })
             }
         }
 
@@ -185,7 +175,7 @@ export class BoardScene extends Phaser.Scene {
                 targets: sprite,
                 alpha: 0,
                 scale: 0.4,
-                duration: 280,
+                duration: PIECE_FADE_MS,
                 onComplete: () => sprite.destroy(),
             })
         }
@@ -233,7 +223,7 @@ export class BoardScene extends Phaser.Scene {
                 const y = oy + (Math.random() - 0.5) * cs * 0.8
                 const height = cs * (0.45 + Math.random() * 0.5)
                 const width = height * (0.45 + Math.random() * 0.2)
-                const color = FIRE_COLORS[Math.floor(Math.random() * FIRE_COLORS.length)]
+                const color = pickRandom(FIRE_COLORS)
 
                 // Chama: base larga embaixo e ponta para cima. Os pontos do triângulo
                 // do Phaser são medidos a partir do canto do próprio desenho, não do centro.
@@ -256,7 +246,7 @@ export class BoardScene extends Phaser.Scene {
                     targets: flame,
                     scaleX: 0.6,
                     delay,
-                    duration: 120 + Math.random() * 90,
+                    duration: randomInt(120, 210),
                     yoyo: true,
                     repeat: -1,
                     ease: "Sine.easeInOut",
@@ -281,7 +271,7 @@ export class BoardScene extends Phaser.Scene {
             this.tweens.add({
                 targets: current.sprite,
                 alpha: 0,
-                duration: 200,
+                duration: ALPHA_TWEEN_MS,
                 onComplete: () => current.sprite.destroy(),
             })
         }

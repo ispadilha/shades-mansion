@@ -1,4 +1,4 @@
-import type { PieceColor } from "../logic/types"
+import type { AuraKind, PieceColor } from "../logic/types"
 
 // Todas as cores do jogo ficam neste arquivo.
 // Nenhum código de cor é escrito solto pelo resto do projeto.
@@ -29,9 +29,6 @@ export const TEAM_BUTTON_PALETTE: Record<PieceColor, { bg: string; text: string 
     gray: { bg: "#888888", text: "#000000" },
     dark: { bg: "#111111", text: "#ffffff" },
 }
-
-// Aura vale ao mesmo tempo para o tabuleiro e para o HUD.
-export type AuraKind = "active" | "manipulated"
 
 export interface AuraPalette {
     color: string

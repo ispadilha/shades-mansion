@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import type { RefObject } from "react"
+import { EDGE_SCROLL } from "../constants/rules"
 
 interface UseEdgeScrollOptions {
     edgeSize?: number
@@ -9,7 +10,7 @@ interface UseEdgeScrollOptions {
 
 export function useEdgeScroll<T extends HTMLElement>(
     ref: RefObject<T | null>,
-    { edgeSize = 80, maxSpeed = 20, enabled = true }: UseEdgeScrollOptions = {}
+    { edgeSize = EDGE_SCROLL.edgeSize, maxSpeed = EDGE_SCROLL.maxSpeed, enabled = true }: UseEdgeScrollOptions = {}
 ) {
     useEffect(() => {
         const container = ref.current

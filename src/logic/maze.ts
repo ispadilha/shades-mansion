@@ -1,4 +1,7 @@
 import type { PiecePosition } from "./types"
+import { ORTHOGONAL_STEPS, manhattan } from "./grid"
+import { randomInt } from "./random"
+import { EXTRA_CORRIDOR_RATIO, LAYOUT_CANDIDATES, ROOM_PLACEMENT_ATTEMPTS_PER_CELL } from "../constants/rules"
 
 export interface MazeRoom {
     // Canto superior esquerdo da sala
@@ -15,19 +18,6 @@ export interface Maze {
     rooms: MazeRoom[]
 }
 
-// Tentativas de encaixar salas novas, por casa do tabuleiro. Como cada tentativa sorteia
-// uma posição/tamanho e descarta os que colidem, o número só regula quão denso fica o
-// preenchimento — e escala com a área para que tabuleiros grandes não saiam vazios.
-const ROOM_PLACEMENT_ATTEMPTS_PER_CELL = 1
-
-// Uma primeira sala mal posicionada pode bloquear todas as outras em tabuleiros
-// apertados, então a geração desenha alguns traçados independentes e fica com o melhor.
-const LAYOUT_CANDIDATES = 4
-
-// Fração de corredores extras (além dos da árvore geradora mínima) para criar
-// caminhos alternativos e evitar um labirinto puramente em árvore.
-const EXTRA_CORRIDOR_RATIO = 0.3
-
 export const inside = (maze: Maze, x: number, y: number) => x >= 0 && y >= 0 && x < maze.size && y < maze.size
 
 export const isWall = (maze: Maze, x: number, y: number) => !inside(maze, x, y) || maze.walls[y][x]
@@ -38,10 +28,6 @@ export const roomCenter = (room: MazeRoom): PiecePosition => ({
     x: room.x + Math.floor(room.size / 2),
     y: room.y + Math.floor(room.size / 2),
 })
-
-const randomInt = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1))
-
-const manhattan = (a: PiecePosition, b: PiecePosition) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
 
 // Salas precisam de pelo menos uma casa de parede entre si, senão viram uma sala só.
 const collides = (a: MazeRoom, b: MazeRoom) =>
@@ -178,7 +164,7 @@ const findComponents = (walls: boolean[][], size: number): PiecePosition[][] => 
             while (queue.length > 0) {
                 const cell = queue.shift()!
                 component.push(cell)
-                for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+                for (const [dx, dy] of ORTHOGONAL_STEPS) {
                     const nx = cell.x + dx
                     const ny = cell.y + dy
                     if (nx < 0 || ny < 0 || nx >= size || ny >= size) continue

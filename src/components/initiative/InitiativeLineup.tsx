@@ -1,15 +1,8 @@
 import React from "react"
-import { Box, Typography } from "@mui/material"
-import { PieceToken } from "./PieceToken"
+import { Box } from "@mui/material"
+import { LineupSlot } from "./LineupSlot"
 import type { PieceSlot } from "../../logic/setup"
-import { INITIATIVE_PALETTE } from "../../constants/palette"
-
-export const INITIATIVE_FADE_MS = 1000
-
-// A linha do número da ordem reserva a própria altura desde o começo, mesmo enquanto não há
-// número, para os bonecos não descerem quando a ordem é revelada. A altura de linha vai
-// declarada junto da reservada para as duas baterem (12px × 1.5 é o padrão do tema).
-const RANK_LINE = { fontSize: 12, lineHeight: "18px", minHeight: "18px" }
+import { INITIATIVE_FADE_MS } from "../../constants/rules"
 
 interface InitiativeLineupProps {
     // Todas as peças, na ordem em que devem aparecer na fila
@@ -48,42 +41,15 @@ export const InitiativeLineup: React.FC<InitiativeLineupProps> = ({
                 key={showRank ? "sorteio" : "times"}
                 sx={{ display: "flex", gap: 1.5, width: "max-content", mx: "auto", px: 2 }}
             >
-                {slots.map((slot, index) => {
-                    const value = values[slot.id]
-                    const rolled = value !== undefined
-
-                    return (
-                        <Box
-                            key={slot.id}
-                            sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5, width: 62 }}
-                        >
-                            {/* O número entra e sai pelo texto, e não escondendo o elemento:
-                            `visibility` invalida só a pintura, e pintura pendente dentro da
-                            camada que acabou de ser animada pode não acontecer.
-                            Trocar o texto invalida o layout, que o navegador é obrigado a refazer. */}
-                            <Typography sx={{ ...RANK_LINE, color: INITIATIVE_PALETTE.rank }}>
-                                {showRank ? `#${index + 1}` : ""}
-                            </Typography>
-                            <PieceToken
-                                color={slot.color}
-                                type={slot.type}
-                                aura={slot.id === activeId ? "active" : null}
-                                dimmed={!rolled && slot.id !== activeId}
-                            />
-                            <Typography sx={{ color: INITIATIVE_PALETTE.pieceId, fontSize: 12 }}>{slot.id}</Typography>
-                            <Typography
-                                sx={{
-                                    color: rolled ? INITIATIVE_PALETTE.value : INITIATIVE_PALETTE.valuePending,
-                                    fontSize: 18,
-                                    fontWeight: 700,
-                                    lineHeight: 1.1,
-                                }}
-                            >
-                                {rolled ? value : "—"}
-                            </Typography>
-                        </Box>
-                    )
-                })}
+                {slots.map((slot, index) => (
+                    <LineupSlot
+                        key={slot.id}
+                        slot={slot}
+                        rank={showRank ? `#${index + 1}` : ""}
+                        value={values[slot.id]}
+                        active={slot.id === activeId}
+                    />
+                ))}
             </Box>
         </Box>
     )

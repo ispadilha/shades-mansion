@@ -5,7 +5,7 @@ import {
     DEFAULT_MAX_ROOM_SIZE,
     DEFAULT_MIN_ROOM_SIZE,
     ROOM_SIZE_RANGE,
-} from "../constants/gameRules"
+} from "../constants/rules"
 
 interface SettingsContextValue {
     boardSize: number

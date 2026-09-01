@@ -1,5 +1,4 @@
 export { Coin } from "./Coin"
 export { Die } from "./Die"
-export { RollBoard, ROLL_SPIN_MS, ROLL_HOLD_MS } from "./RollBoard"
+export { RollBoard } from "./RollBoard"
 export { RollModal } from "./RollModal"
-export type { RollView, RollTone } from "./RollBoard"

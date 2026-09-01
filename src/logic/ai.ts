@@ -1,10 +1,11 @@
 import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventories, SpecialItemKey } from "./types"
 import { itemKeyColor } from "./types"
-import { reachableCells, findApproachCell, lineOfFire, pathLength, distanceMap, positionKey } from "./movement"
+import { reachableCells, findApproachCell, lineOfFire, pathLength, distanceMap } from "./movement"
+import { positionKey } from "./grid"
+import { pickRandom } from "./random"
 import type { Maze } from "./maze"
 import { alliesInBlast, attackArea, type PendingAttack } from "./combat"
-import { PIECE_STATS, isRanged } from "../constants/gameRules"
-import { STEP_MS } from "../game/BoardScene"
+import { ACTION_SETTLE_MS, PIECE_STATS, STEP_MS, isRanged } from "../constants/rules"
 
 export interface AIMoveResult {
     updatedPieces: PieceDefinition[]
@@ -68,7 +69,7 @@ export class SimpleAI {
         // Prioridade 4: movimento aleatório
         const possibleMoves = reachableCells(activePiece, pieces, maze, PIECE_STATS[activePiece.type].moveRange)
         if (possibleMoves.length > 0) {
-            const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)]
+            const randomMove = pickRandom(possibleMoves)
             const updatedPieces = pieces.map((p) =>
                 p.id === activePiece.id ? { ...p, position: randomMove, movedThisTurn: true } : p,
             )
@@ -118,7 +119,7 @@ export class SimpleAI {
                     attackerId: manipulated.id,
                     targetId: best.target.id,
                     damage,
-                    delayMs: moveSteps * STEP_MS + 50,
+                    delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                     ...(area ? { area } : {}),
                     consumedItemKey: itemKey,
                     consumerColor: color,
@@ -182,7 +183,7 @@ export class SimpleAI {
                 attackerId: attacker.id,
                 targetId: target.id,
                 damage,
-                delayMs: moveSteps * STEP_MS + 50,
+                delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                 ...(area ? { area } : {}),
             },
         }

@@ -1,12 +1,10 @@
 import type { PieceColor, PieceDefinition, PiecePosition, PieceType, SpecialItem } from "./types"
 import { ALL_ITEM_KEYS, ALL_PIECE_TYPES } from "./types"
 import type { Maze } from "./maze"
-import { generateMaze, isWalkable } from "./maze"
-import { MAX_HP } from "../constants/gameRules"
-
-const cellKey = (p: PiecePosition) => `${p.x},${p.y}`
-
-const ITEM_COPIES = 2
+import { generateMaze, inside, isWalkable } from "./maze"
+import { neighbors, positionKey } from "./grid"
+import { shuffle } from "./random"
+import { ITEM_COPIES, LINEUP_COLORS, MAX_HP, PLACEMENT_COLORS } from "../constants/rules"
 
 // Distribui "count" posições em uma linha começando e terminando nos extremos,
 // com espaçamento equivalente entre elas.
@@ -19,17 +17,16 @@ const spreadColumns = (count: number, size: number): number[] => {
 // por proximidade), mas só devolve casas caminháveis e ainda não ocupadas — assim uma
 // posição inicial que caiu dentro de uma parede escorrega para a casa útil mais próxima.
 const nearestFreeCell = (maze: Maze, ideal: PiecePosition, occupied: Set<string>): PiecePosition | null => {
-    const seen = new Set<string>([cellKey(ideal)])
+    const seen = new Set<string>([positionKey(ideal)])
     const queue: PiecePosition[] = [ideal]
 
     while (queue.length > 0) {
         const cell = queue.shift()!
-        if (isWalkable(maze, cell.x, cell.y) && !occupied.has(cellKey(cell))) return cell
+        if (isWalkable(maze, cell.x, cell.y) && !occupied.has(positionKey(cell))) return cell
 
-        for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-            const next = { x: cell.x + dx, y: cell.y + dy }
-            if (next.x < 0 || next.y < 0 || next.x >= maze.size || next.y >= maze.size) continue
-            const key = cellKey(next)
+        for (const next of neighbors(cell)) {
+            if (!inside(maze, next.x, next.y)) continue
+            const key = positionKey(next)
             if (seen.has(key)) continue
             seen.add(key)
             queue.push(next)
@@ -38,8 +35,6 @@ const nearestFreeCell = (maze: Maze, ideal: PiecePosition, occupied: Set<string>
 
     return null
 }
-
-export const TEAM_TYPES: PieceType[] = ALL_PIECE_TYPES
 
 export const pieceId = (color: PieceColor, type: PieceType) => `${color[0]}${type}`
 
@@ -51,10 +46,8 @@ export interface PieceSlot {
     type: PieceType
 }
 
-export const LINEUP_COLORS: PieceColor[] = ["light", "gray", "dark"]
-
 export const ALL_PIECE_SLOTS: PieceSlot[] = LINEUP_COLORS.flatMap((color) =>
-    TEAM_TYPES.map((type) => ({ id: pieceId(color, type), color, type })),
+    ALL_PIECE_TYPES.map((type) => ({ id: pieceId(color, type), color, type })),
 )
 
 // Linha inicial de cada time: escuras no topo, cinzas no meio, claras embaixo
@@ -66,14 +59,14 @@ const teamRow = (color: PieceColor, size: number) =>
 export function createInitialPieces(maze: Maze): PieceDefinition[] {
     const occupied = new Set<string>()
     const pieces: PieceDefinition[] = []
-    const columns = spreadColumns(TEAM_TYPES.length, maze.size)
+    const columns = spreadColumns(ALL_PIECE_TYPES.length, maze.size)
 
-    for (const color of ["dark", "gray", "light"] as PieceColor[]) {
+    for (const color of PLACEMENT_COLORS) {
         const y = teamRow(color, maze.size)
-        TEAM_TYPES.forEach((type, index) => {
+        ALL_PIECE_TYPES.forEach((type, index) => {
             const position = nearestFreeCell(maze, { x: columns[index], y }, occupied)
             if (!position) return
-            occupied.add(cellKey(position))
+            occupied.add(positionKey(position))
             pieces.push({
                 id: pieceId(color, type),
                 color,
@@ -92,18 +85,15 @@ export function createInitialPieces(maze: Maze): PieceDefinition[] {
 // Espalha cópias de cada item em casas livres do labirinto (nunca em parede,
 // em cima de uma peça ou de outro item).
 export function placeItems(maze: Maze, pieces: PieceDefinition[]): SpecialItem[] {
-    const occupied = new Set(pieces.map((p) => cellKey(p.position)))
+    const occupied = new Set(pieces.map((p) => positionKey(p.position)))
 
     const available: PiecePosition[] = []
     for (let y = 0; y < maze.size; y++) {
         for (let x = 0; x < maze.size; x++) {
-            if (isWalkable(maze, x, y) && !occupied.has(cellKey({ x, y }))) available.push({ x, y })
+            if (isWalkable(maze, x, y) && !occupied.has(positionKey({ x, y }))) available.push({ x, y })
         }
     }
-    for (let i = available.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        ;[available[i], available[j]] = [available[j], available[i]]
-    }
+    shuffle(available)
 
     // O tabuleiro mínimo é grande o bastante para as duas cópias de cada item; a saída
     // antecipada abaixo é só uma rede de segurança para um labirinto sem casas livres.

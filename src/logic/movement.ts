@@ -1,12 +1,7 @@
 import type { PiecePosition, PieceDefinition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
-
-export const manhattan = (a: PiecePosition, b: PiecePosition) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
-
-export const positionKey = (p: PiecePosition) => `${p.x},${p.y}`
-
-const ORTHOGONAL: Array<[number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+import { ORTHOGONAL_STEPS, atPosition, positionKey } from "./grid"
 
 interface WalkNode {
     position: PiecePosition
@@ -29,7 +24,7 @@ function walkFrom(origin: PiecePosition, maze: Maze, maxSteps = Infinity): Map<s
         const node = queue.shift()!
         if (node.distance >= maxSteps) continue
 
-        for (const [dx, dy] of ORTHOGONAL) {
+        for (const [dx, dy] of ORTHOGONAL_STEPS) {
             const next = { x: node.position.x + dx, y: node.position.y + dy }
             if (!isWalkable(maze, next.x, next.y)) continue
             const key = positionKey(next)
@@ -115,7 +110,7 @@ export function findApproachCell(
 
     for (const candidate of candidates) {
         if (!isWalkable(maze, candidate.x, candidate.y)) continue
-        const occupant = pieces.find((p) => p.position.x === candidate.x && p.position.y === candidate.y)
+        const occupant = atPosition(pieces, candidate)
         if (occupant && occupant.id !== attacker.id) continue
 
         const node = visited.get(positionKey(candidate))
@@ -138,7 +133,7 @@ export function meleeAttackCells(
 
     for (const [, node] of walkFrom(piece.position, maze, range)) {
         if (node.distance === 0) continue
-        const occupant = pieces.find((p) => p.position.x === node.position.x && p.position.y === node.position.y)
+        const occupant = atPosition(pieces, node.position)
         if (occupant && !findApproachCell(piece, occupant, pieces, maze, range)) continue
         cells.push(node.position)
     }

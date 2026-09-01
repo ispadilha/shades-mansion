@@ -1,6 +1,7 @@
 import React from "react"
 import { Box, Modal } from "@mui/material"
-import { RollBoard, type RollView } from "./RollBoard"
+import { RollBoard } from "./RollBoard"
+import type { RollView } from "../../logic/rolls"
 import { ROLL_PALETTE } from "../../constants/palette"
 
 interface RollModalProps {
