@@ -25,7 +25,7 @@ import { useGame } from "../hooks/useGame"
 import { useLanguage } from "../hooks/useLanguage"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
 import { CELL_SIZE, FIRE_AREA_SIDE, PIECE_STATS, isAreaAttack, isRanged } from "../constants/gameRules"
-import { UI_PALETTE } from "../constants/palette"
+import { SURFACE_PALETTE, UI_PALETTE } from "../constants/palette"
 import { STEP_MS, type PieceAuras } from "../game/BoardScene"
 
 const COLOR_LABEL: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
@@ -825,7 +825,11 @@ const MatchScreen: React.FC<MatchScreenProps> = ({ match }) => {
                         left: "50%",
                         transform: "translate(-50%, -50%)",
                         width: 200,
-                        bgcolor: "background.paper",
+                        bgcolor: SURFACE_PALETTE.bg,
+                        color: SURFACE_PALETTE.text,
+                        border: `1px solid ${SURFACE_PALETTE.border}`,
+                        borderRadius: 1,
+                        outline: "none",
                         p: 2,
                     }}
                 >

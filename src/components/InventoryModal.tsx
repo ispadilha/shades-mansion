@@ -4,7 +4,7 @@ import type { PieceColor, PieceDefinition, SpecialItemKey, TeamInventory } from 
 import { itemKeyColor } from "../logic/types"
 import { useLanguage } from "../hooks/useLanguage"
 import { ItemBadge, ItemInfoModal } from "./ItemInfoModal"
-import { HUD_PALETTE } from "../constants/palette"
+import { SURFACE_PALETTE } from "../constants/palette"
 
 interface InventoryModalProps {
     open: boolean
@@ -75,7 +75,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                         left: "50%",
                         transform: "translate(-50%, -50%)",
                         width: 340,
-                        bgcolor: "background.paper",
+                        bgcolor: SURFACE_PALETTE.bg,
+                        color: SURFACE_PALETTE.text,
+                        border: `1px solid ${SURFACE_PALETTE.border}`,
                         p: 3,
                         outline: "none",
                         borderRadius: 1,
@@ -85,7 +87,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                         {t("inventory")}
                     </Typography>
 
-                    {aggregated.length === 0 && <Typography sx={{ color: HUD_PALETTE.emptyInventory }}>{t("noItems")}</Typography>}
+                    {aggregated.length === 0 && <Typography sx={{ color: SURFACE_PALETTE.textMuted }}>{t("noItems")}</Typography>}
 
                     <Stack gap={1} sx={{ maxHeight: "55vh", overflowY: "auto" }}>
                         {aggregated.map(({ key, count }) => {
