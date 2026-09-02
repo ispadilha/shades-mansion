@@ -1,5 +1,5 @@
 import type { PieceColor, PieceType } from "../logic/types"
-import type { CoinFace, DieSides } from "../logic/rolls"
+import type { CoinFace, DiceSpec, DieSides } from "../logic/rolls"
 
 // Todas as regras e todos os tempos do jogo ficam neste arquivo.
 // Nenhum número de regra (alcance, dano, tamanho, ritmo) é escrito solto pelo resto do
@@ -54,28 +54,42 @@ export const PLACEMENT_COLORS: PieceColor[] = ["dark", "gray", "light"]
 // Peças
 // ---------------------------------------------------------------------------
 
-export const MAX_HP = 3
+// d20 não alcança
+export const NO_DODGE = 21
 
 export interface PieceStats {
     moveRange: number
     attackRange: number
-    attackDamage: number
+    maxHp: number
+    damage: DiceSpec
+    // Esquiva total
+    dodge: number
+    // Aparo (dano parcial)
+    guard: number
     ranged?: boolean
     areaAttack?: boolean
 }
 
 export const PIECE_STATS: Record<PieceType, PieceStats> = {
-    A: { moveRange: 9, attackRange: 7, attackDamage: 1 },
-    B: { moveRange: 7, attackRange: 5, attackDamage: 2 },
-    C: { moveRange: 5, attackRange: 3, attackDamage: 3 },
-    D: { moveRange: 5, attackRange: 7, attackDamage: 2, ranged: true },
-    E: { moveRange: 7, attackRange: 5, attackDamage: 2 },
-    F: { moveRange: 5, attackRange: 5, attackDamage: 2, ranged: true, areaAttack: true },
+    // Ágil: pouca vida e pouco dano, mas é a única que desvia totalmente com frequência
+    A: { moveRange: 9, attackRange: 7, maxHp: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
+    // Balanceada: sem esquiva total, apara quase metade dos golpes
+    B: { moveRange: 7, attackRange: 5, maxHp: 12, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 12 },
+    // Campeã: mais vida e o maior golpe do jogo, mas menor movimento
+    C: { moveRange: 5, attackRange: 3, maxHp: 16, damage: { count: 2, sides: 8 }, dodge: NO_DODGE, guard: 14 },
+    // Atiradora: acerta de longe, mas é a mais frágil depois da ágil
+    D: { moveRange: 5, attackRange: 7, maxHp: 10, damage: { count: 1, sides: 6 }, dodge: 18, guard: 14, ranged: true },
+    // Exótica: entre a balanceada e a campeã, com um resto de esquiva
+    E: { moveRange: 7, attackRange: 5, maxHp: 13, damage: { count: 1, sides: 8 }, dodge: 20, guard: 13 },
+    // Incendiária: ataque em área, que pode alcançar várias peças de uma vez
+    F: { moveRange: 5, attackRange: 5, maxHp: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13, ranged: true, areaAttack: true },
 }
 
 export const isRanged = (type: PieceType) => PIECE_STATS[type].ranged === true
 
 export const isAreaAttack = (type: PieceType) => PIECE_STATS[type].areaAttack === true
+
+export const canDodge = (type: PieceType) => PIECE_STATS[type].dodge <= 20
 
 // ---------------------------------------------------------------------------
 // Combate
@@ -84,8 +98,9 @@ export const isAreaAttack = (type: PieceType) => PIECE_STATS[type].areaAttack ==
 // Lado do quadrado que o ataque em área incendeia. Ímpar para o alvo ficar no centro.
 export const FIRE_AREA_SIDE = 3
 
-// A face que faz uma moeda dar certo
 export const SUCCESS_FACE: CoinFace = "heads"
+
+export const DEFENSE_DIE: DieSides = 20
 
 // ---------------------------------------------------------------------------
 // Iniciativa
@@ -108,7 +123,7 @@ export const ITEM_COPIES = 2
 // Tempo que uma peça leva para andar uma casa
 export const STEP_MS = 280
 
-// Folga somada à caminhada antes de resolver o que vem depois dela (a moeda do ataque,
+// Folga somada à caminhada antes de resolver o que vem depois dela (os dados do golpe,
 // a coleta do item): a ação só acontece com a peça já parada no lugar.
 export const ACTION_SETTLE_MS = 50
 
@@ -150,6 +165,11 @@ export const INITIATIVE_ROLL_TIMING = {
 
 // Apagar e acender da tela de iniciativa quando ela troca as rolagens pela ordem sorteada
 export const INITIATIVE_FADE_MS = 1000
+
+// Um ataque tem duas rolagens seguidas: ataque e defesa. Elas correm mais rápido
+// que as da iniciativa porque acontecem o tempo todo.
+export const ATTACK_ROLL_TIMING = { spinMs: 460, holdMs: 620 }
+export const DODGE_ROLL_TIMING = { spinMs: 380, holdMs: 700 }
 
 // ---------------------------------------------------------------------------
 // Animações do tabuleiro (Phaser)

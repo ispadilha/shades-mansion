@@ -37,10 +37,37 @@ export const texts_rules = {
         description: {
             enUS:
                 "Light, Gray and Dark each start with six pieces, one of each type: Agile (A), Balanced (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
+                "The six types are the same for the three teams, and no two of them are alike: they differ in how far they walk, how far they reach, how much health they carry, the dice their blow rolls and how well they defend themselves.\n\n" +
                 "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row.",
             ptBR:
                 "Claro, Cinza e Escuro começam com seis peças cada, uma de cada tipo: Ágil (A), Balanceada (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
+                "Os seis tipos são os mesmos para os três times, e não há dois iguais: eles se diferenciam em quanto andam, quanto alcançam, quanta vida carregam, os dados que o golpe deles rola e o quanto conseguem se defender.\n\n" +
                 "As peças escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
+        },
+    },
+
+    pieceTypes: {
+        name: {
+            enUS: "The six pieces",
+            ptBR: "As seis peças",
+        },
+        description: {
+            enUS:
+                "The Agile (A) runs the farthest and hits the softest: 9 health and a 1d4 blow. In exchange it is the only piece that slips out of a blow completely almost half of the time.\n\n" +
+                "The Balanced (B) is the middle of the table: 12 health and a 1d6 blow.\n\n" +
+                "The Champion (C) is the heaviest of all: 16 health and two d8 in a single blow, but has the most limited movement.\n\n" +
+                "The Distance shooter (D) rolls a 1d6 from where it stands, with 10 health, and still ducks a blow now and then.\n\n" +
+                "The Exotic (E) sits between the middle and the top: 13 health and a 1d8 blow.\n\n" +
+                "The Firestarter (F) rolls 1d6, with 11 health, and its shot burns a whole area.\n\n" +
+                "Right-click a piece and ask for its information to see all of it, including how much health it has left.",
+            ptBR:
+                "A Ágil (A) é a que corre mais longe e a que bate mais fraco: 9 de vida e um golpe de 1d4. Em troca, é a única peça que desvia de ataques em quase metade das vezes.\n\n" +
+                "A Balanceada (B) é o meio da tabela: 12 de vida e golpe de 1d6.\n\n" +
+                "O Campeão (C) é o mais pesado de todos: 16 de vida e dois d8 em um golpe só, mas tem o movimento mais limitado.\n\n" +
+                "A que atira à Distância (D) rola um 1d6 de onde está, com 10 de vida, e ainda desvia de um golpe de vez em quando.\n\n" +
+                "A Exótica (E) fica entre o meio e o topo: 13 de vida e golpe de 1d8\n\n" +
+                "A incendiária com seu Fogo (F) rola 1d6, com 11 de vida, e o tiro dela queima uma área inteira.\n\n" +
+                "Clique com o botão direito em uma peça e peça a informação dela para ver tudo isso, inclusive quanta vida ainda lhe resta.",
         },
     },
 
@@ -112,12 +139,33 @@ export const texts_rules = {
         description: {
             enUS:
                 "Melee pieces attack by walking to a free cell next to the target and striking on arrival. The walk has to fit inside the piece's attack range.\n\n" +
-                "The shooter and the firestarter attack from where they stand, at anything with a clear line of fire.\n\n" +
-                "A piece that drops to 0 HP is removed from the board.",
+                "The shooter and the firestarter attack from where they stand, at anything with a clear line of fire. The firestarter may also aim at an empty cell.\n\n" +
+                "Every blow is settled by two rolls, one after the other. First the attacker rolls the dice of its own blow. Then the piece being attacked answers with a defense roll, which decides how much of that damage actually lands.\n\n" +
+                "A piece that drops to 0 health is removed from the board.",
             ptBR:
                 "As peças corpo a corpo atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça.\n\n" +
-                "A peça atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre.\n\n" +
+                "A peça atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre. A incendiária pode mirar também uma casa vazia.\n\n" +
+                "Todo ataque é resolvido em duas rolagens, uma depois da outra. Primeiro a peça atacante rola os dados de seu golpe. Depois a peça atacada responde com a rolagem de defesa, que decide quanto desse dano chega de fato.\n\n" +
                 "A peça que chega a 0 ponto de vida sai do tabuleiro.",
+        },
+    },
+
+    defense: {
+        name: {
+            enUS: "Dodge and guard",
+            ptBR: "Esquiva e aparo",
+        },
+        description: {
+            enUS:
+                "An attacked piece may defend itself by rolling a d20 against two numbers of its own: the dodge and the guard.\n\n" +
+                "Reaching the dodge, the piece gets out of the way entirely and takes nothing. Reaching only the guard, it holds what it can and takes half the damage, rounded up. Below both, the blow lands whole.\n\n" +
+                "The guard is within reach of every piece, so any of them can soften a blow. The dodge is not: heavy pieces are too slow to leave the ground.\n\n" +
+                "A fire reaches several pieces at once, and each of them rolls its own defense.\n\n",
+            ptBR:
+                "Uma peça atacada pode se defender rolando um d20 contra dois números próprios: a esquiva e o aparo.\n\n" +
+                "Alcançando a esquiva, a peça sai inteira da frente e não leva nada. Alcançando só o aparo, ela segura o que pode e leva metade do dano, arredondada para cima. Abaixo dos dois, o golpe entra inteiro.\n\n" +
+                "O aparo está ao alcance de qualquer peça, então todas conseguem amortecer um golpe. A esquiva não: as peças pesadas são lentas demais para sair do chão.\n\n" +
+                "Um incêndio alcança várias peças de uma vez, e cada uma rola a defesa dela.\n\n",
         },
     },
 
@@ -128,12 +176,12 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The firestarter shoots from a distance, and where the shot lands an area catches fire.\n\n" +
-                "The fire does not tell friend from foe: every piece standing on a burning cell takes the attack damage, including the firestarter's own team and the firestarter itself when it fires at something too close.\n\n" +
+                "The firestarter shoots from a distance, and where the shot lands an area catches fire. It is the only piece that can aim at the ground.\n\n" +
+                "The fire does not tell friend from foe: every piece standing on a burning cell takes damage, including the firestarter's own team and the firestarter itself when it fires at something too close. Each of them rolls its own defense.\n\n" +
                 "Strategy often involves caution.",
             ptBR:
-                "A peça incendiária atira a alguma distância, e onde o tiro cai uma área pega fogo.\n\n" +
-                "O fogo não distingue amigo de inimigo: toda peça em uma casa em chamas leva o dano do ataque, inclusive as do próprio time da incendiária e até ela mesma, quando atira em algo perto demais.\n\n" +
+                "A peça incendiária atira a alguma distância, e onde o tiro cai uma área pega fogo. Esta é a única peça que pode mirar o chão.\n\n" +
+                "O fogo não distingue amigo de inimigo: toda peça em uma casa em chamas leva dano, inclusive as do próprio time da incendiária e até ela mesma, quando atira em algo perto demais. Cada uma delas rola a própria defesa.\n\n" +
                 "A estratégia muitas vezes envolve cautela.",
         },
     },

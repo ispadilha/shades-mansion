@@ -5,7 +5,16 @@ import type { Maze } from "../logic/maze"
 import type { FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
 import { pickRandom, randomInt } from "../logic/random"
-import { AURA_PALETTE, FIRE_PALETTE, ITEM_PALETTE, PIECE_DETAIL_PALETTE, PIECE_PALETTE, hex, rgba } from "../constants/palette"
+import {
+    AURA_PALETTE,
+    FIRE_PALETTE,
+    HEALTH_PALETTE,
+    ITEM_PALETTE,
+    PIECE_DETAIL_PALETTE,
+    PIECE_PALETTE,
+    hex,
+    rgba,
+} from "../constants/palette"
 import {
     ALPHA_TWEEN_MS,
     AURA_TEXTURE_SIZE,
@@ -19,6 +28,20 @@ import {
 
 const FIRE_COLORS = FIRE_PALETTE.flames.map(hex)
 
+const HEALTH_BAR = { width: 0.56, height: 0.1, offsetY: 0.42, inset: 1 }
+
+const healthColor = (ratio: number) =>
+    ratio > 0.5 ? HEALTH_PALETTE.high : ratio > 0.25 ? HEALTH_PALETTE.medium : HEALTH_PALETTE.low
+
+interface HealthBar {
+    // A barra inteira
+    root: Phaser.GameObjects.Container
+    // A parte pintada
+    fill: Phaser.GameObjects.Rectangle
+    // Largura da barra cheia, já descontada a moldura
+    width: number
+}
+
 export class BoardScene extends Phaser.Scene {
     private cellSize: number
     private maze: Maze
@@ -28,6 +51,7 @@ export class BoardScene extends Phaser.Scene {
     // Auras em cena, por peça. O desenho fica dentro do container da peça, então acompanha
     // a caminhada dela sem precisar de sincronia nenhuma.
     private auras: Map<string, { kind: AuraKind; sprite: Phaser.GameObjects.Image }> = new Map()
+    private healthBars: Map<string, HealthBar> = new Map()
     // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
     private pendingPieces: PieceDefinition[] | null = null
     private pendingItems: SpecialItem[] | null = null
@@ -137,6 +161,7 @@ export class BoardScene extends Phaser.Scene {
                 sprite.setAlpha(targetAlpha)
                 this.sprites.set(piece.id, sprite)
                 this.lastCells.set(piece.id, { ...piece.position })
+                this.syncHealthBar(piece)
                 continue
             }
 
@@ -161,6 +186,8 @@ export class BoardScene extends Phaser.Scene {
             if (Math.abs(sprite.alpha - targetAlpha) > 0.01) {
                 this.tweens.add({ targets: sprite, alpha: targetAlpha, duration: ALPHA_TWEEN_MS })
             }
+
+            this.syncHealthBar(piece)
         }
 
         // Peças removidas (eliminadas) somem com fade
@@ -168,8 +195,10 @@ export class BoardScene extends Phaser.Scene {
             if (seen.has(id)) continue
             this.sprites.delete(id)
             this.lastCells.delete(id)
-            // O brilho é filho do container: some junto com a peça, sem tween próprio
+            // O brilho e a barra de vida são filhos do container: somem junto com a peça,
+            // sem tween próprio
             this.auras.delete(id)
+            this.healthBars.delete(id)
             this.tweens.killTweensOf(sprite)
             this.tweens.add({
                 targets: sprite,
@@ -382,7 +411,44 @@ export class BoardScene extends Phaser.Scene {
             .setOrigin(0.5, 0.5)
 
         container.add([shadow, leftLeg, rightLeg, leftArm, rightArm, body, head, leftEye, rightEye, letter])
+        container.add(this.buildHealthBar(piece.id))
         return container
+    }
+
+    // A barra nasce apagada: o tabuleiro só marca quem já foi atingido, e é `syncHealthBar`
+    // que a acende quando a peça perde vida.
+    private buildHealthBar(pieceId: string): Phaser.GameObjects.Container {
+        const cs = this.cellSize
+        const width = cs * HEALTH_BAR.width
+        const height = cs * HEALTH_BAR.height
+
+        const track = this.add
+            .rectangle(0, 0, width, height, hex(HEALTH_PALETTE.track), 0.85)
+            .setStrokeStyle(1, hex(HEALTH_PALETTE.outline), 0.9)
+        // A vida esvazia da direita para a esquerda, então a origem fica na ponta esquerda
+        const fill = this.add
+            .rectangle(-width / 2 + HEALTH_BAR.inset, 0, width - HEALTH_BAR.inset * 2, height - HEALTH_BAR.inset * 2, hex(HEALTH_PALETTE.high))
+            .setOrigin(0, 0.5)
+
+        const root = this.add.container(0, -cs * HEALTH_BAR.offsetY, [track, fill]).setAlpha(0)
+        this.healthBars.set(pieceId, { root, fill, width: width - HEALTH_BAR.inset * 2 })
+        return root
+    }
+
+    // Comprimento e cor acompanham a vida que restou.
+    // A barra some quando a peça está inteira.
+    private syncHealthBar(piece: PieceDefinition) {
+        const bar = this.healthBars.get(piece.id)
+        if (!bar) return
+
+        const ratio = Math.max(0, Math.min(1, piece.hp / piece.maxHp))
+        bar.fill.setSize(Math.max(1, bar.width * ratio), bar.fill.height)
+        bar.fill.setFillStyle(hex(healthColor(ratio)))
+
+        const targetAlpha = ratio < 1 ? 1 : 0
+        if (Math.abs(bar.root.alpha - targetAlpha) < 0.01) return
+        this.tweens.killTweensOf(bar.root)
+        this.tweens.add({ targets: bar.root, alpha: targetAlpha, duration: ALPHA_TWEEN_MS })
     }
 
     private buildItem(item: SpecialItem): Phaser.GameObjects.Container {

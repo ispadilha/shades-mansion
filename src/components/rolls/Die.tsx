@@ -16,14 +16,26 @@ const land = keyframes`
     100% { transform: rotate(0deg) scale(1) }
 `
 
-const SHAPES: Record<DieSides, { outer: string; inner: string }> = {
+interface DieShape {
+    outer: string
+    inner: string
+    // Altura do número dentro da face: cada sólido tem o próprio centro
+    textY: number
+}
+
+const SHAPES: Record<DieSides, DieShape> = {
+    4: { outer: "32,5 59,52 5,52", inner: "32,18 50,46 14,46", textY: 37 },
+    6: { outer: "9,9 55,9 55,55 9,55", inner: "18,18 46,18 46,46 18,46", textY: 32 },
+    8: { outer: "32,3 58,32 32,61 6,32", inner: "32,15 47,32 32,49 17,32", textY: 32 },
     12: {
         outer: "32,4 58.6,23.4 48.5,54.7 15.5,54.7 5.4,23.4",
         inner: "32,12 51,25.8 43.8,48 20.2,48 13,25.8",
+        textY: 36,
     },
     20: {
-        outer: "32,2 58,47 6,47",
-        inner: "32,11 50.2,42.5 13.8,42.5",
+        outer: "32,3 57,17.5 57,46.5 32,61 7,46.5 7,17.5",
+        inner: "32,15 49,45 15,45",
+        textY: 37,
     },
 }
 
@@ -66,7 +78,7 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                 />
                 <text
                     x="32"
-                    y={sides === 20 ? 38 : 36}
+                    y={shape.textY}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     fontFamily="Arial Black"

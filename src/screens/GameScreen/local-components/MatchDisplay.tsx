@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { BoardArea } from "./BoardArea"
-import { BoardContextMenu, type BoardMenuState } from "./BoardContextMenu"
+import { BoardContextMenu, type BoardAction, type BoardMenuState } from "./BoardContextMenu"
 import { HUD } from "./HUD"
 import { InventoryModal } from "./InventoryModal"
 import { ItemInfoModal } from "./ItemInfoModal"
@@ -32,7 +32,7 @@ import { useGameLog } from "../../../hooks/useGameLog"
 import { useHighlightedCells } from "../../../hooks/useHighlightedCells"
 import { useMatchItems } from "../../../hooks/useMatchItems"
 import { useRolls } from "../../../hooks/useRolls"
-import { ACTION_SETTLE_MS, PIECE_STATS, STEP_MS, isRanged } from "../../../constants/rules"
+import { ACTION_SETTLE_MS, PIECE_STATS, STEP_MS, isAreaAttack, isRanged } from "../../../constants/rules"
 
 interface MatchDisplayProps {
     match: MatchSetup
@@ -260,17 +260,25 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         const canItemInfo = !selectedId && !targetPiece && !!itemAtPos && !isManipulating
         const canMove = isOwnSelection && !targetPiece && !itemAtPos && inMoveRange
         const canCollect = isOwnSelection && !targetPiece && !!itemAtPos && inMoveRange
-        // Ataque: durante manipulação, alvo pode ser de qualquer cor (exceto a própria peça manipulada)
+        // Ataque em uma peça: durante manipulação, o alvo pode ser de qualquer cor.
+        // Ataque no chão: só a peça incendiária, e só em casa dentro da linha de tiro dela.
         const canAttack =
             isOwnSelection &&
-            !!targetPiece &&
-            targetPiece.id !== selectedPiece!.id &&
-            (isManipulating || targetPiece.color !== selectedPiece!.color) &&
-            canHitTarget(selectedPiece!, targetPiece)
+            (targetPiece
+                ? targetPiece.id !== selectedPiece!.id &&
+                  (isManipulating || targetPiece.color !== selectedPiece!.color) &&
+                  canHitTarget(selectedPiece!, targetPiece)
+                : isAreaAttack(selectedPiece!.type) && includesPosition(highlighted.attack, pos))
 
-        if (!canInfo && !canItemInfo && !canMove && !canCollect && !canAttack) return
+        const actions: BoardAction[] = []
+        if (canInfo) actions.push("info")
+        if (canItemInfo) actions.push("itemInfo")
+        if (canMove) actions.push("move")
+        if (canCollect) actions.push("collect")
+        if (canAttack) actions.push("attack")
+        if (actions.length === 0) return
 
-        setContextMenu({ mouseX: event.clientX, mouseY: event.clientY, position: pos, targetPiece, itemAtPos })
+        setContextMenu({ mouseX: event.clientX, mouseY: event.clientY, position: pos, targetPiece, itemAtPos, actions })
     }
 
     const closeContextMenu = () => setContextMenu(null)
@@ -311,19 +319,22 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const handleCollect = () => contextMenu?.position && moveSelectedTo(contextMenu.position)
 
     const handleAttack = () => {
-        if (!selectedId || !contextMenu?.targetPiece || !activeColor) return
+        if (!selectedId || !contextMenu || !activeColor) return
         const attacker = pieces.find((p) => p.id === selectedId)
         if (!attacker) return
 
+        // O golpe cai em uma casa, que pode ou não ter uma peça em cima
         const target = contextMenu.targetPiece
-        const damage = PIECE_STATS[attacker.type].attackDamage
-        const targetId = target.id
-        const area = attackArea(attacker, target.position)
+        const area = attackArea(attacker, target?.position ?? contextMenu.position)
+        if (!target && !area) return
+
         // Ataque à distância acerta de onde a peça está. Os outros tipos se aproximam do alvo antes.
         const ranged = isRanged(attacker.type)
-        const newPos = ranged
-            ? attacker.position
-            : (findApproachCell(attacker, target, pieces, maze, PIECE_STATS[attacker.type].attackRange) ?? attacker.position)
+        const newPos =
+            ranged || !target
+                ? attacker.position
+                : (findApproachCell(attacker, target, pieces, maze, PIECE_STATS[attacker.type].attackRange) ??
+                  attacker.position)
         const delayMs = pathLength(attacker.position, newPos, maze) * STEP_MS + ACTION_SETTLE_MS
 
         // Ataque forçado por manipulação não gasta a ação que a peça tem no próprio turno
@@ -337,19 +348,21 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         setSelectedId(null)
         closeContextMenu()
 
+        // Sem peça mirada não há alvo para nomear no histórico
+        const actionKey: TextKey = target ? "toAttack" : "toBurnArea"
         if (forcedBy) {
-            log.manipulatedTo(activeColor, attacker.id, "toAttack", targetId)
+            log.manipulatedTo(activeColor, attacker.id, actionKey, target?.id)
             endManipulation()
         } else {
-            log.usedTo(activeColor, attacker.id, "toAttack", targetId)
+            log.usedTo(activeColor, attacker.id, actionKey, target?.id)
         }
 
-        // A moeda é jogada quando o atacante termina de se aproximar
+        // Os dados são jogados quando o atacante termina de se aproximar
         combat.resolveAttack({
             attackerId: attacker.id,
-            targetId,
-            damage,
+            attackerType: attacker.type,
             delayMs,
+            ...(target ? { targetId: target.id } : {}),
             ...(area ? { area } : {}),
             ...(forcedBy ? { consumedItemKey: attacker.id as SpecialItemKey, consumerColor: forcedBy } : {}),
         })
@@ -411,7 +424,6 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     }, [activePieceId, manipulatedId])
 
     const playerInventory = inventoryColor ? inventories[inventoryColor] : []
-    const selectedPiece = selectedId ? pieces.find((p) => p.id === selectedId) : undefined
 
     return (
         <ScreenLayout sx={{ justifyContent: "flex-start", alignItems: "stretch", overflow: "hidden" }}>
@@ -448,9 +460,6 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
 
             <BoardContextMenu
                 menu={contextMenu}
-                selectedId={selectedId}
-                selectedPiece={selectedPiece}
-                manipulating={manipulation !== null}
                 onClose={closeContextMenu}
                 onShowPieceInfo={handleShowInfo}
                 onShowItemInfo={handleShowItemInfo}

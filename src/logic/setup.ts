@@ -4,7 +4,7 @@ import type { Maze } from "./maze"
 import { generateMaze, inside, isWalkable } from "./maze"
 import { neighbors, positionKey } from "./grid"
 import { shuffle } from "./random"
-import { ITEM_COPIES, LINEUP_COLORS, MAX_HP, PLACEMENT_COLORS } from "../constants/rules"
+import { ITEM_COPIES, LINEUP_COLORS, PIECE_STATS, PLACEMENT_COLORS } from "../constants/rules"
 
 // Distribui "count" posições em uma linha começando e terminando nos extremos,
 // com espaçamento equivalente entre elas.
@@ -67,14 +67,15 @@ export function createInitialPieces(maze: Maze): PieceDefinition[] {
             const position = nearestFreeCell(maze, { x: columns[index], y }, occupied)
             if (!position) return
             occupied.add(positionKey(position))
+            const { maxHp } = PIECE_STATS[type]
             pieces.push({
                 id: pieceId(color, type),
                 color,
                 type,
                 position,
                 movedThisTurn: false,
-                hp: MAX_HP,
-                maxHp: MAX_HP,
+                hp: maxHp,
+                maxHp,
             })
         })
     }

@@ -63,6 +63,14 @@ export const BOARD_PALETTE = {
     selected: "#ffd700",
 }
 
+export const HEALTH_PALETTE = {
+    track: "#141014",
+    outline: "#000000",
+    high: "#4caf50",
+    medium: "#d9a13a",
+    low: "#e04a3c",
+}
+
 // O incêndio do dano em área: as chamas sorteiam uma das cores da lista.
 export const FIRE_PALETTE = {
     flames: ["#fff0a5", "#ffc043", "#ff8c1a", "#e63b1e"],

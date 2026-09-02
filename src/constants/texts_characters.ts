@@ -82,10 +82,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Pyrrha was let into the Dark team on one condition: never to stand close to anyone the team cannot lose. The condition has already been broken twice.\n\n" +
-                "The firestarter of the Dark team: shoots from where it stands, and the shot sets a square around the target on fire.",
+                "The firestarter of the Dark team: shoots from where it stands, and the shot sets an area on fire.",
             ptBR:
                 "Pyrrha foi aceita no time escuro sob uma condição: nunca ficar perto de quem o time não pode perder. A condição já foi quebrada duas vezes.\n\n" +
-                "É a incendiária do time escuro: atira de onde está, e o tiro incendeia um quadrado em volta do alvo.",
+                "É a incendiária do time escuro: atira de onde está, e o tiro incendeia uma área.",
         },
     },
 
@@ -172,10 +172,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Favilla keeps what is left of every room the Gray team has walked through, and would gladly add a few more to the collection.\n\n" +
-                "The firestarter of the Gray team: shoots from where it stands, and the shot sets a square around the target on fire.",
+                "The firestarter of the Gray team: shoots from where it stands, and the shot sets an area on fire.",
             ptBR:
                 "Favilla guarda o que sobrou de cada sala por onde o time cinza passou, e acrescentaria mais algumas à coleção com prazer.\n\n" +
-                "É a incendiária do time cinza: atira de onde está, e o tiro incendeia um quadrado em volta do alvo.",
+                "É a incendiária do time cinza: atira de onde está, e o tiro incendeia uma área.",
         },
     },
 
@@ -262,10 +262,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Every briefing ends by reminding Ignis to look at who is standing around the target. Ignis always says yes, and looks at the target.\n\n" +
-                "The firestarter of the Light team: shoots from where it stands, and the shot sets a square around the target on fire.",
+                "The firestarter of the Light team: shoots from where it stands, and the shot sets an area on fire.",
             ptBR:
                 "Toda instrução termina lembrando Ignis de olhar quem está em volta do alvo. Ignis sempre diz que sim, e olha para o alvo.\n\n" +
-                "É a incendiária do time claro: atira de onde está, e o tiro incendeia um quadrado em volta do alvo.",
+                "É a incendiária do time claro: atira de onde está, e o tiro incendeia uma área.",
 
         },
     },

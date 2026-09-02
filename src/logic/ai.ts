@@ -9,7 +9,7 @@ import { ACTION_SETTLE_MS, PIECE_STATS, STEP_MS, isRanged } from "../constants/r
 
 export interface AIMoveResult {
     updatedPieces: PieceDefinition[]
-    // Ataque decidido: quem chamou é que joga a moeda e aplica (ou não) o dano
+    // Ataque decidido: quem chamou é que rola o dano, a defesa do alvo, e aplica o resultado
     pendingAttack?: PendingAttack
 }
 
@@ -96,8 +96,6 @@ export class SimpleAI {
             const manipulated = pieces.find((p) => p.id === itemKey)
             if (!manipulated) continue
 
-            const damage = PIECE_STATS[manipulated.type].attackDamage
-
             // Alvos possíveis: qualquer peça que não seja da IA nem a própria peça manipulada
             const candidates = pieces.filter((p) => p.id !== manipulated.id && p.color !== color)
             const reach = this.findInRangeTargets(manipulated, candidates, pieces, maze, color)
@@ -117,8 +115,8 @@ export class SimpleAI {
                 updatedPieces,
                 pendingAttack: {
                     attackerId: manipulated.id,
+                    attackerType: manipulated.type,
                     targetId: best.target.id,
-                    damage,
                     delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                     ...(area ? { area } : {}),
                     consumedItemKey: itemKey,
@@ -174,15 +172,14 @@ export class SimpleAI {
         maze: Maze,
     ): AIMoveResult {
         const moveSteps = pathLength(attacker.position, approach, maze)
-        const damage = PIECE_STATS[attacker.type].attackDamage
         const area = attackArea(attacker, target.position)
         const updatedPieces = pieces.map((p) => (p.id === attacker.id ? { ...p, position: approach, movedThisTurn: true } : p))
         return {
             updatedPieces,
             pendingAttack: {
                 attackerId: attacker.id,
+                attackerType: attacker.type,
                 targetId: target.id,
-                damage,
                 delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                 ...(area ? { area } : {}),
             },

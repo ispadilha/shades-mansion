@@ -1,19 +1,30 @@
 import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { PieceColor, PieceDefinition, SpecialItemKey } from "../logic/types"
+import type { PieceColor, PieceDefinition, PiecePosition, SpecialItemKey, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import {
     areaCells,
-    piecesInCells,
-    rollAttack,
+    piecesInBlast,
+    rollDamage,
+    rollDefense,
     rollManipulation,
+    type AttackArea,
+    type DamageRoll,
+    type DefenseOutcome,
     type FireBurst,
     type PendingAttack,
 } from "../logic/combat"
+import { dieKind, type RollTone } from "../logic/rolls"
 import { useLanguage } from "./useLanguage"
 import type { GameLog } from "./useGameLog"
 import type { RollQueue } from "./useRolls"
-import { MAX_FIRE_BURSTS } from "../constants/rules"
+import { ATTACK_ROLL_TIMING, DEFENSE_DIE, DODGE_ROLL_TIMING, MAX_FIRE_BURSTS, PIECE_STATS } from "../constants/rules"
+
+const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }> = {
+    dodged: { label: "dodgeTotal", tone: "good" },
+    guarded: { label: "dodgeGuard", tone: "neutral" },
+    clean: { label: "dodgeNone", tone: "bad" },
+}
 
 interface CombatResolutionOptions {
     pieces: PieceDefinition[]
@@ -48,7 +59,7 @@ export const useCombatResolution = ({
     isManualRoll,
 }: CombatResolutionOptions): CombatResolution => {
     const { t } = useLanguage()
-    // A moeda do ataque só é jogada quando o atacante termina de se aproximar: o timer
+    // Os dados do golpe só são jogados quando o atacante termina de se aproximar: o timer
     // fica guardado para não sobreviver à saída da tela.
     const damageTimerRef = useRef<number | null>(null)
 
@@ -58,56 +69,102 @@ export const useCombatResolution = ({
         }
     }, [])
 
+    // O atacante rola o dano e, em cima dele, cada peça atingida rola sua defesa
     const resolveAttack = (attack: PendingAttack) => {
-        const rollerColor = attack.consumerColor ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
+        // Quem joga os dados do golpe: o time da peça, ou quem a está manipulando
+        const attackerColor = attack.consumerColor ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
         rolls.setResolving(true)
+
         damageTimerRef.current = window.setTimeout(() => {
             damageTimerRef.current = null
-            const { face, success } = rollAttack()
+
+            // O tiro caiu: trazendo uma área, ela pega fogo antes de qualquer conta
+            const burning = attack.area ? igniteArea(attack.area, attack.attackerId) : []
+            const defenders = defendersOf(attack, burning)
+
+            // Fogo em casa vazia, ou alvo que já saiu do tabuleiro: nada para rolar
+            if (defenders.length === 0) {
+                rolls.setResolving(false)
+                return
+            }
+
+            const damage = rollDamage(attack.attackerType)
 
             rolls.show(
                 {
-                    id: `attack-${attack.attackerId}-${attack.targetId}-${Date.now()}`,
-                    kind: "coin",
-                    value: face,
-                    title: t("attackRoll"),
-                    subtitle: `${attack.attackerId} → ${attack.targetId}`,
-                    outcome: { label: success ? t("attackHit") : t("attackMiss"), tone: success ? "good" : "bad" },
-                    manual: rollerColor !== null && isManualRoll(rollerColor),
+                    id: `damage-${attack.attackerId}-${Date.now()}`,
+                    kind: dieKind(PIECE_STATS[attack.attackerType].damage.sides),
+                    value: damage.dice,
+                    title: t("damageRoll"),
+                    subtitle: attack.targetId ? `${attack.attackerId} → ${attack.targetId}` : attack.attackerId,
+                    outcome: { label: t("damagePoints"), tone: "neutral" },
+                    manual: attackerColor !== null && isManualRoll(attackerColor),
+                    ...ATTACK_ROLL_TIMING,
                 },
-                () => {
-                    if (success) {
-                        // O fogo pega todo mundo que estiver nas casas em chamas.
-                        // As casas e quem está nelas são decididas
-                        // agora, com as posições atuais.
-                        const burning = attack.area ? areaCells(maze, attack.area.center, attack.area.side) : []
-                        const burned = piecesInCells(pieces, burning)
-                            .filter((p) => p.id !== attack.targetId)
-                            .map((p) => p.id)
-                        const hit = new Set([attack.targetId, ...burned])
-
-                        setPieces((prev) =>
-                            prev
-                                .map((p) => (hit.has(p.id) ? { ...p, hp: p.hp - attack.damage } : p))
-                                .filter((p) => p.hp > 0),
-                        )
-                        if (attack.area) {
-                            const { center } = attack.area
-                            setFireBursts((prev) => [
-                                ...prev.slice(-MAX_FIRE_BURSTS + 1),
-                                { id: `fire-${attack.attackerId}-${Date.now()}`, center, cells: burning },
-                            ])
-                        }
-                        log.attackRoll(attack.attackerId, attack.targetId, success)
-                        log.burned(burned)
-                        rolls.setResolving(false)
-                        return
-                    }
-                    log.attackRoll(attack.attackerId, attack.targetId, success)
-                    rolls.setResolving(false)
-                },
+                () => resolveDefenders(attack, damage, defenders, 0),
             )
         }, attack.delayMs)
+    }
+
+    // O incêndio acontece com ou sem peça(s) para queimar
+    const igniteArea = (area: AttackArea, attackerId: string): PiecePosition[] => {
+        const burning = areaCells(maze, area.center, area.side)
+        setFireBursts((prev) => [
+            ...prev.slice(-MAX_FIRE_BURSTS + 1),
+            { id: `fire-${attackerId}-${Date.now()}`, center: area.center, cells: burning },
+        ])
+        return burning
+    }
+
+    // Quem se defende: a peça mirada, ou todas as da área quando o golpe incendeia
+    const defendersOf = (attack: PendingAttack, burning: PiecePosition[]): PieceDefinition[] => {
+        if (attack.area) return piecesInBlast(pieces, burning, attack.area.center)
+        const target = pieces.find((p) => p.id === attack.targetId)
+        return target ? [target] : []
+    }
+
+    // Uma defesa de cada vez, rolada por quem comanda a peça atingida
+    const resolveDefenders = (
+        attack: PendingAttack,
+        damage: DamageRoll,
+        defenders: PieceDefinition[],
+        index: number,
+    ) => {
+        const defender = defenders[index]
+        if (!defender) {
+            rolls.setResolving(false)
+            return
+        }
+
+        const defense = rollDefense(defender.type, damage.total)
+        const reading = DEFENSE_READING[defense.outcome]
+
+        rolls.show(
+            {
+                id: `defense-${defender.id}-${Date.now()}`,
+                kind: dieKind(DEFENSE_DIE),
+                value: [defense.die],
+                title: t("dodgeRoll"),
+                subtitle: defender.id,
+                outcome: { label: t(reading.label), tone: reading.tone },
+                manual: isManualRoll(defender.color),
+                ...DODGE_ROLL_TIMING,
+            },
+            () => {
+                if (defense.damage > 0) applyDamage(defender.id, defense.damage)
+
+                if (defense.outcome === "dodged") log.attackDodged(attack.attackerId, defender.id)
+                else if (defense.outcome === "guarded") log.attackGuarded(attack.attackerId, defender.id, defense.damage)
+                else log.attackHit(attack.attackerId, defender.id, defense.damage)
+
+                resolveDefenders(attack, damage, defenders, index + 1)
+            },
+        )
+    }
+
+    // Quem chega a zero sai do tabuleiro
+    const applyDamage = (pieceId: string, damage: number) => {
+        setPieces((prev) => prev.map((p) => (p.id === pieceId ? { ...p, hp: p.hp - damage } : p)).filter((p) => p.hp > 0))
     }
 
     const resolveManipulation = (

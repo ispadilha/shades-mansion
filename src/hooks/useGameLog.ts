@@ -14,12 +14,14 @@ export interface GameLog {
     // "{time} manipulou {peça} para {ação} [{alvo}]"
     manipulatedTo: (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => void
     healed: (color: PieceColor, piece: string) => void
-    // Resultado da moeda de ataque
-    attackRoll: (attackerId: string, targetId: string, hit: boolean) => void
+    // Golpe que passou inteiro pela defesa
+    attackHit: (attackerId: string, targetId: string, damage: number) => void
+    // Golpe aparado: o defensor levou metade
+    attackGuarded: (attackerId: string, targetId: string, damage: number) => void
+    // Golpe desviado
+    attackDodged: (attackerId: string, targetId: string) => void
     // Resultado da moeda de manipulação
     manipulationRoll: (itemKey: string, success: boolean) => void
-    // Peças pegas de tabela pelo fogo do ataque em área
-    burned: (pieceIds: string[]) => void
     eliminated: (pieceId: string) => void
     defeated: (color: PieceColor) => void
 }
@@ -52,17 +54,23 @@ export const useGameLog = (): GameLog => {
         add(`${tTeam(color)} ${t("verbHealed")} ${piece}`)
     }
 
-    const attackRoll = (attackerId: string, targetId: string, hit: boolean) => {
-        add(`${attackerId} ${t(hit ? "verbHit" : "verbMissed")} ${targetId}`)
+    // Quanto a peça perdeu de vida, no fim da frase: "xX acertou yY (−7)"
+    const hpLoss = (damage: number) => ` (−${damage})`
+
+    const attackHit = (attackerId: string, targetId: string, damage: number) => {
+        add(`${attackerId} ${t("verbHit")} ${targetId}${hpLoss(damage)}`)
+    }
+
+    const attackGuarded = (attackerId: string, targetId: string, damage: number) => {
+        add(`${targetId} ${t("verbGuarded")} ${attackerId}${hpLoss(damage)}`)
+    }
+
+    const attackDodged = (attackerId: string, targetId: string) => {
+        add(`${targetId} ${t("verbDodged")} ${attackerId}`)
     }
 
     const manipulationRoll = (itemKey: string, success: boolean) => {
         add(`${itemKey} ${t(success ? "verbFellUnderManipulation" : "verbResistedManipulation")}`)
-    }
-
-    // O alvo principal já entrou no log pela moeda de ataque
-    const burned = (pieceIds: string[]) => {
-        for (const id of pieceIds) add(`${id} ${t("wasBurned")}`)
     }
 
     const eliminated = (pieceId: string) => {
@@ -73,5 +81,17 @@ export const useGameLog = (): GameLog => {
         add(`${tTeam(color)} ${t("wasDefeated")}!`)
     }
 
-    return { entries, add, usedTo, manipulatedTo, healed, attackRoll, manipulationRoll, burned, eliminated, defeated }
+    return {
+        entries,
+        add,
+        usedTo,
+        manipulatedTo,
+        healed,
+        attackHit,
+        attackGuarded,
+        attackDodged,
+        manipulationRoll,
+        eliminated,
+        defeated,
+    }
 }

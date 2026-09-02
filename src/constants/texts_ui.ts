@@ -154,9 +154,24 @@ export const texts_ui = {
         ptBR: "Alcance de ataque",
     },
 
-    attackPower: {
-        enUS: "Attack power",
-        ptBR: "Força de ataque",
+    damage: {
+        enUS: "Damage",
+        ptBR: "Dano",
+    },
+
+    dodge: {
+        enUS: "Dodge",
+        ptBR: "Esquiva",
+    },
+
+    guard: {
+        enUS: "Guard",
+        ptBR: "Aparo",
+    },
+
+    dodgeNever: {
+        enUS: "too heavy",
+        ptBR: "não desvia",
     },
 
     attackStyle: {
@@ -284,14 +299,14 @@ export const texts_ui = {
         ptBR: "para atacar",
     },
 
+    toBurnArea: {
+        enUS: "to set an area on fire",
+        ptBR: "para incendiar uma área",
+    },
+
     toCollectItem: {
         enUS: "to collect item",
         ptBR: "para coletar o item",
-    },
-
-    wasBurned: {
-        enUS: "was caught in the fire",
-        ptBR: "foi pega pelo fogo",
     },
 
     wasEliminated: {
@@ -389,9 +404,34 @@ export const texts_ui = {
         ptBR: "Rodada",
     },
 
-    attackRoll: {
-        enUS: "Attack roll",
-        ptBR: "Rolagem de ataque",
+    damageRoll: {
+        enUS: "Damage roll",
+        ptBR: "Rolagem de dano",
+    },
+
+    damagePoints: {
+        enUS: "damage",
+        ptBR: "de dano",
+    },
+
+    dodgeRoll: {
+        enUS: "Dodge roll",
+        ptBR: "Rolagem de esquiva",
+    },
+
+    dodgeTotal: {
+        enUS: "Dodged it!",
+        ptBR: "Esquiva total!",
+    },
+
+    dodgeGuard: {
+        enUS: "Blocked half",
+        ptBR: "Aparou metade",
+    },
+
+    dodgeNone: {
+        enUS: "Clean hit",
+        ptBR: "Golpe cheio",
     },
 
     coinHeads: {
@@ -404,24 +444,19 @@ export const texts_ui = {
         ptBR: "Coroa",
     },
 
-    attackHit: {
-        enUS: "Hit!",
-        ptBR: "Acertou!",
-    },
-
-    attackMiss: {
-        enUS: "Miss!",
-        ptBR: "Errou!",
-    },
-
     verbHit: {
         enUS: "hit",
         ptBR: "acertou",
     },
 
-    verbMissed: {
-        enUS: "missed",
-        ptBR: "errou",
+    verbGuarded: {
+        enUS: "blocked",
+        ptBR: "aparou o golpe de",
+    },
+
+    verbDodged: {
+        enUS: "dodged",
+        ptBR: "desviou de",
     },
 
     alreadyActed: {
