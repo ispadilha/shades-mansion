@@ -6,7 +6,7 @@ import { useLanguage } from "../../hooks/useLanguage"
 import { AURA_PALETTE, INITIATIVE_PALETTE } from "../../constants/palette"
 
 interface TurnOrderBarProps {
-    // Peças vivas, já na ordem de iniciativa
+    // Peças ainda em jogo, já na ordem de iniciativa
     order: PieceDefinition[]
     activeId: string | null
     // Peça sob manipulação

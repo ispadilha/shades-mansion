@@ -8,7 +8,7 @@ import { useLanguage } from "../../../hooks/useLanguage"
 import { SURFACE_PALETTE } from "../../../constants/palette"
 
 // O verbete de um item depende de quem olha:
-// o do próprio time cura a peça correspondente,
+// o do próprio time cura ou promove a peça correspondente,
 // o de outro time serve para manipulá-la.
 const HEAL_HEAD: Record<PieceColor, TextKey> = {
     light: "itemDescHealLight",

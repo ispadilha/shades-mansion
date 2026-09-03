@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import type { PieceDefinition, PiecePosition } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { lineOfFire, meleeAttackCells, reachableCells } from "../logic/movement"
-import { PIECE_STATS, isRanged } from "../constants/rules"
+import { isRanged, statsFor } from "../constants/rules"
 
 export interface HighlightedCells {
     // Casas em que a peça selecionada pode terminar o movimento
@@ -29,7 +29,7 @@ export const useHighlightedCells = (
         const piece = pieces.find((p) => p.id === selectedId)
         if (!piece) return
 
-        const stats = PIECE_STATS[piece.type]
+        const stats = statsFor(piece.type, piece.level)
         setMove(reachableCells(piece, pieces, maze, stats.moveRange))
 
         // Peças de ataque à distância destacam tudo o que estiver na mira:

@@ -92,6 +92,39 @@ export const isAreaAttack = (type: PieceType) => PIECE_STATS[type].areaAttack ==
 export const canDodge = (type: PieceType) => PIECE_STATS[type].dodge <= 20
 
 // ---------------------------------------------------------------------------
+// Promoções
+// ---------------------------------------------------------------------------
+
+export const MAX_LEVEL = 3
+
+// A escada dos dados de dano: cada promoção sobe um degrau
+const DAMAGE_LADDER: DieSides[] = [4, 6, 8, 10, 12, 20]
+
+// O que cada nível acima do primeiro acrescenta.
+// A esquiva fica de fora:
+// quem é pesado demais para desviar não aprende a desviar.
+export const LEVEL_BONUS = { maxHp: 3, moveRange: 1, guard: -1, damageSteps: 1 }
+
+// Os atributos de uma peça no nível em que ela está
+export const statsFor = (type: PieceType, level: number): PieceStats => {
+    const base = PIECE_STATS[type]
+    const steps = Math.max(0, level - 1)
+    if (steps === 0) return base
+
+    const degrau = Math.min(
+        DAMAGE_LADDER.indexOf(base.damage.sides) + steps * LEVEL_BONUS.damageSteps,
+        DAMAGE_LADDER.length - 1,
+    )
+    return {
+        ...base,
+        maxHp: base.maxHp + steps * LEVEL_BONUS.maxHp,
+        moveRange: base.moveRange + steps * LEVEL_BONUS.moveRange,
+        guard: base.guard + steps * LEVEL_BONUS.guard,
+        damage: { ...base.damage, sides: DAMAGE_LADDER[degrau] },
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Combate
 // ---------------------------------------------------------------------------
 
@@ -139,6 +172,9 @@ export const MAX_LOG_ENTRIES = 100
 // Explosões de fogo guardadas no estado (só para a cena não reanimar as antigas)
 export const MAX_FIRE_BURSTS = 8
 
+// Quanto tempo a câmera fica presa no item que caiu de volta no tabuleiro
+export const ITEM_DROP_HOLD_MS = 1000
+
 // Rolagem da câmera quando o cursor encosta na borda da viewport
 export const EDGE_SCROLL = { edgeSize: 80, maxSpeed: 20 }
 
@@ -166,8 +202,8 @@ export const INITIATIVE_ROLL_TIMING = {
 // Apagar e acender da tela de iniciativa quando ela troca as rolagens pela ordem sorteada
 export const INITIATIVE_FADE_MS = 1000
 
-// Um ataque tem duas rolagens seguidas: ataque e defesa. Elas correm mais rápido
-// que as da iniciativa porque acontecem o tempo todo.
+// Um ataque tem a rolagem do dano e uma de defesa por peça atingida. Elas correm mais
+// rápido que as da iniciativa porque acontecem o tempo todo.
 export const ATTACK_ROLL_TIMING = { spinMs: 460, holdMs: 620 }
 export const DODGE_ROLL_TIMING = { spinMs: 380, holdMs: 700 }
 
@@ -184,6 +220,10 @@ export const AURA_TEXTURE_SIZE = 128
 
 // Peça que já agiu na rodada fica translúcida
 export const MOVED_PIECE_ALPHA = 0.55
+
+// A queda do item que volta ao tabuleiro: de onde ele cai, e em quanto tempo
+export const ITEM_DROP_MS = 1000
+export const ITEM_DROP_HEIGHT = 1.6
 
 // Saídas de cena: peça eliminada, item coletado, e a troca de transparência das peças
 export const PIECE_FADE_MS = 280

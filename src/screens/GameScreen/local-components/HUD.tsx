@@ -15,7 +15,7 @@ const TURN_ORDER_WIDTH = "75%"
 interface HUDProps {
     // Peça da vez na ordem de iniciativa (null só enquanto a partida está terminando)
     activePiece: PieceDefinition | null
-    // Peças vivas na ordem de iniciativa, para a faixa de turnos
+    // Peças ainda em jogo, na ordem de iniciativa, para a faixa de turnos
     turnOrder: PieceDefinition[]
     round: number
     isPlayerTurn: boolean

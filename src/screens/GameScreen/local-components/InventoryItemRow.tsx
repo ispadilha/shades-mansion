@@ -1,21 +1,24 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
 import { ItemBadge } from "../../../components/pieces"
-import type { SpecialItemKey } from "../../../logic/types"
+import type { SpecialItemKey, TextKey } from "../../../logic/types"
+import type { ItemUse } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"
 
 interface InventoryItemRowProps {
     itemKey: SpecialItemKey
     // Quantas unidades do item o time tem
     count: number
-    // Se o item rende alguma ação agora
-    usable: boolean
+    // O que o item faz agora, ou null quando não serve para nada
+    use: ItemUse | null
     onUse: () => void
     // O menu de contexto da linha só oferece examinar o item
     onExamine: (event: React.MouseEvent) => void
 }
 
-export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, count, usable, onUse, onExamine }) => {
+const USE_LABEL: Record<ItemUse, TextKey> = { heal: "heal", promote: "promote", manipulate: "use" }
+
+export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, count, use, onUse, onExamine }) => {
     const { t } = useLanguage()
 
     return (
@@ -39,9 +42,9 @@ export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, cou
                 {itemKey}
                 {count > 1 ? ` × ${count}` : ""}
             </Typography>
-            {usable && (
+            {use && (
                 <Button size="small" variant="contained" onClick={onUse}>
-                    {t("use")}
+                    {t(USE_LABEL[use])}
                 </Button>
             )}
         </Box>

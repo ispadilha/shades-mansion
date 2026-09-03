@@ -58,13 +58,13 @@ export interface NextTurn {
     newRound: boolean
 }
 
-// Próxima posição da ordem ocupada por uma peça ainda viva. As eliminadas são puladas
+// Próxima posição da ordem ocupada por uma peça ainda em jogo. As eliminadas são puladas
 // (a ordem em si nunca muda). Retorna null se não sobrou ninguém.
-export function nextTurnIndex(order: string[], isAlive: (pieceId: string) => boolean, from: number): NextTurn | null {
+export function nextTurnIndex(order: string[], inInPlay: (pieceId: string) => boolean, from: number): NextTurn | null {
     for (let step = 1; step <= order.length; step++) {
         const raw = from + step
         const index = raw % order.length
-        if (isAlive(order[index])) return { index, newRound: raw >= order.length }
+        if (inInPlay(order[index])) return { index, newRound: raw >= order.length }
     }
     return null
 }

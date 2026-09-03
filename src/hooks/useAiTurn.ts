@@ -53,13 +53,13 @@ export const useAiTurn = ({
     combat,
     log,
 }: AiTurnOptions) => {
-    // Turno em que a fase de cura já foi resolvida (ela acontece uma vez por turno)
-    const healPhaseDoneRef = useRef<string | null>(null)
+    // Turno em que a fase dos itens já foi resolvida (ela acontece uma vez por turno)
+    const itemPhaseDoneRef = useRef<string | null>(null)
 
     useEffect(() => {
         if (!activePiece) return
         if (isPlayerTurn) {
-            healPhaseDoneRef.current = null
+            itemPhaseDoneRef.current = null
             return
         }
         if (resolving) return
@@ -67,18 +67,18 @@ export const useAiTurn = ({
         const turnKey = `${round}-${turnIndex}`
         const color = activePiece.color
 
-        // Fase de cura: no começo do turno, o time da peça da vez gasta os itens que tem
-        // para curar suas peças (uma vez por turno)
-        if (healPhaseDoneRef.current !== turnKey) {
-            const heal = SimpleAI.applyHeals(pieces, color, inventories)
-            healPhaseDoneRef.current = turnKey
-            if (heal.healed) {
-                for (const p of pieces) {
-                    const after = heal.pieces.find((q) => q.id === p.id)
-                    if (after && after.hp > p.hp) log.healed(color, p.id)
+        // Fase dos itens: no começo do turno, o time da peça da vez gasta os itens que tem
+        // nas próprias peças, curando ou promovendo (uma vez por turno)
+        if (itemPhaseDoneRef.current !== turnKey) {
+            const phase = SimpleAI.applyOwnItems(pieces, color, inventories)
+            itemPhaseDoneRef.current = turnKey
+            if (phase.uses.length > 0) {
+                for (const { pieceId, use, level } of phase.uses) {
+                    if (use === "heal") log.healed(color, pieceId)
+                    else log.promoted(color, pieceId, level)
                 }
-                setPieces(heal.pieces)
-                setInventories(heal.inventories)
+                setPieces(phase.pieces)
+                setInventories(phase.inventories)
                 return
             }
         }
@@ -115,8 +115,9 @@ export const useAiTurn = ({
                         ? { itemKey: pendingAttack.consumedItemKey, color: pendingAttack.consumerColor }
                         : null
 
-                // Ataque forçado por item: primeiro a moeda decide se a peça obedece. O item
-                // é gasto na tentativa e a peça só sai do lugar se a manipulação pegar.
+                // Ataque por manipulação: primeiro a moeda decide se a peça obedece. O item
+                // sai do inventário na tentativa (falhando, cai de volta no tabuleiro) e a peça
+                // só sai do lugar se a manipulação pegar.
                 if (forced) {
                     removeFromInventory(forced.color, forced.itemKey)
                     log.usedTo(forced.color, forced.itemKey, "toManipulate")

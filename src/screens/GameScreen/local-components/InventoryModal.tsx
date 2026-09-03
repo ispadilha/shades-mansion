@@ -4,7 +4,7 @@ import { InventoryItemRow } from "./InventoryItemRow"
 import { ItemInfoModal } from "./ItemInfoModal"
 import { ModalCard } from "../../../components/ui"
 import type { PieceColor, PieceDefinition, SpecialItemKey, TeamInventory } from "../../../logic/types"
-import { itemKeyColor } from "../../../logic/types"
+import { itemUseFor } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { SURFACE_PALETTE } from "../../../constants/palette"
 
@@ -14,7 +14,7 @@ interface InventoryModalProps {
     inventory: TeamInventory
     pieces: PieceDefinition[]
     playerColor: PieceColor
-    onUseHealItem: (key: SpecialItemKey) => void
+    onUseOwnItem: (key: SpecialItemKey) => void
     onUseManipulationItem: (key: SpecialItemKey) => void
 }
 
@@ -24,7 +24,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
     inventory,
     pieces,
     playerColor,
-    onUseHealItem,
+    onUseOwnItem,
     onUseManipulationItem,
 }) => {
     const { t } = useLanguage()
@@ -39,24 +39,14 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
         return acc
     }, [])
 
-    const isOwn = (key: SpecialItemKey) => itemKeyColor(key) === playerColor
-
-    // Item próprio é usado para curar a peça correspondente (se ferida)
-    // item de outra cor é usado para manipular a peça correspondente (se viva)
-    const canHeal = (key: SpecialItemKey) => {
-        if (!isOwn(key)) return false
-        const target = pieces.find((p) => p.id === key)
-        return !!target && target.hp < target.maxHp
-    }
-
-    const canManipulate = (key: SpecialItemKey) => {
-        if (isOwn(key)) return false
-        return pieces.some((p) => p.id === key)
-    }
+    // Item do próprio time cura a peça atingida ou promove a que está inteira.
+    // Item de outro time serve para tentar manipular a peça.
+    const actionFor = (key: SpecialItemKey) => itemUseFor(key, pieces.find((p) => p.id === key), playerColor)
 
     const handleUse = (key: SpecialItemKey) => {
-        if (canHeal(key)) onUseHealItem(key)
-        else if (canManipulate(key)) onUseManipulationItem(key)
+        const use = actionFor(key)
+        if (use === "manipulate") onUseManipulationItem(key)
+        else if (use) onUseOwnItem(key)
     }
 
     const closeItemMenu = () => setItemMenu(null)
@@ -82,7 +72,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                             key={key}
                             itemKey={key}
                             count={count}
-                            usable={canHeal(key) || canManipulate(key)}
+                            use={actionFor(key)}
                             onUse={() => handleUse(key)}
                             onExamine={(event) => setItemMenu({ mouseX: event.clientX, mouseY: event.clientY, key })}
                         />

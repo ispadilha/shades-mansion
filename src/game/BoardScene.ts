@@ -17,6 +17,8 @@ import {
 } from "../constants/palette"
 import {
     ALPHA_TWEEN_MS,
+    ITEM_DROP_HEIGHT,
+    ITEM_DROP_MS,
     AURA_TEXTURE_SIZE,
     FIRE_BURST_MS,
     FLAMES_PER_CELL,
@@ -56,6 +58,7 @@ export class BoardScene extends Phaser.Scene {
     private pendingPieces: PieceDefinition[] | null = null
     private pendingItems: SpecialItem[] | null = null
     private pendingBursts: FireBurst[] = []
+    private pendingDrops: string[] = []
     private pendingAuras: PieceAuras | null = null
     private isReady = false
 
@@ -82,6 +85,8 @@ export class BoardScene extends Phaser.Scene {
         }
         for (const burst of this.pendingBursts) this.spawnFireBurst(burst)
         this.pendingBursts = []
+        for (const itemId of this.pendingDrops) this.dropItem(itemId)
+        this.pendingDrops = []
     }
 
     syncPieces(pieces: PieceDefinition[]) {
@@ -109,6 +114,16 @@ export class BoardScene extends Phaser.Scene {
             return
         }
         this.spawnFireBurst(burst)
+    }
+
+    // A queda de um item que voltou ao tabuleiro.
+    // O item já está na lista: aqui ele só é jogado para cair na casa dele.
+    playItemDrop(itemId: string) {
+        if (!this.isReady) {
+            this.pendingDrops.push(itemId)
+            return
+        }
+        this.dropItem(itemId)
     }
 
     syncAuras(auras: PieceAuras) {
@@ -270,7 +285,7 @@ export class BoardScene extends Phaser.Scene {
                     duration: FIRE_BURST_MS - delay,
                     ease: "Sine.easeOut",
                 })
-                // Tremulação: a largura vai e volta enquanto a chama vive
+                // Tremulação: a largura vai e volta enquanto a chama dura
                 this.tweens.add({
                     targets: flame,
                     scaleX: 0.6,
@@ -283,12 +298,24 @@ export class BoardScene extends Phaser.Scene {
             }
         }
 
-        // As chamas tremulam em loop até aqui: matar os tweens antes de destruir evita
-        // que eles continuem mexendo em objetos que já saíram da cena.
+        // As chamas tremulam em loop até aqui: parar os tweens antes de descartar
+        // evita que eles continuem mexendo em objetos que já saíram da cena.
         this.time.delayedCall(FIRE_BURST_MS + 120, () => {
             this.tweens.killTweensOf(container.list)
             container.destroy()
         })
+    }
+
+    private dropItem(itemId: string) {
+        const sprite = this.itemSprites.get(itemId)
+        if (!sprite) return
+
+        const { y } = sprite
+        sprite.setY(y - this.cellSize * ITEM_DROP_HEIGHT)
+        sprite.setAlpha(0)
+        this.tweens.killTweensOf(sprite)
+        // Cai acelerando, como queda livre, no centro da casa
+        this.tweens.add({ targets: sprite, y, alpha: 1, duration: ITEM_DROP_MS, ease: "Cubic.easeIn" })
     }
 
     private applyAuras(auras: PieceAuras) {

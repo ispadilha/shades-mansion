@@ -14,6 +14,9 @@ export interface GameLog {
     // "{time} manipulou {peça} para {ação} [{alvo}]"
     manipulatedTo: (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => void
     healed: (color: PieceColor, piece: string) => void
+    promoted: (color: PieceColor, piece: string, level: number) => void
+    // Item que saiu de uma manipulação falha e caiu de volta no labirinto
+    returned: (itemKey: string) => void
     // Golpe que passou inteiro pela defesa
     attackHit: (attackerId: string, targetId: string, damage: number) => void
     // Golpe aparado: o defensor levou metade
@@ -57,6 +60,14 @@ export const useGameLog = (): GameLog => {
     // Quanto a peça perdeu de vida, no fim da frase: "xX acertou yY (−7)"
     const hpLoss = (damage: number) => ` (−${damage})`
 
+    const promoted = (color: PieceColor, piece: string, level: number) => {
+        add(`${tTeam(color)} ${t("verbPromoted")} ${piece} ${t("toLevel")} ${level}`)
+    }
+
+    const returned = (itemKey: string) => {
+        add(`${itemKey} ${t("itemFellBack")}`)
+    }
+
     const attackHit = (attackerId: string, targetId: string, damage: number) => {
         add(`${attackerId} ${t("verbHit")} ${targetId}${hpLoss(damage)}`)
     }
@@ -87,6 +98,8 @@ export const useGameLog = (): GameLog => {
         usedTo,
         manipulatedTo,
         healed,
+        promoted,
+        returned,
         attackHit,
         attackGuarded,
         attackDodged,

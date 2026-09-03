@@ -18,6 +18,8 @@ interface BoardProps {
     fireBursts: FireBurst[]
     auras: PieceAuras
     selectedPieceId: string | null
+    // Item que caiu de volta no tabuleiro
+    droppedItemId: string | null
     onCellClick: (pos: PiecePosition) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
@@ -34,6 +36,7 @@ export const Board: React.FC<BoardProps> = ({
     fireBursts,
     auras,
     selectedPieceId,
+    droppedItemId,
     onCellClick,
     onCellContextMenu,
 }) => {
@@ -69,6 +72,7 @@ export const Board: React.FC<BoardProps> = ({
                 items={items}
                 fireBursts={fireBursts}
                 auras={auras}
+                droppedItemId={droppedItemId}
             />
         </Box>
     )

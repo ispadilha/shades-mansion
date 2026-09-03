@@ -28,6 +28,7 @@ export interface PieceDefinition {
     movedThisTurn: boolean
     hp: number
     maxHp: number
+    level: number
 }
 
 // A chave do item é o id da peça a que ele pertence: inicial do time + tipo ("lA", "dF"...),

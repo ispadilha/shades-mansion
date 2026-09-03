@@ -13,17 +13,19 @@ import type {
     PieceColor,
     PieceDefinition,
     PiecePosition,
+    SpecialItem,
     SpecialItemKey,
     TextKey,
 } from "../../../logic/types"
 import { controlledColorsFor, itemKeyColor } from "../../../logic/types"
+import { healed, itemUseFor, promoted } from "../../../logic/items"
 import { atPosition, includesPosition } from "../../../logic/grid"
 import { findApproachCell, lineOfFire, pathLength } from "../../../logic/movement"
 import { nextTurnIndex } from "../../../logic/initiative"
 import { attackArea, type FireBurst } from "../../../logic/combat"
 import type { MatchSetup } from "../../../logic/setup"
 import { useAiTurn } from "../../../hooks/useAiTurn"
-import { useBoardCamera } from "../../../hooks/useBoardCamera"
+import { useBoardCamera, type CameraFocus } from "../../../hooks/useBoardCamera"
 import { useCombatResolution } from "../../../hooks/useCombatResolution"
 import { useEdgeScroll } from "../../../hooks/useEdgeScroll"
 import { useEliminations } from "../../../hooks/useEliminations"
@@ -32,7 +34,7 @@ import { useGameLog } from "../../../hooks/useGameLog"
 import { useHighlightedCells } from "../../../hooks/useHighlightedCells"
 import { useMatchItems } from "../../../hooks/useMatchItems"
 import { useRolls } from "../../../hooks/useRolls"
-import { ACTION_SETTLE_MS, PIECE_STATS, STEP_MS, isAreaAttack, isRanged } from "../../../constants/rules"
+import { ACTION_SETTLE_MS, ITEM_DROP_HOLD_MS, STEP_MS, isAreaAttack, isRanged, statsFor } from "../../../constants/rules"
 
 interface MatchDisplayProps {
     match: MatchSetup
@@ -52,7 +54,8 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const spectating = controlledColors.length === 0
 
     const [pieces, setPieces] = useState<PieceDefinition[]>(match.pieces)
-    const { items, inventories, setInventories, itemAt, schedulePickup, removeFromInventory } = useMatchItems(match.items)
+    const { items, inventories, setInventories, itemAt, schedulePickup, removeFromInventory, dropOnBoard } =
+        useMatchItems(match.items)
     const [turnIndex, setTurnIndex] = useState(0)
     const [round, setRound] = useState(1)
     const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -69,6 +72,8 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     // é o caso do mover forçado, que só tem a caminhada para mostrar
     const [focusHeldUntil, setFocusHeldUntil] = useState(0)
     const [contextMenu, setContextMenu] = useState<BoardMenuState | null>(null)
+    // Item que acabou de cair de volta no tabuleiro: a câmera para em cima dele
+    const [droppedItem, setDroppedItem] = useState<SpecialItem | null>(null)
 
     const log = useGameLog()
     const rolls = useRolls()
@@ -79,10 +84,10 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const isPlayerTurn = activePiece !== null && controlledColors.includes(activePiece.color)
     const activeColor = isPlayerTurn ? activePiece!.color : null
     // Inventário exibido no HUD: quem comanda um único time consulta o seu a qualquer momento
-    // (inclusive para curar durante o turno da IA).
+    // (inclusive para curar ou promover durante o turno da IA).
     // No multi-jogador local, é sempre o do time da vez.
     const inventoryColor = controlledColors.length === 1 ? controlledColors[0] : activeColor
-    // Peças vivas na ordem de iniciativa, para a faixa de turnos do HUD
+    // Peças ainda em jogo, na ordem de iniciativa, para a faixa de turnos do HUD
     const orderedPieces = turnOrder.map((id) => pieces.find((p) => p.id === id)).filter((p): p is PieceDefinition => !!p)
 
     // Rolagem de time comandado por jogador espera o clique no dado;
@@ -96,19 +101,27 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
 
     // Câmera: começa perto da base do jogador (quem comanda todos os times ou só assiste
     // não tem base própria, e começa no meio do tabuleiro) e depois acompanha a peça da vez.
-    // Uma manipulação rouba esse foco: quem age é a peça manipulada.
-    const focusPieceId = manipulatedId ?? activePiece?.id ?? null
+    // Uma manipulação rouba esse foco (quem age é a peça manipulada),
+    // e um item caindo de volta no labirinto rouba de todos, por um instante.
+    // Seguir a casa, e não só a peça, brigaria com a rolagem manual do jogador: por isso a
+    // posição só entra na chave durante uma manipulação.
+    const focusPiece = pieces.find((p) => p.id === (manipulatedId ?? activePiece?.id))
+    const cameraFocus: CameraFocus | undefined = droppedItem
+        ? { key: droppedItem.id, position: droppedItem.position }
+        : focusPiece && {
+              key: manipulatedId ? `${focusPiece.id}:${focusPiece.position.x},${focusPiece.position.y}` : focusPiece.id,
+              position: focusPiece.position,
+          }
     useBoardCamera(scrollRef, {
         maze,
         homeColor: controlledColors.length === 1 ? controlledColors[0] : null,
-        focusPiece: pieces.find((p) => p.id === focusPieceId),
-        trackPosition: manipulatedId !== null,
+        focus: cameraFocus,
     })
 
     // Devolve o foco à peça da vez quando a manipulação se encerra: a peça manipulada saiu
     // do comando (resistiu a manipulação, ou já fez a ação forçada) e não há mais rolagem
-    // para acompanhar. Enquanto a moeda de manipulação ou a de ataque estiver em jogo,
-    // `rolls.resolving` segura a câmera onde a ação está acontecendo.
+    // para acompanhar. Enquanto houver rolagem em jogo, `rolls.resolving` segura a
+    // câmera onde a ação está acontecendo.
     useEffect(() => {
         if (!manipulatedId || manipulation || rolls.resolving) return
 
@@ -132,14 +145,14 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         return item ? { actionKey: "toCollectItem", target: item.key } : { actionKey: "toMove" }
     }
 
-    // Passa a vez para a próxima peça viva da ordem de iniciativa. Quando a ordem dá a
+    // Passa a vez para a próxima peça em jogo da ordem de iniciativa. Quando a ordem dá a
     // volta, começa uma nova rodada e todas as peças voltam a ter sua ação disponível.
     const endTurn = () => {
         setSelectedId(null)
         setManipulation(null)
 
-        const alive = new Set(pieces.map((p) => p.id))
-        const next = nextTurnIndex(turnOrder, (id) => alive.has(id), turnIndex)
+        const inPlay = new Set(pieces.map((p) => p.id))
+        const next = nextTurnIndex(turnOrder, (id) => inPlay.has(id), turnIndex)
         if (!next) return
 
         if (next.newRound) {
@@ -147,6 +160,15 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
             setRound((prev) => prev + 1)
         }
         setTurnIndex(next.index)
+    }
+
+    // Manipulação fracassada: o item cai de volta no tabuleiro em uma casa livre sorteada
+    const returnItemToBoard = (key: SpecialItemKey) => {
+        const item = dropOnBoard(key, maze, pieces)
+        if (!item) return
+        log.returned(key)
+        setDroppedItem(item)
+        window.setTimeout(() => setDroppedItem(null), ITEM_DROP_HOLD_MS)
     }
 
     const combat = useCombatResolution({
@@ -158,6 +180,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         rolls,
         log,
         isManualRoll,
+        onManipulationFailed: returnItemToBoard,
     })
 
     useAiTurn({
@@ -199,11 +222,11 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
 
     useEliminations(pieces, { onPieceEliminated: log.eliminated, onTeamDefeated: log.defeated })
 
-    // Vitória: último time vivo no tabuleiro
+    // Vitória: último time com peças no tabuleiro
     useEffect(() => {
-        const alive = new Set(pieces.map((p) => p.color))
-        if (alive.size !== 1) return
-        const [winner] = alive
+        const inPlay = new Set(pieces.map((p) => p.color))
+        if (inPlay.size !== 1) return
+        const [winner] = inPlay
         setWinner(winner)
         navigate("/end")
     }, [pieces, navigate, setWinner])
@@ -227,7 +250,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     // (paredes e outras peças cobrem o alvo).
     // As demais precisam de uma casa livre adjacente ao alvo.
     const canHitTarget = (attacker: PieceDefinition, target: PieceDefinition) => {
-        const { attackRange } = PIECE_STATS[attacker.type]
+        const { attackRange } = statsFor(attacker.type, attacker.level)
         if (isRanged(attacker.type)) {
             return lineOfFire(attacker, pieces, maze, attackRange).targets.some((t) => t.id === target.id)
         }
@@ -283,8 +306,8 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
 
     const closeContextMenu = () => setContextMenu(null)
 
-    // Sai do modo manipulação depois da ação forçada. O item já foi gasto na tentativa
-    // (a moeda podia ter falhado), então aqui não há nada para consumir.
+    // Sai do modo manipulação depois da ação forçada. O item saiu do inventário lá na
+    // tentativa, então aqui não há nada a fazer com ele.
     const endManipulation = () => setManipulation(null)
 
     const moveSelectedTo = (newPos: PiecePosition) => {
@@ -333,7 +356,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         const newPos =
             ranged || !target
                 ? attacker.position
-                : (findApproachCell(attacker, target, pieces, maze, PIECE_STATS[attacker.type].attackRange) ??
+                : (findApproachCell(attacker, target, pieces, maze, statsFor(attacker.type, attacker.level).attackRange) ??
                   attacker.position)
         const delayMs = pathLength(attacker.position, newPos, maze) * STEP_MS + ACTION_SETTLE_MS
 
@@ -360,7 +383,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         // Os dados são jogados quando o atacante termina de se aproximar
         combat.resolveAttack({
             attackerId: attacker.id,
-            attackerType: attacker.type,
+            damageDice: statsFor(attacker.type, attacker.level).damage,
             delayMs,
             ...(target ? { targetId: target.id } : {}),
             ...(area ? { area } : {}),
@@ -379,25 +402,30 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         closeContextMenu()
     }
 
-    const handleUseHealItem = (key: SpecialItemKey) => {
-        if (!inventoryColor || itemKeyColor(key) !== inventoryColor) return
-        if (!inventories[inventoryColor].includes(key)) return
+    // Item do próprio time cura a peça atingida, ou promove a que está inteira
+    const handleUseOwnItem = (key: SpecialItemKey) => {
+        if (!inventoryColor || !inventories[inventoryColor].includes(key)) return
         const target = pieces.find((p) => p.id === key)
-        if (!target || target.hp >= target.maxHp) return
+        const use = itemUseFor(key, target, inventoryColor)
+        if (!target || (use !== "heal" && use !== "promote")) return
 
-        setPieces((prev) => prev.map((p) => (p.id === key ? { ...p, hp: p.maxHp } : p)))
+        const after = use === "heal" ? healed(target) : promoted(target)
+        setPieces((prev) => prev.map((p) => (p.id === key ? after : p)))
         removeFromInventory(inventoryColor, key)
-        log.healed(inventoryColor, key)
+        if (use === "heal") log.healed(inventoryColor, key)
+        else log.promoted(inventoryColor, key, after.level)
     }
 
+    // Item de outro time: serve para tentar manipular a peça
     const handleUseManipulationItem = (key: SpecialItemKey) => {
         if (!activeColor || rolls.resolving) return
         if (itemKeyColor(key) === activeColor) return
         if (!inventories[activeColor].includes(key)) return
         if (!pieces.some((p) => p.id === key)) return
 
-        // O item é gasto na tentativa. A moeda decide se a peça obedece. Dando certo, ela
-        // fica selecionada e o próximo mover/atacar é a ação forçada.
+        // O item sai do inventário na tentativa. A moeda decide se a peça obedece: dando
+        // certo, ela fica selecionada e o próximo mover/atacar é a ação forçada.
+        // Falhando, o item cai de volta no tabuleiro.
         const color = activeColor
         setInventoryOpen(false)
         removeFromInventory(color, key)
@@ -437,6 +465,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
                 fireBursts={fireBursts}
                 auras={auras}
                 selectedPieceId={selectedId}
+                droppedItemId={droppedItem?.id ?? null}
                 onCellClick={onCellClick}
                 onCellContextMenu={onCellContextMenu}
             />
@@ -484,7 +513,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
                     inventory={playerInventory}
                     pieces={pieces}
                     playerColor={inventoryColor}
-                    onUseHealItem={handleUseHealItem}
+                    onUseOwnItem={handleUseOwnItem}
                     onUseManipulationItem={handleUseManipulationItem}
                 />
             )}

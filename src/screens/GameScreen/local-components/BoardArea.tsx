@@ -18,6 +18,7 @@ interface BoardAreaProps {
     fireBursts: FireBurst[]
     auras: PieceAuras
     selectedPieceId: string | null
+    droppedItemId: string | null
     onCellClick: (pos: PiecePosition) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
@@ -34,6 +35,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
     fireBursts,
     auras,
     selectedPieceId,
+    droppedItemId,
     onCellClick,
     onCellContextMenu,
 }) => {
@@ -62,6 +64,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                     auras={auras}
                     onCellClick={onCellClick}
                     selectedPieceId={selectedPieceId}
+                    droppedItemId={droppedItemId}
                     onCellContextMenu={onCellContextMenu}
                 />
             </Box>

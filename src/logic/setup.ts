@@ -3,7 +3,7 @@ import { ALL_ITEM_KEYS, ALL_PIECE_TYPES } from "./types"
 import type { Maze } from "./maze"
 import { generateMaze, inside, isWalkable } from "./maze"
 import { neighbors, positionKey } from "./grid"
-import { shuffle } from "./random"
+import { pickRandom, shuffle } from "./random"
 import { ITEM_COPIES, LINEUP_COLORS, PIECE_STATS, PLACEMENT_COLORS } from "../constants/rules"
 
 // Distribui "count" posições em uma linha começando e terminando nos extremos,
@@ -76,6 +76,7 @@ export function createInitialPieces(maze: Maze): PieceDefinition[] {
                 movedThisTurn: false,
                 hp: maxHp,
                 maxHp,
+                level: 1,
             })
         })
     }
@@ -83,18 +84,29 @@ export function createInitialPieces(maze: Maze): PieceDefinition[] {
     return pieces
 }
 
+// As casas em que um item cabe: nem parede, nem peça, nem outro item em cima
+export function freeCells(maze: Maze, pieces: PieceDefinition[], items: SpecialItem[]): PiecePosition[] {
+    const taken = new Set([...pieces.map((p) => positionKey(p.position)), ...items.map((i) => positionKey(i.position))])
+
+    const cells: PiecePosition[] = []
+    for (let y = 0; y < maze.size; y++) {
+        for (let x = 0; x < maze.size; x++) {
+            if (isWalkable(maze, x, y) && !taken.has(positionKey({ x, y }))) cells.push({ x, y })
+        }
+    }
+    return cells
+}
+
+// Uma delas, sorteada. Null só em um labirinto sem casa livre nenhuma.
+export function randomFreeCell(maze: Maze, pieces: PieceDefinition[], items: SpecialItem[]): PiecePosition | null {
+    const cells = freeCells(maze, pieces, items)
+    return cells.length > 0 ? pickRandom(cells) : null
+}
+
 // Espalha cópias de cada item em casas livres do labirinto (nunca em parede,
 // em cima de uma peça ou de outro item).
 export function placeItems(maze: Maze, pieces: PieceDefinition[]): SpecialItem[] {
-    const occupied = new Set(pieces.map((p) => positionKey(p.position)))
-
-    const available: PiecePosition[] = []
-    for (let y = 0; y < maze.size; y++) {
-        for (let x = 0; x < maze.size; x++) {
-            if (isWalkable(maze, x, y) && !occupied.has(positionKey({ x, y }))) available.push({ x, y })
-        }
-    }
-    shuffle(available)
+    const available = shuffle(freeCells(maze, pieces, []))
 
     // O tabuleiro mínimo é grande o bastante para as duas cópias de cada item; a saída
     // antecipada abaixo é só uma rede de segurança para um labirinto sem casas livres.

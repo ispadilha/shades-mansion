@@ -2,10 +2,10 @@ import { pickRandom, randomInt } from "./random"
 
 export type CoinFace = "heads" | "tails"
 
-export type DieSides = 4 | 6 | 8 | 12 | 20
+export type DieSides = 4 | 6 | 8 | 10 | 12 | 20
 
 // Os dados, pelo nome que a regra usa
-export type DiceKind = "d4" | "d6" | "d8" | "d12" | "d20"
+export type DiceKind = "d4" | "d6" | "d8" | "d10" | "d12" | "d20"
 
 // Uma rolagem é ou de moeda, ou de dados
 export type RollKind = "coin" | DiceKind
@@ -24,7 +24,7 @@ export const flipCoin = (): CoinFace => pickRandom(COIN_FACES)
 
 export const rollDie = (sides: DieSides): number => randomInt(1, sides)
 
-const KIND_SIDES: Record<DiceKind, DieSides> = { d4: 4, d6: 6, d8: 8, d12: 12, d20: 20 }
+const KIND_SIDES: Record<DiceKind, DieSides> = { d4: 4, d6: 6, d8: 8, d10: 10, d12: 12, d20: 20 }
 
 // Quantas faces o dado tem
 export const sidesOf = (kind: DiceKind): DieSides => KIND_SIDES[kind]

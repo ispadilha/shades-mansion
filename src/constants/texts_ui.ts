@@ -115,8 +115,8 @@ export const texts_ui = {
     },
 
     itemDescOwnSuffix: {
-        enUS: "(restores full HP)",
-        ptBR: "(restaura PV total)",
+        enUS: "(heals it, or promotes it)",
+        ptBR: "(cura, ou promove)",
     },
 
     itemDescManipulateSuffix: {
@@ -132,6 +132,11 @@ export const texts_ui = {
     team: {
         enUS: "Team",
         ptBR: "Equipe",
+    },
+
+    level: {
+        enUS: "Level",
+        ptBR: "Nível",
     },
 
     hp: {
@@ -244,6 +249,16 @@ export const texts_ui = {
         ptBR: "Inventário",
     },
 
+    heal: {
+        enUS: "Heal",
+        ptBR: "Curar",
+    },
+
+    promote: {
+        enUS: "Promote",
+        ptBR: "Promover",
+    },
+
     use: {
         enUS: "Use",
         ptBR: "Usar",
@@ -282,6 +297,21 @@ export const texts_ui = {
     verbManipulated: {
         enUS: "manipulated",
         ptBR: "manipulou",
+    },
+
+    verbPromoted: {
+        enUS: "promoted",
+        ptBR: "promoveu",
+    },
+
+    toLevel: {
+        enUS: "to level",
+        ptBR: "ao nível",
+    },
+
+    itemFellBack: {
+        enUS: "fell back on the floor",
+        ptBR: "caiu de volta no chão",
     },
 
     verbHealed: {

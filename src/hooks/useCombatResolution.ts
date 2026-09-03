@@ -18,7 +18,13 @@ import { dieKind, type RollTone } from "../logic/rolls"
 import { useLanguage } from "./useLanguage"
 import type { GameLog } from "./useGameLog"
 import type { RollQueue } from "./useRolls"
-import { ATTACK_ROLL_TIMING, DEFENSE_DIE, DODGE_ROLL_TIMING, MAX_FIRE_BURSTS, PIECE_STATS } from "../constants/rules"
+import {
+    ATTACK_ROLL_TIMING,
+    DEFENSE_DIE,
+    DODGE_ROLL_TIMING,
+    ITEM_DROP_HOLD_MS,
+    MAX_FIRE_BURSTS,
+} from "../constants/rules"
 
 const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }> = {
     dodged: { label: "dodgeTotal", tone: "good" },
@@ -38,13 +44,16 @@ interface CombatResolutionOptions {
     // Rolagem de time comandado por jogador espera o clique no dado,
     // as de times comandados por IA rolam automaticamente.
     isManualRoll: (color: PieceColor) => boolean
+    // Uma manipulação falha derruba o item de volta no tabuleiro
+    onManipulationFailed: (itemKey: SpecialItemKey) => void
 }
 
 export interface CombatResolution {
     // Toda tentativa de ataque (do jogador, da IA ou vinda de uma manipulação) passa por aqui
     resolveAttack: (attack: PendingAttack) => void
-    // Tentativa de manipulação: o item já foi gasto por quem usou, e a moeda decide se a
-    // peça obedece. Devolve o resultado a quem chamou depois de encenar a rolagem.
+    // Tentativa de manipulação: o item já saiu do inventário de quem usou, e a moeda decide
+    // se a peça obedece. Falhando, o item cai de volta no tabuleiro. Devolve o resultado a
+    // quem chamou depois de encenar a rolagem.
     resolveManipulation: (color: PieceColor, itemKey: SpecialItemKey, onSettled: (success: boolean) => void) => void
 }
 
@@ -57,15 +66,19 @@ export const useCombatResolution = ({
     rolls,
     log,
     isManualRoll,
+    onManipulationFailed,
 }: CombatResolutionOptions): CombatResolution => {
     const { t } = useLanguage()
     // Os dados do golpe só são jogados quando o atacante termina de se aproximar: o timer
-    // fica guardado para não sobreviver à saída da tela.
+    // fica guardado para ser cancelado quando a tela sair.
     const damageTimerRef = useRef<number | null>(null)
+    // A queda do item devolvido segura a partida enquanto a câmera a acompanha
+    const dropTimerRef = useRef<number | null>(null)
 
     useEffect(() => {
         return () => {
             if (damageTimerRef.current !== null) clearTimeout(damageTimerRef.current)
+            if (dropTimerRef.current !== null) clearTimeout(dropTimerRef.current)
         }
     }, [])
 
@@ -88,12 +101,12 @@ export const useCombatResolution = ({
                 return
             }
 
-            const damage = rollDamage(attack.attackerType)
+            const damage = rollDamage(attack.damageDice)
 
             rolls.show(
                 {
                     id: `damage-${attack.attackerId}-${Date.now()}`,
-                    kind: dieKind(PIECE_STATS[attack.attackerType].damage.sides),
+                    kind: dieKind(attack.damageDice.sides),
                     value: damage.dice,
                     title: t("damageRoll"),
                     subtitle: attack.targetId ? `${attack.attackerId} → ${attack.targetId}` : attack.attackerId,
@@ -136,7 +149,7 @@ export const useCombatResolution = ({
             return
         }
 
-        const defense = rollDefense(defender.type, damage.total)
+        const defense = rollDefense(defender, damage.total)
         const reading = DEFENSE_READING[defense.outcome]
 
         rolls.show(
@@ -190,8 +203,21 @@ export const useCombatResolution = ({
             },
             () => {
                 log.manipulationRoll(itemKey, success)
+
+                // Manipulação falhou: o item cai de volta no tabuleiro.
+                // A partida espera a queda, para a câmera mostrar onde ele foi parar.
+                if (!success) {
+                    onManipulationFailed(itemKey)
+                    dropTimerRef.current = window.setTimeout(() => {
+                        dropTimerRef.current = null
+                        rolls.setResolving(false)
+                        onSettled(false)
+                    }, ITEM_DROP_HOLD_MS)
+                    return
+                }
+
                 rolls.setResolving(false)
-                onSettled(success)
+                onSettled(true)
             },
         )
     }

@@ -1,42 +1,49 @@
 import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventories, SpecialItemKey } from "./types"
+import { healed, itemUseFor, promoted, type ItemUse } from "./items"
 import { itemKeyColor } from "./types"
 import { reachableCells, findApproachCell, lineOfFire, pathLength, distanceMap } from "./movement"
 import { positionKey } from "./grid"
 import { pickRandom } from "./random"
 import type { Maze } from "./maze"
 import { alliesInBlast, attackArea, type PendingAttack } from "./combat"
-import { ACTION_SETTLE_MS, PIECE_STATS, STEP_MS, isRanged } from "../constants/rules"
+import { ACTION_SETTLE_MS, STEP_MS, isRanged, statsFor } from "../constants/rules"
 
 export interface AIMoveResult {
     updatedPieces: PieceDefinition[]
-    // Ataque decidido: quem chamou é que rola o dano, a defesa do alvo, e aplica o resultado
+    // Ataque decidido: quem chamou é que rola o dano, as defesas, e aplica o resultado
     pendingAttack?: PendingAttack
 }
 
-export interface HealResult {
+// O que o time fez com os próprios itens no começo do turno
+export interface ItemPhaseResult {
     pieces: PieceDefinition[]
     inventories: Inventories
-    healed: boolean
+    uses: Array<{ pieceId: string; use: ItemUse; level: number }>
 }
 
 export class SimpleAI {
-    // Para cada peça ferida do time, gasta o item homônimo do inventário (id == key) para curar
-    static applyHeals(pieces: PieceDefinition[], color: PieceColor, inventories: Inventories): HealResult {
+    // Gasta os itens do time nas próprias peças
+    static applyOwnItems(pieces: PieceDefinition[], color: PieceColor, inventories: Inventories): ItemPhaseResult {
         const teamInv = [...inventories[color]]
         let updatedPieces = pieces
-        let healed = false
+        const uses: ItemPhaseResult["uses"] = []
 
         for (const piece of pieces) {
-            if (piece.color !== color || piece.hp >= piece.maxHp) continue
-            const idx = teamInv.indexOf(piece.id as SpecialItemKey)
+            if (piece.color !== color) continue
+            const key = piece.id as SpecialItemKey
+            const idx = teamInv.indexOf(key)
             if (idx === -1) continue
 
+            const use = itemUseFor(key, piece, color)
+            if (use !== "heal" && use !== "promote") continue
+
             teamInv.splice(idx, 1)
-            updatedPieces = updatedPieces.map((p) => (p.id === piece.id ? { ...p, hp: p.maxHp } : p))
-            healed = true
+            const after = use === "heal" ? healed(piece) : promoted(piece)
+            updatedPieces = updatedPieces.map((p) => (p.id === piece.id ? after : p))
+            uses.push({ pieceId: piece.id, use, level: after.level })
         }
 
-        return { pieces: updatedPieces, inventories: { ...inventories, [color]: teamInv }, healed }
+        return { pieces: updatedPieces, inventories: { ...inventories, [color]: teamInv }, uses }
     }
 
     static makeMove(
@@ -67,7 +74,7 @@ export class SimpleAI {
         }
 
         // Prioridade 4: movimento aleatório
-        const possibleMoves = reachableCells(activePiece, pieces, maze, PIECE_STATS[activePiece.type].moveRange)
+        const possibleMoves = reachableCells(activePiece, pieces, maze, statsFor(activePiece.type, activePiece.level).moveRange)
         if (possibleMoves.length > 0) {
             const randomMove = pickRandom(possibleMoves)
             const updatedPieces = pieces.map((p) =>
@@ -115,7 +122,7 @@ export class SimpleAI {
                 updatedPieces,
                 pendingAttack: {
                     attackerId: manipulated.id,
-                    attackerType: manipulated.type,
+                    damageDice: statsFor(manipulated.type, manipulated.level).damage,
                     targetId: best.target.id,
                     delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                     ...(area ? { area } : {}),
@@ -145,7 +152,7 @@ export class SimpleAI {
         if (!bestPair || bestPair.distance === 0) return null
 
         const { piece, distances, distance } = bestPair
-        const reachable = reachableCells(piece, pieces, maze, PIECE_STATS[piece.type].moveRange)
+        const reachable = reachableCells(piece, pieces, maze, statsFor(piece.type, piece.level).moveRange)
         if (reachable.length === 0) return null
 
         let bestCell = reachable[0]
@@ -178,7 +185,7 @@ export class SimpleAI {
             updatedPieces,
             pendingAttack: {
                 attackerId: attacker.id,
-                attackerType: attacker.type,
+                damageDice: statsFor(attacker.type, attacker.level).damage,
                 targetId: target.id,
                 delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                 ...(area ? { area } : {}),
@@ -197,7 +204,7 @@ export class SimpleAI {
         maze: Maze,
         friendlyColor: PieceColor,
     ): Array<{ target: PieceDefinition; approach: PiecePosition }> {
-        const range = PIECE_STATS[myPiece.type].attackRange
+        const range = statsFor(myPiece.type, myPiece.level).attackRange
         const sparesAllies = (target: PieceDefinition) =>
             alliesInBlast(myPiece, target, pieces, maze, friendlyColor).length === 0
 

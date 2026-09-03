@@ -209,10 +209,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "The mansion contains valuable items for the different pieces.\n\n" +
-                "Using an item which is valuable to your own piece heals it, while using an item which is valuable to another team's piece may manipulate that piece.\n\n",
+                "An item valuable to one of your own pieces heals it when it is damaged, and promotes it when it is not. An item valuable to another team's piece may manipulate that piece.\n\n",
             ptBR:
                 "A mansão contém itens valiosos para as diferentes peças.\n\n" +
-                "Usar um item valioso para a sua própria peça a cura, enquanto usar um item valioso para a peça de outro time pode manipular essa peça.\n\n",
+                "Um item valioso para uma peça sua a cura quando ela está atingida, e a promove quando não está. Um item valioso para a peça de outro time pode manipular essa peça.\n\n",
         },
     },
 
@@ -224,10 +224,31 @@ export const texts_rules = {
         description: {
             enUS:
                 "Using an item which is valuable to your own piece heals it.\n\n" +
-                "It can't be used if the piece is already at full health or has been eliminated, so an item held too long can be lost with its owner.",
+                "Healing is what the item does while the piece is damaged. Undamaged, the same item promotes it instead.\n\n" +
+                "It can't be used on a piece that has been eliminated, so an item held too long can be lost with its owner.",
             ptBR:
                 "Usar um item valioso para a sua própria peça a cura.\n\n" +
-                "Ele não pode ser usado se a peça já estiver com a vida cheia ou tiver sido eliminada, então um item guardado tempo demais pode se perder junto com o dono.",
+                "Curar é o que o item faz enquanto a peça está atingida. Inteira, o mesmo item a promove.\n\n" +
+                "Ele não pode ser usado em uma peça eliminada, então um item guardado tempo demais pode se perder junto com o dono.",
+        },
+    },
+
+    promotions: {
+        name: {
+            enUS: "Promotions",
+            ptBR: "Promoções",
+        },
+        description: {
+            enUS:
+                "A piece at full health does not need its item to heal. Instead, the item promotes the piece: it goes up a level.\n\n" +
+                "Every level adds 3 health, a step of reach, an easier guard, and one step up the ladder of the damage die: a d4 becomes a d6, a d6 becomes a d8, a d8 becomes a d10.\n\n" +
+                "The dodge is the one thing a promotion doesn't change: a heavy piece will still be slow.\n\n" +
+                "Right-click a piece and ask for its information to see the level it is on.",
+            ptBR:
+                "Uma peça com a vida cheia não precisa de seu item para cura. Em vez disso, o item a promove: ela sobe um nível.\n\n" +
+                "Cada nível acrescenta 3 de vida, um passo de alcance, um aparo mais fácil, e um degrau na escada do dado de dano: um d4 vira d6, um d6 vira d8, um d8 vira d10.\n\n" +
+                "A esquiva é a única coisa em que a promoção não mexe: uma peça pesada ainda será lenta.\n\n" +
+                "Clique com o botão direito em uma peça e peça a informação dela para ver em que nível ela está.",
         },
     },
 
@@ -239,10 +260,12 @@ export const texts_rules = {
         description: {
             enUS:
                 "An item which is valuable to an opponent is a temptation over them. Using it on your turn flips a coin: on heads that enemy piece falls under your command for a single action, and on tails it resists.\n\n" +
-                "Being manipulated is an abnormal action and the piece still has its own action when its turn comes, and a piece that has already acted can be manipulated all the same.",
+                "Being manipulated is an abnormal action and the piece still has its own action when its turn comes, and a piece that has already acted can be manipulated all the same.\n\n" +
+                "On tails, the item slips out of the manipulator's hands and falls back on the floor, on a random free cell, for whoever reaches it first.",
             ptBR:
                 "Um item valioso para um oponente é uma tentação sobre o mesmo. Usá-lo no seu turno joga uma moeda: dando cara, aquela peça inimiga cai sob o seu comando por uma única ação.\n\n" +
-                "Ser manipulada é uma ação anormal e a peça continua com sua ação quando chegar a vez dela, e uma peça que já agiu pode ser manipulada do mesmo jeito.",
+                "Ser manipulada é uma ação anormal e a peça continua com sua ação quando chegar a vez dela, e uma peça que já agiu pode ser manipulada do mesmo jeito.\n\n" +
+                "Dando coroa, o item escapa das mãos de quem tentou e cai de volta no chão, em uma casa livre sorteada, para quem chegar primeiro.",
         },
     },
 

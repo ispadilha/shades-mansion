@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { Inventories, PieceColor, PiecePosition, SpecialItem, SpecialItemKey } from "../logic/types"
+import type { Inventories, PieceColor, PieceDefinition, PiecePosition, SpecialItem, SpecialItemKey } from "../logic/types"
+import type { Maze } from "../logic/maze"
 import { atPosition } from "../logic/grid"
+import { randomFreeCell } from "../logic/setup"
 
 // Os itens espalhados pelo labirinto e os inventários dos três times. Um item sai do
 // tabuleiro e entra no inventário quando a peça termina de caminhar até a casa dele.
@@ -14,6 +16,8 @@ export interface MatchItems {
     // Coleta agendada para quando a peça chegar na casa (delay = nº de passos × STEP_MS)
     schedulePickup: (color: PieceColor, position: PiecePosition, delayMs: number) => void
     removeFromInventory: (color: PieceColor, key: SpecialItemKey) => void
+    // Devolve um item ao labirinto, em uma casa livre sorteada. Null se não sobrou casa.
+    dropOnBoard: (key: SpecialItemKey, maze: Maze, pieces: PieceDefinition[]) => SpecialItem | null
 }
 
 export const useMatchItems = (initialItems: SpecialItem[]): MatchItems => {
@@ -47,5 +51,14 @@ export const useMatchItems = (initialItems: SpecialItem[]): MatchItems => {
         })
     }
 
-    return { items, inventories, setInventories, itemAt, schedulePickup, removeFromInventory }
+    const dropOnBoard = (key: SpecialItemKey, maze: Maze, pieces: PieceDefinition[]): SpecialItem | null => {
+        const position = randomFreeCell(maze, pieces, itemsRef.current)
+        if (!position) return null
+
+        const item: SpecialItem = { id: `item-${key}-drop-${Date.now()}`, key, position }
+        setItems((prev) => [...prev, item])
+        return item
+    }
+
+    return { items, inventories, setInventories, itemAt, schedulePickup, removeFromInventory, dropOnBoard }
 }

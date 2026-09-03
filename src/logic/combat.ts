@@ -1,9 +1,9 @@
-import type { PieceColor, PieceDefinition, PiecePosition, PieceType, SpecialItemKey } from "./types"
+import type { PieceColor, PieceDefinition, PiecePosition, SpecialItemKey } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { manhattan, neighbors, positionKey } from "./grid"
-import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace } from "./rolls"
-import { DEFENSE_DIE, FIRE_AREA_SIDE, PIECE_STATS, SUCCESS_FACE, isAreaAttack } from "../constants/rules"
+import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
+import { DEFENSE_DIE, FIRE_AREA_SIDE, SUCCESS_FACE, isAreaAttack, statsFor } from "../constants/rules"
 
 export interface CoinCheck {
     face: CoinFace
@@ -21,8 +21,8 @@ export interface DamageRoll {
     total: number
 }
 
-export function rollDamage(type: PieceType): DamageRoll {
-    const dice = rollSpec(PIECE_STATS[type].damage)
+export function rollDamage(spec: DiceSpec): DamageRoll {
+    const dice = rollSpec(spec)
     return { dice, total: sumDice(dice) }
 }
 
@@ -39,8 +39,8 @@ export interface DefenseRoll {
 // A defesa é um d20 contra os dois números da peça.
 // Alcançando a esquiva, o golpe é desviado.
 // Alcançando só o aparo, a peça segura o que pode e leva metade do dano.
-export function rollDefense(type: PieceType, damage: number): DefenseRoll {
-    const { dodge, guard } = PIECE_STATS[type]
+export function rollDefense(piece: PieceDefinition, damage: number): DefenseRoll {
+    const { dodge, guard } = statsFor(piece.type, piece.level)
     const die = rollDie(DEFENSE_DIE)
 
     if (die >= dodge) return { die, outcome: "dodged", damage: 0 }
@@ -48,9 +48,9 @@ export function rollDefense(type: PieceType, damage: number): DefenseRoll {
     return { die, outcome: "clean", damage }
 }
 
-// As casas que o fogo alcança. Ele nasce na casa do alvo e se espalha de casa em casa.
-// Peças não seguram o fogo — só as paredes.
-// O lado é ímpar para o alvo ficar bem no centro. Um lado par é arredondado para cima.
+// As casas que o fogo alcança.
+// Ele nasce na casa mirada e se espalha de casa em casa. Paredes seguram o fogo.
+// O lado é ímpar para a casa mirada ficar bem no centro. Um lado par é arredondado para cima.
 export function areaCells(maze: Maze, center: PiecePosition, side: number): PiecePosition[] {
     if (!isWalkable(maze, center.x, center.y)) return []
 
@@ -107,14 +107,14 @@ export interface AttackArea {
 export const attackArea = (attacker: PieceDefinition, target: PiecePosition): AttackArea | undefined =>
     isAreaAttack(attacker.type) ? { center: { ...target }, side: FIRE_AREA_SIDE } : undefined
 
-// Um ataque já decidido (alvo escolhido, atacante a caminho) esperando os dados.
+// Um ataque já decidido (alvo ou casa escolhidos, atacante a caminho) esperando os dados.
 // `delayMs` é o tempo que o atacante leva para chegar até o alvo — os dados só são
 // jogados depois disso, para que o desenho na tela acompanhe as rolagens.
 export interface PendingAttack {
     attackerId: string
-    // De onde saem os dados de dano. Os dados só são rolados quando o golpe acontece,
-    // depois da caminhada do atacante.
-    attackerType: PieceType
+    // Os dados de dano do atacante, no nível em que ele estava. Eles só são rolados
+    // quando o golpe acontece, depois da caminhada.
+    damageDice: DiceSpec
     // A peça mirada, quando há uma. No incêndio serve só para o histórico: lá quem se
     // defende são as peças da área, e a mira pode ter sido uma casa vazia.
     targetId?: string
@@ -122,8 +122,8 @@ export interface PendingAttack {
     // Ataque em área (incendiário): o quadrado que pega fogo. Todas as peças dentro dele
     // se defendem, do time que forem.
     area?: AttackArea
-    // Preenchidos quando o ataque vem de um item de manipulação (o item já foi gasto na
-    // tentativa de manipulação): identificam quem forçou o golpe, para o log.
+    // Preenchidos quando o ataque vem de um item de manipulação (o item já saiu do
+    // inventário na tentativa): identificam quem fez a manipulação, para o log.
     consumedItemKey?: SpecialItemKey
     consumerColor?: PieceColor
 }

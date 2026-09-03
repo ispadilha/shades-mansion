@@ -12,9 +12,18 @@ interface PhaserBoardProps {
     items: SpecialItem[]
     fireBursts: FireBurst[]
     auras: PieceAuras
+    droppedItemId: string | null
 }
 
-export const PhaserBoard: React.FC<PhaserBoardProps> = ({ cellSize, maze, pieces, items, fireBursts, auras }) => {
+export const PhaserBoard: React.FC<PhaserBoardProps> = ({
+    cellSize,
+    maze,
+    pieces,
+    items,
+    fireBursts,
+    auras,
+    droppedItemId,
+}) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<BoardScene | null>(null)
     const playedBurstsRef = useRef(new Set<string>())
@@ -41,6 +50,11 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({ cellSize, maze, pieces
     useEffect(() => {
         sceneRef.current?.syncItems(items)
     }, [items])
+
+    // O item já precisa estar em cena para poder cair nela
+    useEffect(() => {
+        if (droppedItemId) sceneRef.current?.playItemDrop(droppedItemId)
+    }, [droppedItemId])
 
     useEffect(() => {
         sceneRef.current?.syncPieces(pieces)
