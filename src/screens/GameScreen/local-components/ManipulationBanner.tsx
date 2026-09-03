@@ -2,7 +2,7 @@ import React from "react"
 import { Box, Button, Typography } from "@mui/material"
 import type { MotivationItemKey } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { HUD_PALETTE } from "../../../constants/palette"
+import { MANIPULATION_PALETTE } from "../../../constants/palette"
 
 interface ManipulationBannerProps {
     // Peça que está sob manipulação
@@ -23,18 +23,18 @@ export const ManipulationBanner: React.FC<ManipulationBannerProps> = ({ itemKey,
                 gap: 2,
                 px: 3,
                 py: 0.75,
-                bgcolor: HUD_PALETTE.manipulationBg,
-                borderBottom: `1px solid ${HUD_PALETTE.outline}`,
+                bgcolor: MANIPULATION_PALETTE.bandBg,
+                borderBottom: `1px solid ${MANIPULATION_PALETTE.bandOutline}`,
             }}
         >
-            <Typography sx={{ color: HUD_PALETTE.manipulationText, fontSize: 13 }}>
+            <Typography sx={{ color: MANIPULATION_PALETTE.bandText, fontSize: 13 }}>
                 {t("manipulatingPiece")}: {itemKey}
             </Typography>
             <Button
                 size="small"
                 variant="outlined"
                 onClick={onCancel}
-                sx={{ color: HUD_PALETTE.text, borderColor: HUD_PALETTE.manipulationOutline, py: 0.25 }}
+                sx={{ color: MANIPULATION_PALETTE.bandText, borderColor: MANIPULATION_PALETTE.bandOutline, py: 0.25 }}
             >
                 {t("cancelManipulation")}
             </Button>

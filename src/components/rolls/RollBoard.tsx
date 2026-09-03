@@ -21,6 +21,16 @@ interface RollBoardProps {
 
 type Phase = "waiting" | "spinning" | "revealed"
 
+// Se o que está na mesa serve para a rolagem que chega: a moeda precisa de uma face, e os
+// dados, do mesmo punhado e de valores que caibam no dado novo. Servindo, o número que
+// saiu antes fica à vista até outro giro começar, em vez de piscar um valor sorteado à toa.
+const fitsRoll = (shown: CoinFace | number[], next: RollView): boolean => {
+    if (next.kind === "coin") return !Array.isArray(shown)
+    if (!Array.isArray(shown) || !Array.isArray(next.value)) return false
+    const sides = sidesOf(next.kind)
+    return shown.length === next.value.length && shown.every((value) => value <= sides)
+}
+
 // O conteúdo de uma rolagem: título, dados girando, resultado e leitura. Serve tanto ao
 // modal quanto a uma área fixa da tela. Quem usa decide a moldura pelo `sx`.
 export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }) => {
@@ -54,7 +64,7 @@ export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }
         setShownId(rollId)
         if (roll) {
             setPhase(roll.manual ? "waiting" : "spinning")
-            setPreview(randomFaces())
+            setPreview((current) => (fitsRoll(current, roll) ? current : randomFaces()))
         }
     }
 
@@ -75,6 +85,9 @@ export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }
     // Resultado: segura o valor na tela e devolve o controle a quem pediu a rolagem
     useEffect(() => {
         if (!roll || phase !== "revealed") return
+        // O que saiu passa a ser o que fica na mesa: é ele que continua à vista até os
+        // dados voltarem a girar na rolagem seguinte
+        setPreview(roll.value)
         const timer = window.setTimeout(() => onDoneRef.current(), roll.holdMs ?? ROLL_HOLD_MS)
         return () => clearTimeout(timer)
         // eslint-disable-next-line react-hooks/exhaustive-deps

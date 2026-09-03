@@ -30,6 +30,13 @@ export const TEAM_BUTTON_PALETTE: Record<PieceColor, { bg: string; text: string 
     dark: { bg: "#111111", text: "#ffffff" },
 }
 
+export const MANIPULATION_PALETTE = {
+    glow: "#c2185b",
+    bandBg: "#2e0f1d",
+    bandText: "#f06292",
+    bandOutline: "#8c2751",
+}
+
 export interface AuraPalette {
     color: string
     strength: number
@@ -39,7 +46,7 @@ export interface AuraPalette {
 
 export const AURA_PALETTE: Record<AuraKind, AuraPalette> = {
     active: { color: "#ffd700", strength: 0.55, radius: 0.62, pulseMs: 1200 },
-    manipulated: { color: "#e53935", strength: 0.7, radius: 0.68, pulseMs: 700 },
+    manipulated: { color: MANIPULATION_PALETTE.glow, strength: 0.7, radius: 0.68, pulseMs: 700 },
 }
 
 // As casas destacadas quando uma peça está selecionada.
@@ -122,9 +129,6 @@ export const HUD_PALETTE = {
     outline: "#555555",
     text: "#ffffff",
     logText: "#bbbbbb",
-    manipulationBg: "#3a2a10",
-    manipulationText: "#ffd27a",
-    manipulationOutline: "#777777",
     statusReady: "#4caf50",
     statusWaiting: "#f44336",
     statusIdle: "#aaaaaa",
