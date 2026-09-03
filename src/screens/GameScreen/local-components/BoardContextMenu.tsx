@@ -1,6 +1,6 @@
 import React from "react"
 import { Menu, MenuItem } from "@mui/material"
-import type { PieceDefinition, PiecePosition, SpecialItem } from "../../../logic/types"
+import type { PieceDefinition, PiecePosition, MotivationItem } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
 
 // As ações que uma casa oferece. Quais valem é decidido na hora de abrir o menu.
@@ -12,7 +12,7 @@ export interface BoardMenuState {
     mouseY: number
     position: PiecePosition
     targetPiece?: PieceDefinition
-    itemAtPos?: SpecialItem
+    itemAtPos?: MotivationItem
     actions: BoardAction[]
 }
 

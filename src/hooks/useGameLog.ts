@@ -13,7 +13,7 @@ export interface GameLog {
     usedTo: (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => void
     // "{time} manipulou {peça} para {ação} [{alvo}]"
     manipulatedTo: (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => void
-    healed: (color: PieceColor, piece: string) => void
+    reinvigorated: (color: PieceColor, piece: string) => void
     promoted: (color: PieceColor, piece: string, level: number) => void
     // Item que saiu de uma manipulação falha e caiu de volta no labirinto
     returned: (itemKey: string) => void
@@ -53,12 +53,12 @@ export const useGameLog = (): GameLog => {
         add(target ? `${base} ${target}` : base)
     }
 
-    const healed = (color: PieceColor, piece: string) => {
-        add(`${tTeam(color)} ${t("verbHealed")} ${piece}`)
+    const reinvigorated = (color: PieceColor, piece: string) => {
+        add(`${tTeam(color)} ${t("verbReinvigorated")} ${piece}`)
     }
 
-    // Quanto a peça perdeu de vida, no fim da frase: "xX acertou yY (−7)"
-    const hpLoss = (damage: number) => ` (−${damage})`
+    // Quanto a peça perdeu de vigor, no fim da frase: "xX acertou yY (−7)"
+    const vigorLoss = (damage: number) => ` (−${damage})`
 
     const promoted = (color: PieceColor, piece: string, level: number) => {
         add(`${tTeam(color)} ${t("verbPromoted")} ${piece} ${t("toLevel")} ${level}`)
@@ -69,11 +69,11 @@ export const useGameLog = (): GameLog => {
     }
 
     const attackHit = (attackerId: string, targetId: string, damage: number) => {
-        add(`${attackerId} ${t("verbHit")} ${targetId}${hpLoss(damage)}`)
+        add(`${attackerId} ${t("verbHit")} ${targetId}${vigorLoss(damage)}`)
     }
 
     const attackGuarded = (attackerId: string, targetId: string, damage: number) => {
-        add(`${targetId} ${t("verbGuarded")} ${attackerId}${hpLoss(damage)}`)
+        add(`${targetId} ${t("verbGuarded")} ${attackerId}${vigorLoss(damage)}`)
     }
 
     const attackDodged = (attackerId: string, targetId: string) => {
@@ -97,7 +97,7 @@ export const useGameLog = (): GameLog => {
         add,
         usedTo,
         manipulatedTo,
-        healed,
+        reinvigorated,
         promoted,
         returned,
         attackHit,

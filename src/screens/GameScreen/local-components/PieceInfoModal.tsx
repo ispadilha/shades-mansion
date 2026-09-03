@@ -19,7 +19,7 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
             <Typography>{t("team")}: {tTeam(piece.color)}</Typography>
             <Typography>{t("type")}: {piece.type}</Typography>
             <Typography>{t("level")}: {piece.level}</Typography>
-            <Typography>{t("hp")}: {piece.hp} / {piece.maxHp}</Typography>
+            <Typography>{t("vigor")}: {piece.vigor} / {piece.maxVigor}</Typography>
             <Typography>{t("moveRange")}: {stats.moveRange}</Typography>
             <Typography>{t("attackRange")}: {stats.attackRange}</Typography>
             <Typography>{t("damage")}: {diceLabel(stats.damage)}</Typography>

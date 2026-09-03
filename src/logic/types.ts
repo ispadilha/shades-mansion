@@ -26,8 +26,8 @@ export interface PieceDefinition {
     type: PieceType
     position: PiecePosition
     movedThisTurn: boolean
-    hp: number
-    maxHp: number
+    vigor: number
+    maxVigor: number
     level: number
 }
 
@@ -35,24 +35,24 @@ export interface PieceDefinition {
 // então cada peça nova traz o seu item junto, sem lista para manter à parte.
 export type ItemPrefix = "d" | "g" | "l"
 
-export type SpecialItemKey = `${ItemPrefix}${PieceType}`
+export type MotivationItemKey = `${ItemPrefix}${PieceType}`
 
 const ITEM_PREFIXES: ItemPrefix[] = ["d", "g", "l"]
 
-export interface SpecialItem {
+export interface MotivationItem {
     id: string
-    key: SpecialItemKey
+    key: MotivationItemKey
     position: PiecePosition
 }
 
-export type TeamInventory = SpecialItemKey[]
+export type TeamInventory = MotivationItemKey[]
 export type Inventories = Record<PieceColor, TeamInventory>
 
-export const ALL_ITEM_KEYS: SpecialItemKey[] = ITEM_PREFIXES.flatMap((prefix) =>
-    ALL_PIECE_TYPES.map((type): SpecialItemKey => `${prefix}${type}`),
+export const ALL_ITEM_KEYS: MotivationItemKey[] = ITEM_PREFIXES.flatMap((prefix) =>
+    ALL_PIECE_TYPES.map((type): MotivationItemKey => `${prefix}${type}`),
 )
 
-export const itemKeyColor = (key: SpecialItemKey): PieceColor =>
+export const itemKeyColor = (key: MotivationItemKey): PieceColor =>
     key[0] === "l" ? "light" : key[0] === "d" ? "dark" : "gray"
 
 export const ALL_TEAM_COLORS: PieceColor[] = ["light", "dark", "gray"]

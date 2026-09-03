@@ -1,12 +1,12 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
 import { ItemBadge } from "../../../components/pieces"
-import type { SpecialItemKey, TextKey } from "../../../logic/types"
+import type { MotivationItemKey, TextKey } from "../../../logic/types"
 import type { ItemUse } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"
 
 interface InventoryItemRowProps {
-    itemKey: SpecialItemKey
+    itemKey: MotivationItemKey
     // Quantas unidades do item o time tem
     count: number
     // O que o item faz agora, ou null quando não serve para nada
@@ -16,7 +16,7 @@ interface InventoryItemRowProps {
     onExamine: (event: React.MouseEvent) => void
 }
 
-const USE_LABEL: Record<ItemUse, TextKey> = { heal: "heal", promote: "promote", manipulate: "use" }
+const USE_LABEL: Record<ItemUse, TextKey> = { reinvigorate: "reinvigorate", promote: "promote", manipulate: "use" }
 
 export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, count, use, onUse, onExamine }) => {
     const { t } = useLanguage()

@@ -2,7 +2,7 @@ import React from "react"
 import type { RefObject } from "react"
 import { Box } from "@mui/material"
 import { Board } from "../../../components/board"
-import type { PieceAuras, PieceDefinition, PiecePosition, SpecialItem } from "../../../logic/types"
+import type { PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../../logic/types"
 import type { FireBurst } from "../../../logic/combat"
 import type { Maze } from "../../../logic/maze"
 import { CELL_SIZE } from "../../../constants/rules"
@@ -12,7 +12,7 @@ interface BoardAreaProps {
     scrollRef: RefObject<HTMLDivElement | null>
     maze: Maze
     pieces: PieceDefinition[]
-    items: SpecialItem[]
+    items: MotivationItem[]
     highlighted: PiecePosition[]
     attackHighlighted: PiecePosition[]
     fireBursts: FireBurst[]

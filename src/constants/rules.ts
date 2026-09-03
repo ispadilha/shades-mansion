@@ -60,7 +60,7 @@ export const NO_DODGE = 21
 export interface PieceStats {
     moveRange: number
     attackRange: number
-    maxHp: number
+    maxVigor: number
     damage: DiceSpec
     // Esquiva total
     dodge: number
@@ -71,18 +71,18 @@ export interface PieceStats {
 }
 
 export const PIECE_STATS: Record<PieceType, PieceStats> = {
-    // Ágil: pouca vida e pouco dano, mas é a única que desvia totalmente com frequência
-    A: { moveRange: 9, attackRange: 7, maxHp: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
+    // Ágil: pouco vigor e pouco dano, mas é a única que desvia totalmente com frequência
+    A: { moveRange: 9, attackRange: 7, maxVigor: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
     // Balanceada: sem esquiva total, apara quase metade dos golpes
-    B: { moveRange: 7, attackRange: 5, maxHp: 12, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 12 },
-    // Campeã: mais vida e o maior golpe do jogo, mas menor movimento
-    C: { moveRange: 5, attackRange: 3, maxHp: 16, damage: { count: 2, sides: 8 }, dodge: NO_DODGE, guard: 14 },
+    B: { moveRange: 7, attackRange: 5, maxVigor: 12, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 12 },
+    // Campeã: mais vigor e o maior golpe do jogo, mas menor movimento
+    C: { moveRange: 5, attackRange: 3, maxVigor: 16, damage: { count: 2, sides: 8 }, dodge: NO_DODGE, guard: 14 },
     // Atiradora: acerta de longe, mas é a mais frágil depois da ágil
-    D: { moveRange: 5, attackRange: 7, maxHp: 10, damage: { count: 1, sides: 6 }, dodge: 18, guard: 14, ranged: true },
+    D: { moveRange: 5, attackRange: 7, maxVigor: 10, damage: { count: 1, sides: 6 }, dodge: 18, guard: 14, ranged: true },
     // Exótica: entre a balanceada e a campeã, com um resto de esquiva
-    E: { moveRange: 7, attackRange: 5, maxHp: 13, damage: { count: 1, sides: 8 }, dodge: 20, guard: 13 },
+    E: { moveRange: 7, attackRange: 5, maxVigor: 13, damage: { count: 1, sides: 8 }, dodge: 20, guard: 13 },
     // Incendiária: ataque em área, que pode alcançar várias peças de uma vez
-    F: { moveRange: 5, attackRange: 5, maxHp: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13, ranged: true, areaAttack: true },
+    F: { moveRange: 5, attackRange: 5, maxVigor: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13, ranged: true, areaAttack: true },
 }
 
 export const isRanged = (type: PieceType) => PIECE_STATS[type].ranged === true
@@ -103,7 +103,7 @@ const DAMAGE_LADDER: DieSides[] = [4, 6, 8, 10, 12, 20]
 // O que cada nível acima do primeiro acrescenta.
 // A esquiva fica de fora:
 // quem é pesado demais para desviar não aprende a desviar.
-export const LEVEL_BONUS = { maxHp: 3, moveRange: 1, guard: -1, damageSteps: 1 }
+export const LEVEL_BONUS = { maxVigor: 3, moveRange: 1, guard: -1, damageSteps: 1 }
 
 // Os atributos de uma peça no nível em que ela está
 export const statsFor = (type: PieceType, level: number): PieceStats => {
@@ -117,7 +117,7 @@ export const statsFor = (type: PieceType, level: number): PieceStats => {
     )
     return {
         ...base,
-        maxHp: base.maxHp + steps * LEVEL_BONUS.maxHp,
+        maxVigor: base.maxVigor + steps * LEVEL_BONUS.maxVigor,
         moveRange: base.moveRange + steps * LEVEL_BONUS.moveRange,
         guard: base.guard + steps * LEVEL_BONUS.guard,
         damage: { ...base.damage, sides: DAMAGE_LADDER[degrau] },

@@ -1,11 +1,11 @@
 import React from "react"
 import { Box } from "@mui/material"
-import type { SpecialItemKey } from "../../logic/types"
+import type { MotivationItemKey } from "../../logic/types"
 import { itemKeyColor } from "../../logic/types"
 import { ITEM_PALETTE } from "../../constants/palette"
 
 interface ItemBadgeProps {
-    itemKey: SpecialItemKey
+    itemKey: MotivationItemKey
     size?: number
 }
 

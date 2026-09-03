@@ -1,4 +1,4 @@
-import type { PieceColor, PieceDefinition, PiecePosition, SpecialItemKey } from "./types"
+import type { PieceColor, PieceDefinition, PiecePosition, MotivationItemKey } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { manhattan, neighbors, positionKey } from "./grid"
@@ -124,7 +124,7 @@ export interface PendingAttack {
     area?: AttackArea
     // Preenchidos quando o ataque vem de um item de manipulação (o item já saiu do
     // inventário na tentativa): identificam quem fez a manipulação, para o log.
-    consumedItemKey?: SpecialItemKey
+    consumedItemKey?: MotivationItemKey
     consumerColor?: PieceColor
 }
 

@@ -3,7 +3,7 @@ import { Box, Button, Menu, MenuItem, Stack, Typography } from "@mui/material"
 import { InventoryItemRow } from "./InventoryItemRow"
 import { ItemInfoModal } from "./ItemInfoModal"
 import { ModalCard } from "../../../components/ui"
-import type { PieceColor, PieceDefinition, SpecialItemKey, TeamInventory } from "../../../logic/types"
+import type { PieceColor, PieceDefinition, MotivationItemKey, TeamInventory } from "../../../logic/types"
 import { itemUseFor } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { SURFACE_PALETTE } from "../../../constants/palette"
@@ -14,8 +14,8 @@ interface InventoryModalProps {
     inventory: TeamInventory
     pieces: PieceDefinition[]
     playerColor: PieceColor
-    onUseOwnItem: (key: SpecialItemKey) => void
-    onUseManipulationItem: (key: SpecialItemKey) => void
+    onUseOwnItem: (key: MotivationItemKey) => void
+    onUseManipulationItem: (key: MotivationItemKey) => void
 }
 
 export const InventoryModal: React.FC<InventoryModalProps> = ({
@@ -28,22 +28,22 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
     onUseManipulationItem,
 }) => {
     const { t } = useLanguage()
-    const [itemMenu, setItemMenu] = useState<{ mouseX: number; mouseY: number; key: SpecialItemKey } | null>(null)
-    const [examineKey, setExamineKey] = useState<SpecialItemKey | null>(null)
+    const [itemMenu, setItemMenu] = useState<{ mouseX: number; mouseY: number; key: MotivationItemKey } | null>(null)
+    const [examineKey, setExamineKey] = useState<MotivationItemKey | null>(null)
 
     // Agrupa por key para mostrar contagem (×N) ao invés de uma linha por unidade
-    const aggregated = inventory.reduce<Array<{ key: SpecialItemKey; count: number }>>((acc, key) => {
+    const aggregated = inventory.reduce<Array<{ key: MotivationItemKey; count: number }>>((acc, key) => {
         const entry = acc.find((e) => e.key === key)
         if (entry) entry.count++
         else acc.push({ key, count: 1 })
         return acc
     }, [])
 
-    // Item do próprio time cura a peça atingida ou promove a que está inteira.
+    // Item do próprio time revigora a peça atingida ou promove a que está inteira.
     // Item de outro time serve para tentar manipular a peça.
-    const actionFor = (key: SpecialItemKey) => itemUseFor(key, pieces.find((p) => p.id === key), playerColor)
+    const actionFor = (key: MotivationItemKey) => itemUseFor(key, pieces.find((p) => p.id === key), playerColor)
 
-    const handleUse = (key: SpecialItemKey) => {
+    const handleUse = (key: MotivationItemKey) => {
         const use = actionFor(key)
         if (use === "manipulate") onUseManipulationItem(key)
         else if (use) onUseOwnItem(key)

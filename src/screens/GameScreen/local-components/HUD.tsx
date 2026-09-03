@@ -5,7 +5,7 @@ import { HudActions } from "./HudActions"
 import { ManipulationBanner } from "./ManipulationBanner"
 import { TurnStatus } from "./TurnStatus"
 import { TurnOrderBar } from "../../../components/initiative"
-import type { PieceDefinition, SpecialItemKey } from "../../../logic/types"
+import type { PieceDefinition, MotivationItemKey } from "../../../logic/types"
 import { HUD_PALETTE } from "../../../constants/palette"
 
 // O HUD é feito de faixas horizontais de mesma altura e mesma cor.
@@ -29,7 +29,7 @@ interface HUDProps {
     log: string[]
     // Peça sob manipulação
     manipulatedId: string | null
-    manipulationKey: SpecialItemKey | null
+    manipulationKey: MotivationItemKey | null
     onCancelManipulation: () => void
 }
 

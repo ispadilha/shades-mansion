@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { Inventories, PieceColor, PieceDefinition, PiecePosition, SpecialItem, SpecialItemKey, TextKey } from "../logic/types"
+import type { Inventories, PieceColor, PieceDefinition, PiecePosition, MotivationItem, MotivationItemKey, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { pathLength } from "../logic/movement"
 import { SimpleAI } from "../logic/ai"
@@ -15,7 +15,7 @@ interface AiTurnOptions {
     turnIndex: number
     pieces: PieceDefinition[]
     setPieces: Dispatch<SetStateAction<PieceDefinition[]>>
-    items: SpecialItem[]
+    items: MotivationItem[]
     inventories: Inventories
     setInventories: Dispatch<SetStateAction<Inventories>>
     maze: Maze
@@ -26,7 +26,7 @@ interface AiTurnOptions {
     schedulePickup: (color: PieceColor, position: PiecePosition, delayMs: number) => void
     // Diz se o destino tem item: é o que separa "mover" de "coletar" no log
     moveActionFor: (position: PiecePosition) => { actionKey: TextKey; target?: string }
-    removeFromInventory: (color: PieceColor, key: SpecialItemKey) => void
+    removeFromInventory: (color: PieceColor, key: MotivationItemKey) => void
     combat: CombatResolution
     log: GameLog
 }
@@ -68,13 +68,13 @@ export const useAiTurn = ({
         const color = activePiece.color
 
         // Fase dos itens: no começo do turno, o time da peça da vez gasta os itens que tem
-        // nas próprias peças, curando ou promovendo (uma vez por turno)
+        // nas próprias peças, revigorando ou promovendo (uma vez por turno)
         if (itemPhaseDoneRef.current !== turnKey) {
             const phase = SimpleAI.applyOwnItems(pieces, color, inventories)
             itemPhaseDoneRef.current = turnKey
             if (phase.uses.length > 0) {
                 for (const { pieceId, use, level } of phase.uses) {
-                    if (use === "heal") log.healed(color, pieceId)
+                    if (use === "reinvigorate") log.reinvigorated(color, pieceId)
                     else log.promoted(color, pieceId, level)
                 }
                 setPieces(phase.pieces)

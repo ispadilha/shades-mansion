@@ -13,12 +13,12 @@ import type {
     PieceColor,
     PieceDefinition,
     PiecePosition,
-    SpecialItem,
-    SpecialItemKey,
+    MotivationItem,
+    MotivationItemKey,
     TextKey,
 } from "../../../logic/types"
 import { controlledColorsFor, itemKeyColor } from "../../../logic/types"
-import { healed, itemUseFor, promoted } from "../../../logic/items"
+import { reinvigorated, itemUseFor, promoted } from "../../../logic/items"
 import { atPosition, includesPosition } from "../../../logic/grid"
 import { findApproachCell, lineOfFire, pathLength } from "../../../logic/movement"
 import { nextTurnIndex } from "../../../logic/initiative"
@@ -62,9 +62,9 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     // Explosões de fogo já resolvidas, para a cena animar (o tabuleiro ignora as repetidas)
     const [fireBursts, setFireBursts] = useState<FireBurst[]>([])
     const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
-    const [itemInfoKey, setItemInfoKey] = useState<SpecialItemKey | null>(null)
+    const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [inventoryOpen, setInventoryOpen] = useState(false)
-    const [manipulation, setManipulation] = useState<{ itemKey: SpecialItemKey } | null>(null)
+    const [manipulation, setManipulation] = useState<{ itemKey: MotivationItemKey } | null>(null)
     // Peça sob manipulação, do lançamento da moeda até a ação forçada acabar:
     // é ela que a câmera segue e quem ganha a aura de manipulação
     const [manipulatedId, setManipulatedId] = useState<string | null>(null)
@@ -73,7 +73,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const [focusHeldUntil, setFocusHeldUntil] = useState(0)
     const [contextMenu, setContextMenu] = useState<BoardMenuState | null>(null)
     // Item que acabou de cair de volta no tabuleiro: a câmera para em cima dele
-    const [droppedItem, setDroppedItem] = useState<SpecialItem | null>(null)
+    const [droppedItem, setDroppedItem] = useState<MotivationItem | null>(null)
 
     const log = useGameLog()
     const rolls = useRolls()
@@ -84,7 +84,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const isPlayerTurn = activePiece !== null && controlledColors.includes(activePiece.color)
     const activeColor = isPlayerTurn ? activePiece!.color : null
     // Inventário exibido no HUD: quem comanda um único time consulta o seu a qualquer momento
-    // (inclusive para curar ou promover durante o turno da IA).
+    // (inclusive para revigorar ou promover durante o turno da IA).
     // No multi-jogador local, é sempre o do time da vez.
     const inventoryColor = controlledColors.length === 1 ? controlledColors[0] : activeColor
     // Peças ainda em jogo, na ordem de iniciativa, para a faixa de turnos do HUD
@@ -163,7 +163,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     }
 
     // Manipulação fracassada: o item cai de volta no tabuleiro em uma casa livre sorteada
-    const returnItemToBoard = (key: SpecialItemKey) => {
+    const returnItemToBoard = (key: MotivationItemKey) => {
         const item = dropOnBoard(key, maze, pieces)
         if (!item) return
         log.returned(key)
@@ -387,7 +387,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
             delayMs,
             ...(target ? { targetId: target.id } : {}),
             ...(area ? { area } : {}),
-            ...(forcedBy ? { consumedItemKey: attacker.id as SpecialItemKey, consumerColor: forcedBy } : {}),
+            ...(forcedBy ? { consumedItemKey: attacker.id as MotivationItemKey, consumerColor: forcedBy } : {}),
         })
     }
 
@@ -402,22 +402,22 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         closeContextMenu()
     }
 
-    // Item do próprio time cura a peça atingida, ou promove a que está inteira
-    const handleUseOwnItem = (key: SpecialItemKey) => {
+    // Item do próprio time revigora a peça atingida, ou promove a que está inteira
+    const handleUseOwnItem = (key: MotivationItemKey) => {
         if (!inventoryColor || !inventories[inventoryColor].includes(key)) return
         const target = pieces.find((p) => p.id === key)
         const use = itemUseFor(key, target, inventoryColor)
-        if (!target || (use !== "heal" && use !== "promote")) return
+        if (!target || (use !== "reinvigorate" && use !== "promote")) return
 
-        const after = use === "heal" ? healed(target) : promoted(target)
+        const after = use === "reinvigorate" ? reinvigorated(target) : promoted(target)
         setPieces((prev) => prev.map((p) => (p.id === key ? after : p)))
         removeFromInventory(inventoryColor, key)
-        if (use === "heal") log.healed(inventoryColor, key)
+        if (use === "reinvigorate") log.reinvigorated(inventoryColor, key)
         else log.promoted(inventoryColor, key, after.level)
     }
 
     // Item de outro time: serve para tentar manipular a peça
-    const handleUseManipulationItem = (key: SpecialItemKey) => {
+    const handleUseManipulationItem = (key: MotivationItemKey) => {
         if (!activeColor || rolls.resolving) return
         if (itemKeyColor(key) === activeColor) return
         if (!inventories[activeColor].includes(key)) return

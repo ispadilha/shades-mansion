@@ -1,5 +1,5 @@
-import type { PieceDefinition, PieceColor, PiecePosition, SpecialItem, Inventories, SpecialItemKey } from "./types"
-import { healed, itemUseFor, promoted, type ItemUse } from "./items"
+import type { PieceDefinition, PieceColor, PiecePosition, MotivationItem, Inventories, MotivationItemKey } from "./types"
+import { reinvigorated, itemUseFor, promoted, type ItemUse } from "./items"
 import { itemKeyColor } from "./types"
 import { reachableCells, findApproachCell, lineOfFire, pathLength, distanceMap } from "./movement"
 import { positionKey } from "./grid"
@@ -30,15 +30,15 @@ export class SimpleAI {
 
         for (const piece of pieces) {
             if (piece.color !== color) continue
-            const key = piece.id as SpecialItemKey
+            const key = piece.id as MotivationItemKey
             const idx = teamInv.indexOf(key)
             if (idx === -1) continue
 
             const use = itemUseFor(key, piece, color)
-            if (use !== "heal" && use !== "promote") continue
+            if (use !== "reinvigorate" && use !== "promote") continue
 
             teamInv.splice(idx, 1)
-            const after = use === "heal" ? healed(piece) : promoted(piece)
+            const after = use === "reinvigorate" ? reinvigorated(piece) : promoted(piece)
             updatedPieces = updatedPieces.map((p) => (p.id === piece.id ? after : p))
             uses.push({ pieceId: piece.id, use, level: after.level })
         }
@@ -50,12 +50,12 @@ export class SimpleAI {
         pieces: PieceDefinition[],
         activePiece: PieceDefinition,
         maze: Maze,
-        items: SpecialItem[],
+        items: MotivationItem[],
         inventories: Inventories,
     ): AIMoveResult {
         const color = activePiece.color
         const enemyPieces = pieces.filter((p) => p.color !== color)
-        const myInv: SpecialItemKey[] = inventories[color]
+        const myInv: MotivationItemKey[] = inventories[color]
 
         // Prioridade 1: usar item de manipulação para forçar um ataque vantajoso
         const manipulation = this.tryManipulationAttack(pieces, color, myInv, maze)
@@ -90,12 +90,12 @@ export class SimpleAI {
     }
 
     // Para cada item de manipulação no inventário, verifica se a peça correspondente
-    // pode atacar alguém que NÃO seja do time da IA. Escolhe o alvo de menor HP
+    // pode atacar alguém que NÃO seja do time da IA. Escolhe o alvo de menor vigor
     // (mais chance de eliminar). Se nenhum item rende um ataque útil, retorna null.
     private static tryManipulationAttack(
         pieces: PieceDefinition[],
         color: PieceColor,
-        myInv: SpecialItemKey[],
+        myInv: MotivationItemKey[],
         maze: Maze,
     ): AIMoveResult | null {
         for (const itemKey of myInv) {
@@ -108,8 +108,8 @@ export class SimpleAI {
             const reach = this.findInRangeTargets(manipulated, candidates, pieces, maze, color)
             if (reach.length === 0) continue
 
-            // Escolhe o alvo de menor HP (mais chance de eliminá-lo)
-            const best = reach.reduce((acc, r) => (r.target.hp < acc.target.hp ? r : acc))
+            // Escolhe o alvo de menor vigor (mais chance de tirá-lo da mansão)
+            const best = reach.reduce((acc, r) => (r.target.vigor < acc.target.vigor ? r : acc))
 
             const moveSteps = pathLength(manipulated.position, best.approach, maze)
             const area = attackArea(manipulated, best.target.position)
@@ -136,7 +136,7 @@ export class SimpleAI {
 
     private static moveTowardItem(
         myPieces: PieceDefinition[],
-        items: SpecialItem[],
+        items: MotivationItem[],
         pieces: PieceDefinition[],
         maze: Maze,
     ): AIMoveResult | null {

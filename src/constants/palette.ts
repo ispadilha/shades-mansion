@@ -63,7 +63,7 @@ export const BOARD_PALETTE = {
     selected: "#ffd700",
 }
 
-export const HEALTH_PALETTE = {
+export const VIGOR_PALETTE = {
     track: "#141014",
     outline: "#000000",
     high: "#4caf50",

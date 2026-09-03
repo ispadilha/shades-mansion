@@ -84,19 +84,19 @@ export const texts_ui = {
         ptBR: "Examinar",
     },
 
-    itemDescHealLight: {
-        enUS: "Heals Light",
-        ptBR: "Cura a peça clara",
+    itemDescReinvigorateLight: {
+        enUS: "Reinvigorates Light",
+        ptBR: "Revigora a peça clara",
     },
 
-    itemDescHealDark: {
-        enUS: "Heals Dark",
-        ptBR: "Cura a peça escura",
+    itemDescReinvigorateDark: {
+        enUS: "Reinvigorates Dark",
+        ptBR: "Revigora a peça escura",
     },
 
-    itemDescHealGray: {
-        enUS: "Heals Gray",
-        ptBR: "Cura a peça cinza",
+    itemDescReinvigorateGray: {
+        enUS: "Reinvigorates Gray",
+        ptBR: "Revigora a peça cinza",
     },
 
     itemDescManipulateLight: {
@@ -115,8 +115,8 @@ export const texts_ui = {
     },
 
     itemDescOwnSuffix: {
-        enUS: "(heals it, or promotes it)",
-        ptBR: "(cura, ou promove)",
+        enUS: "(reinvigorates it, or promotes it)",
+        ptBR: "(revigora, ou promove)",
     },
 
     itemDescManipulateSuffix: {
@@ -139,9 +139,9 @@ export const texts_ui = {
         ptBR: "Nível",
     },
 
-    hp: {
-        enUS: "HP",
-        ptBR: "PV",
+    vigor: {
+        enUS: "Vigor",
+        ptBR: "Vigor",
     },
 
     type: {
@@ -249,9 +249,9 @@ export const texts_ui = {
         ptBR: "Inventário",
     },
 
-    heal: {
-        enUS: "Heal",
-        ptBR: "Curar",
+    reinvigorate: {
+        enUS: "Reinvigorate",
+        ptBR: "Revigorar",
     },
 
     promote: {
@@ -314,9 +314,9 @@ export const texts_ui = {
         ptBR: "caiu de volta no chão",
     },
 
-    verbHealed: {
-        enUS: "healed",
-        ptBR: "curou",
+    verbReinvigorated: {
+        enUS: "reinvigorated",
+        ptBR: "revigorou",
     },
 
     toMove: {
@@ -340,13 +340,13 @@ export const texts_ui = {
     },
 
     wasEliminated: {
-        enUS: "was eliminated",
-        ptBR: "foi eliminada",
+        enUS: "fled the mansion",
+        ptBR: "fugiu da mansão",
     },
 
     wasDefeated: {
-        enUS: "was defeated",
-        ptBR: "foi derrotado",
+        enUS: "abandoned the mansion",
+        ptBR: "abandonou a mansão",
     },
 
     mazeSettings: {

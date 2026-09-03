@@ -1,12 +1,12 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
-import type { SpecialItemKey } from "../../../logic/types"
+import type { MotivationItemKey } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { HUD_PALETTE } from "../../../constants/palette"
 
 interface ManipulationBannerProps {
     // Peça que está sob manipulação
-    itemKey: SpecialItemKey
+    itemKey: MotivationItemKey
     onCancel: () => void
 }
 

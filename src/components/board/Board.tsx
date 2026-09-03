@@ -2,7 +2,7 @@ import React, { type JSX } from "react"
 import { Box } from "@mui/material"
 import { Cell } from "./Cell"
 import { PhaserBoard } from "./PhaserBoard"
-import type { PieceAuras, PieceDefinition, PiecePosition, SpecialItem } from "../../logic/types"
+import type { PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../logic/types"
 import type { FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { isWall } from "../../logic/maze"
@@ -12,7 +12,7 @@ interface BoardProps {
     cellSize: number
     maze: Maze
     pieces: PieceDefinition[]
-    items: SpecialItem[]
+    items: MotivationItem[]
     highlighted: PiecePosition[]
     attackHighlighted: PiecePosition[]
     fireBursts: FireBurst[]

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { PieceColor, PieceDefinition, PiecePosition, SpecialItemKey, TextKey } from "../logic/types"
+import type { PieceColor, PieceDefinition, PiecePosition, MotivationItemKey, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import {
     areaCells,
@@ -45,7 +45,7 @@ interface CombatResolutionOptions {
     // as de times comandados por IA rolam automaticamente.
     isManualRoll: (color: PieceColor) => boolean
     // Uma manipulação falha derruba o item de volta no tabuleiro
-    onManipulationFailed: (itemKey: SpecialItemKey) => void
+    onManipulationFailed: (itemKey: MotivationItemKey) => void
 }
 
 export interface CombatResolution {
@@ -54,7 +54,7 @@ export interface CombatResolution {
     // Tentativa de manipulação: o item já saiu do inventário de quem usou, e a moeda decide
     // se a peça obedece. Falhando, o item cai de volta no tabuleiro. Devolve o resultado a
     // quem chamou depois de encenar a rolagem.
-    resolveManipulation: (color: PieceColor, itemKey: SpecialItemKey, onSettled: (success: boolean) => void) => void
+    resolveManipulation: (color: PieceColor, itemKey: MotivationItemKey, onSettled: (success: boolean) => void) => void
 }
 
 export const useCombatResolution = ({
@@ -177,12 +177,12 @@ export const useCombatResolution = ({
 
     // Quem chega a zero sai do tabuleiro
     const applyDamage = (pieceId: string, damage: number) => {
-        setPieces((prev) => prev.map((p) => (p.id === pieceId ? { ...p, hp: p.hp - damage } : p)).filter((p) => p.hp > 0))
+        setPieces((prev) => prev.map((p) => (p.id === pieceId ? { ...p, vigor: p.vigor - damage } : p)).filter((p) => p.vigor > 0))
     }
 
     const resolveManipulation = (
         color: PieceColor,
-        itemKey: SpecialItemKey,
+        itemKey: MotivationItemKey,
         onSettled: (success: boolean) => void,
     ) => {
         const { face, success } = rollManipulation()

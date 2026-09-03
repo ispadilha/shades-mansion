@@ -37,11 +37,11 @@ export const texts_rules = {
         description: {
             enUS:
                 "Light, Gray and Dark each start with six pieces, one of each type: Agile (A), Balanced (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
-                "The six types are the same for the three teams, and no two of them are alike: they differ in how far they walk, how far they reach, how much health they carry, the dice their blow rolls and how well they defend themselves.\n\n" +
+                "The six types are the same for the three teams, and no two of them are alike: they differ in how far they walk, how far they reach, how much vigor they have, the dice their blow rolls and how well they defend themselves.\n\n" +
                 "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row.",
             ptBR:
                 "Claro, Cinza e Escuro começam com seis peças cada, uma de cada tipo: Ágil (A), Balanceada (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
-                "Os seis tipos são os mesmos para os três times, e não há dois iguais: eles se diferenciam em quanto andam, quanto alcançam, quanta vida carregam, os dados que o golpe deles rola e o quanto conseguem se defender.\n\n" +
+                "Os seis tipos são os mesmos para os três times, e não há dois iguais: eles se diferenciam em quanto andam, quanto alcançam, quanto vigor têm, os dados que o golpe deles rola e o quanto conseguem se defender.\n\n" +
                 "As peças escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
         },
     },
@@ -53,21 +53,21 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The Agile (A) runs the farthest and hits the softest: 9 health and a 1d4 blow. In exchange it is the only piece that slips out of a blow completely almost half of the time.\n\n" +
-                "The Balanced (B) is the middle of the table: 12 health and a 1d6 blow.\n\n" +
-                "The Champion (C) is the heaviest of all: 16 health and two d8 in a single blow, but has the most limited movement.\n\n" +
-                "The Distance shooter (D) rolls a 1d6 from where it stands, with 10 health, and still ducks a blow now and then.\n\n" +
-                "The Exotic (E) sits between the middle and the top: 13 health and a 1d8 blow.\n\n" +
-                "The Firestarter (F) rolls 1d6, with 11 health, and its shot burns a whole area.\n\n" +
-                "Right-click a piece and ask for its information to see all of it, including how much health it has left.",
+                "The Agile (A) runs the farthest and hits the softest: 9 vigor and a 1d4 blow. In exchange it is the only piece that slips out of a blow completely almost half of the time.\n\n" +
+                "The Balanced (B) is the middle of the table: 12 vigor and a 1d6 blow.\n\n" +
+                "The Champion (C) is the heaviest of all: 16 vigor and two d8 in a single blow, but has the most limited movement.\n\n" +
+                "The Distance shooter (D) rolls a 1d6 from where it stands, with 10 vigor, and still ducks a blow now and then.\n\n" +
+                "The Exotic (E) sits between the middle and the top: 13 vigor and a 1d8 blow.\n\n" +
+                "The Firestarter (F) rolls 1d6, with 11 vigor, and its shot burns a whole area.\n\n" +
+                "Right-click a piece and ask for its information to see all of it, including how much vigor it has left.",
             ptBR:
-                "A Ágil (A) é a que corre mais longe e a que bate mais fraco: 9 de vida e um golpe de 1d4. Em troca, é a única peça que desvia de ataques em quase metade das vezes.\n\n" +
-                "A Balanceada (B) é o meio da tabela: 12 de vida e golpe de 1d6.\n\n" +
-                "O Campeão (C) é o mais pesado de todos: 16 de vida e dois d8 em um golpe só, mas tem o movimento mais limitado.\n\n" +
-                "A que atira à Distância (D) rola um 1d6 de onde está, com 10 de vida, e ainda desvia de um golpe de vez em quando.\n\n" +
-                "A Exótica (E) fica entre o meio e o topo: 13 de vida e golpe de 1d8\n\n" +
-                "A incendiária com seu Fogo (F) rola 1d6, com 11 de vida, e o tiro dela queima uma área inteira.\n\n" +
-                "Clique com o botão direito em uma peça e peça a informação dela para ver tudo isso, inclusive quanta vida ainda lhe resta.",
+                "A Ágil (A) é a que corre mais longe e a que bate mais fraco: 9 de vigor e um golpe de 1d4. Em troca, é a única peça que desvia de ataques em quase metade das vezes.\n\n" +
+                "A Balanceada (B) é o meio da tabela: 12 de vigor e golpe de 1d6.\n\n" +
+                "O Campeão (C) é o mais pesado de todos: 16 de vigor e dois d8 em um golpe só, mas tem o movimento mais limitado.\n\n" +
+                "A que atira à Distância (D) rola um 1d6 de onde está, com 10 de vigor, e ainda desvia de um golpe de vez em quando.\n\n" +
+                "A Exótica (E) fica entre o meio e o topo: 13 de vigor e golpe de 1d8\n\n" +
+                "A incendiária com seu Fogo (F) rola 1d6, com 11 de vigor, e seu tiro queima uma área inteira.\n\n" +
+                "Clique com o botão direito em uma peça e peça a informação dela para ver tudo isso, inclusive quanto vigor ainda lhe resta.",
         },
     },
 
@@ -94,10 +94,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "Between choosing your side and entering the mansion, all the characters line up — Light, Gray then Dark — and roll their initiative one at a time: two d20 thrown together, counted as their sum. A total already taken is refused and the character rolls again, so the values are always different.\n\n" +
-                "The rolls are sorted from the highest to the lowest and that becomes the order of play for the whole match. The order never changes: eliminated pieces are simply skipped.",
+                "The rolls are sorted from the highest to the lowest and that becomes the order of play for the whole match. The order never changes: pieces that have left the mansion are simply skipped.",
             ptBR:
                 "Entre a escolha de time e a entrada na mansão, todos os personagens se enfileiram — Claros, Cinzas e Escuros — e rolam a iniciativa um de cada vez: dois d20 jogados juntos, valendo a soma. Um total que já saiu é recusado e o personagem rola de novo, então os valores são sempre diferentes.\n\n" +
-                "As rolagens são ordenadas do maior para o menor e isso vira a ordem das vezes na partida inteira. A ordem nunca muda: as peças eliminadas são apenas puladas.",
+                "As rolagens são ordenadas do maior para o menor e isso vira a ordem das vezes na partida inteira. A ordem nunca muda: as peças que já fugiram da mansão são apenas puladas.",
         },
     },
 
@@ -141,12 +141,12 @@ export const texts_rules = {
                 "Melee pieces attack by walking to a free cell next to the target and striking on arrival. The walk has to fit inside the piece's attack range.\n\n" +
                 "The shooter and the firestarter attack from where they stand, at anything with a clear line of fire. The firestarter may also aim at an empty cell.\n\n" +
                 "Every blow is settled by two rolls, one after the other. First the attacker rolls the dice of its own blow. Then the piece being attacked answers with a defense roll, which decides how much of that damage actually lands.\n\n" +
-                "A piece that drops to 0 health is removed from the board.",
+                "A piece that drops to 0 vigor gives up the dispute and leaves the mansion.",
             ptBR:
                 "As peças corpo a corpo atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça.\n\n" +
                 "A peça atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre. A incendiária pode mirar também uma casa vazia.\n\n" +
                 "Todo ataque é resolvido em duas rolagens, uma depois da outra. Primeiro a peça atacante rola os dados de seu golpe. Depois a peça atacada responde com a rolagem de defesa, que decide quanto desse dano chega de fato.\n\n" +
-                "A peça que chega a 0 ponto de vida sai do tabuleiro.",
+                "A peça que chega a 0 pontos de vigor desiste da disputa e sai da mansão.",
         },
     },
 
@@ -203,33 +203,33 @@ export const texts_rules = {
 
     items: {
         name: {
-            enUS: "Special items",
-            ptBR: "Itens especiais",
+            enUS: "Motivation items",
+            ptBR: "Itens de motivação",
         },
         description: {
             enUS:
-                "The mansion contains valuable items for the different pieces.\n\n" +
-                "An item valuable to one of your own pieces heals it when it is damaged, and promotes it when it is not. An item valuable to another team's piece may manipulate that piece.\n\n",
+                "The mansion hides items that are valuable to the different pieces. Each one is a motivation for the piece it belongs to: a reason to recover, to grow, and to stay in the dispute.\n\n" +
+                "An item that motivates one of your own pieces reinvigorates it when it has lost vigor, and promotes it when it has not. An item that motivates another team's piece is a temptation you can use to manipulate it.\n\n",
             ptBR:
-                "A mansão contém itens valiosos para as diferentes peças.\n\n" +
-                "Um item valioso para uma peça sua a cura quando ela está atingida, e a promove quando não está. Um item valioso para a peça de outro time pode manipular essa peça.\n\n",
+                "A mansão esconde itens que são valiosos para as diferentes peças. Cada um é uma motivação para a peça a que pertence: um motivo para se recuperar, para evoluir, e para continuar na disputa.\n\n" +
+                "Um item que motiva uma peça sua a revigora, quando ela perdeu vigor, e a promove quando isso não aconteceu. Um item que motiva a peça de outro time é uma tentação que você pode usar para manipulá-la.\n\n",
         },
     },
 
-    healing: {
+    reinvigorating: {
         name: {
-            enUS: "Healing",
-            ptBR: "Cura",
+            enUS: "Reinvigorating",
+            ptBR: "Revigorar",
         },
         description: {
             enUS:
-                "Using an item which is valuable to your own piece heals it.\n\n" +
-                "Healing is what the item does while the piece is damaged. Undamaged, the same item promotes it instead.\n\n" +
-                "It can't be used on a piece that has been eliminated, so an item held too long can be lost with its owner.",
+                "Using an item which motivates your own piece gives it back the vigor it has lost.\n\n" +
+                "Reinvigorating is what the item does while the piece is short of vigor. At full vigor, the same item promotes it instead.\n\n" +
+                "It can't be used on a piece that has already left the mansion, so an item held too long can be lost with its owner.",
             ptBR:
-                "Usar um item valioso para a sua própria peça a cura.\n\n" +
-                "Curar é o que o item faz enquanto a peça está atingida. Inteira, o mesmo item a promove.\n\n" +
-                "Ele não pode ser usado em uma peça eliminada, então um item guardado tempo demais pode se perder junto com o dono.",
+                "Usar um item que motiva a sua própria peça devolve a ela o vigor que perdeu.\n\n" +
+                "Revigorar é o que o item faz quando a peça foi atingida em disputas. Com o vigor cheio, o mesmo item a promove.\n\n" +
+                "Ele não pode ser usado em uma peça que já fugiu da mansão, então um item guardado tempo demais pode se perder junto com o dono.",
         },
     },
 
@@ -240,13 +240,13 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "A piece at full health does not need its item to heal. Instead, the item promotes the piece: it goes up a level.\n\n" +
-                "Every level adds 3 health, a step of reach, an easier guard, and one step up the ladder of the damage die: a d4 becomes a d6, a d6 becomes a d8, a d8 becomes a d10.\n\n" +
+                "A piece at full vigor has no vigor to get back, so the item promotes it instead: the piece goes up a level.\n\n" +
+                "Every level adds 3 vigor, a step of reach, an easier guard, and one step up the ladder of the damage die: a d4 becomes a d6, a d6 becomes a d8, a d8 becomes a d10.\n\n" +
                 "The dodge is the one thing a promotion doesn't change: a heavy piece will still be slow.\n\n" +
                 "Right-click a piece and ask for its information to see the level it is on.",
             ptBR:
-                "Uma peça com a vida cheia não precisa de seu item para cura. Em vez disso, o item a promove: ela sobe um nível.\n\n" +
-                "Cada nível acrescenta 3 de vida, um passo de alcance, um aparo mais fácil, e um degrau na escada do dado de dano: um d4 vira d6, um d6 vira d8, um d8 vira d10.\n\n" +
+                "Uma peça com o vigor cheio não tem vigor a recuperar, então o item a promove: ela sobe um nível.\n\n" +
+                "Cada nível acrescenta 3 de vigor, um passo de alcance, um aparo mais fácil, e um degrau na escada do dado de dano: um d4 vira d6, um d6 vira d8, um d8 vira d10.\n\n" +
                 "A esquiva é a única coisa em que a promoção não mexe: uma peça pesada ainda será lenta.\n\n" +
                 "Clique com o botão direito em uma peça e peça a informação dela para ver em que nível ela está.",
         },
@@ -259,13 +259,13 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "An item which is valuable to an opponent is a temptation over them. Using it on your turn flips a coin: on heads that enemy piece falls under your command for a single action, and on tails it resists.\n\n" +
+                "An item that motivates an opponent's piece is a temptation over it. Using it on your turn flips a coin: on heads that enemy piece falls under your command for a single action. On tails, it resists.\n\n" +
                 "Being manipulated is an abnormal action and the piece still has its own action when its turn comes, and a piece that has already acted can be manipulated all the same.\n\n" +
                 "On tails, the item slips out of the manipulator's hands and falls back on the floor, on a random free cell, for whoever reaches it first.",
             ptBR:
-                "Um item valioso para um oponente é uma tentação sobre o mesmo. Usá-lo no seu turno joga uma moeda: dando cara, aquela peça inimiga cai sob o seu comando por uma única ação.\n\n" +
+                "Um item que motiva a peça de um oponente é uma tentação sobre ela. Usá-lo no seu turno joga uma moeda: dando cara, aquela peça inimiga cai sob o seu comando por uma única ação. Se der coroa, ela resiste.\n\n" +
                 "Ser manipulada é uma ação anormal e a peça continua com sua ação quando chegar a vez dela, e uma peça que já agiu pode ser manipulada do mesmo jeito.\n\n" +
-                "Dando coroa, o item escapa das mãos de quem tentou e cai de volta no chão, em uma casa livre sorteada, para quem chegar primeiro.",
+                "Dando coroa, o item escapa das mãos de quem tentou uma manipulação e cai de volta no chão, em uma casa livre sorteada, para quem chegar primeiro.",
         },
     },
 
@@ -276,9 +276,9 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The mansion will be conquered by one team only. When two of the three sides have lost every piece, the last one still standing wins, however few pieces it has left.\n\n",
+                "The mansion will be conquered by one team only. When two of the three sides have seen all their pieces flee the mansion, the last one still around wins, however few pieces it has left.\n\n",
             ptBR:
-                "A mansão será conquistada por um time só. Quando dois dos três lados perdem todas as peças, o último de pé vence, por menos peças que ainda tenha.\n\n",
+                "A mansão será conquistada por um time só. Quando dois dos três lados veem todas as suas peças fugirem da mansão, o último presente vence, por menos peças que ainda tenha.\n\n",
         },
     },
 }
