@@ -1,5 +1,6 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
+import { ColorModeOptions } from "./local-components/ColorModeOptions"
 import { LanguageOptions } from "./local-components/LanguageOptions"
 import { MazeOptions } from "./local-components/MazeOptions"
 import { BackButton, ScreenLayout, ScreenTitle } from "../../components/ui"
@@ -15,6 +16,11 @@ export const OptionsScreen: React.FC<OptionsScreenProps> = ({}) => {
         <ScreenLayout gap={4}>
             <ScreenTitle size={28}>{t("languageSettings")}</ScreenTitle>
             <LanguageOptions />
+
+            <ScreenTitle size={28} sx={{ mt: 2 }}>
+                {t("colorSettings")}
+            </ScreenTitle>
+            <ColorModeOptions />
 
             <ScreenTitle size={28} sx={{ mt: 2 }}>
                 {t("mazeSettings")}

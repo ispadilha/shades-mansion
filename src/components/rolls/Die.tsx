@@ -2,7 +2,7 @@ import React, { useId } from "react"
 import { Box } from "@mui/material"
 import { keyframes } from "@emotion/react"
 import type { DieSides } from "../../logic/rolls"
-import { DIE_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 const tumble = keyframes`
     0% { transform: rotate(0deg) scale(1) }
@@ -62,6 +62,7 @@ interface DieProps {
 }
 
 export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = false, spinOffsetMs = 0 }) => {
+    const palette = usePalette()
     const shape = SHAPES[sides]
     // Um id por dado em cena
     const uid = useId().replace(/:/g, "")
@@ -82,18 +83,18 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                             <polygon points={shape.outer} />
                         </clipPath>
                         <radialGradient id={`die-glow-${uid}`}>
-                            <stop offset="0%" stopColor={DIE_PALETTE.innerEdge} stopOpacity="0.8" />
-                            <stop offset="30%" stopColor={DIE_PALETTE.innerEdge} stopOpacity="0.45" />
-                            <stop offset="65%" stopColor={DIE_PALETTE.inner} stopOpacity="0.22" />
-                            <stop offset="100%" stopColor={DIE_PALETTE.inner} stopOpacity="0" />
+                            <stop offset="0%" stopColor={palette.die.innerEdge} stopOpacity="0.8" />
+                            <stop offset="30%" stopColor={palette.die.innerEdge} stopOpacity="0.45" />
+                            <stop offset="65%" stopColor={palette.die.inner} stopOpacity="0.22" />
+                            <stop offset="100%" stopColor={palette.die.inner} stopOpacity="0" />
                         </radialGradient>
                     </defs>
                 )}
 
                 <polygon
                     points={shape.outer}
-                    fill={DIE_PALETTE.face}
-                    stroke={DIE_PALETTE.faceEdge}
+                    fill={palette.die.face}
+                    stroke={palette.die.faceEdge}
                     strokeWidth="2"
                     strokeLinejoin="round"
                 />
@@ -101,15 +102,15 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                 {shape.inner ? (
                     <polygon
                         points={shape.inner}
-                        fill={DIE_PALETTE.inner}
-                        stroke={DIE_PALETTE.innerEdge}
+                        fill={palette.die.inner}
+                        stroke={palette.die.innerEdge}
                         strokeWidth="1"
                         strokeLinejoin="round"
                     />
                 ) : (
                     <g clipPath={`url(#die-face-${uid})`}>
                         <circle cx={APEX.x} cy={APEX.y} r={APEX.glow} fill={`url(#die-glow-${uid})`} />
-                        <circle cx={APEX.x} cy={APEX.y} r={APEX.dot} fill={DIE_PALETTE.innerEdge} />
+                        <circle cx={APEX.x} cy={APEX.y} r={APEX.dot} fill={palette.die.innerEdge} />
                     </g>
                 )}
 
@@ -120,8 +121,8 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                     dominantBaseline="middle"
                     fontFamily="Arial Black"
                     fontSize="20"
-                    fill={DIE_PALETTE.value}
-                    stroke={DIE_PALETTE.valueStroke}
+                    fill={palette.die.value}
+                    stroke={palette.die.valueStroke}
                     strokeWidth="0.8"
                 >
                     {value}

@@ -3,7 +3,8 @@ import { Box, Typography } from "@mui/material"
 import { PieceToken } from "../pieces"
 import type { AuraKind, PieceDefinition } from "../../logic/types"
 import { useLanguage } from "../../hooks/useLanguage"
-import { AURA_PALETTE, INITIATIVE_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
+import { AURA_PALETTE } from "../../constants/palette"
 
 interface TurnOrderBarProps {
     // Peças ainda em jogo, já na ordem de iniciativa
@@ -15,11 +16,12 @@ interface TurnOrderBarProps {
 }
 
 export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, activeId, manipulatedId, round }) => {
+    const palette = usePalette()
     const { t } = useLanguage()
 
     return (
         <Box sx={{ height: "100%", minWidth: 0, display: "flex", alignItems: "center", gap: 1, px: 2 }}>
-            <Typography sx={{ color: INITIATIVE_PALETTE.rank, fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
+            <Typography sx={{ color: palette.initiative.rank, fontSize: 12, whiteSpace: "nowrap", flexShrink: 0 }}>
                 {t("round")} {round}
             </Typography>
 
@@ -50,7 +52,7 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, activeId, man
                                 aura={aura}
                                 dimmed={piece.movedThisTurn && !aura}
                             />
-                            <Typography sx={{ color: aura ? AURA_PALETTE[aura].color : INITIATIVE_PALETTE.idleId, fontSize: 10 }}>
+                            <Typography sx={{ color: aura ? AURA_PALETTE[aura].color : palette.initiative.idleId, fontSize: 10 }}>
                                 {piece.id}
                             </Typography>
                         </Box>

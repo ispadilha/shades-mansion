@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Shades Mansion</title>
+    <script>
+      // Aplica o modo de cor antes da primeira pintura. Sem isto a página aparece por um
+      // instante no modo padrão e só troca quando o React monta, o que pisca na cara de
+      // quem usa o modo escuro. A chave é a mesma de `contexts/ColorModeContext.tsx`.
+      ;(function () {
+        try {
+          var saved = localStorage.getItem("shades-mansion:color-mode")
+          var chosen = saved === "light" || saved === "gray" || saved === "dark" ? saved : null
+          document.documentElement.dataset.theme =
+            chosen || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+        } catch (error) {
+          // Navegador sem armazenamento: o CSS decide sozinho pelo modo do sistema
+        }
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

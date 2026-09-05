@@ -1,9 +1,25 @@
-import type { AuraKind, PieceColor } from "../logic/types"
+import type { AuraKind, ColorMode, PieceColor } from "../logic/types"
 
 // Todas as cores do jogo ficam neste arquivo.
 // Nenhum código de cor é escrito solto pelo resto do projeto.
-// A única exceção é o fundo da página em `src/index.css`, que o CSS carrega antes do React
-// e acompanha `UI_PALETTE.screenBg`.
+//
+// Elas se dividem em duas famílias:
+//
+// - Cores de identidade (a primeira metade): os times, o fogo, os itens, o vigor. Elas
+//   são o jogo em si e valem igual nos três modos de cor — inclusive porque quem desenha
+//   a maioria delas é o Phaser, que pinta em textura e não acompanha o React. São
+//   constantes de módulo: quem precisa, importa direto.
+//
+// - Cores de superfície (a segunda metade): fundo, texto, borda, botão, o chão do
+//   labirinto. Existem três versões de cada uma, uma por modo, e quem as consome pede
+//   pelo hook `usePalette()`, que devolve a paleta do modo em vigor.
+//
+// A única cor fora daqui é o fundo da página em `src/index.css`, que o CSS precisa
+// conhecer antes de o React montar. Lá os três fundos aparecem de novo, em variáveis CSS.
+
+// ---------------------------------------------------------------------------
+// Identidade: as cores que não mudam de modo
+// ---------------------------------------------------------------------------
 
 export interface PiecePalette {
     clothing: string
@@ -24,18 +40,17 @@ export const PIECE_DETAIL_PALETTE = {
     eyes: "#111111",
 }
 
-export const TEAM_BUTTON_PALETTE: Record<PieceColor, { bg: string; text: string }> = {
-    light: { bg: "#dddddd", text: "#000000" },
-    gray: { bg: "#888888", text: "#000000" },
-    dark: { bg: "#111111", text: "#ffffff" },
+// O contorno acompanha o do desenho da peça: é a mesma linha que separa o time do fundo
+export const TEAM_BUTTON_PALETTE: Record<PieceColor, { bg: string; text: string; outline: string }> = {
+    light: { bg: "#dddddd", text: "#000000", outline: "#2a2a2a" },
+    gray: { bg: "#888888", text: "#000000", outline: "#2a2a2a" },
+    dark: { bg: "#111111", text: "#ffffff", outline: "#dedede" },
 }
 
-export const MANIPULATION_PALETTE = {
-    glow: "#c2185b",
-    bandBg: "#2e0f1d",
-    bandText: "#f06292",
-    bandOutline: "#8c2751",
-}
+// A cor da manipulação é a mesma nos três modos: é estado de jogo, e o brilho sobre a
+// peça manipulada é desenhado pelo Phaser. A faixa do HUD acompanha o modo (mais abaixo),
+// mas nasce deste mesmo rosa.
+const MANIPULATION_GLOW = "#c2185b"
 
 export interface AuraPalette {
     color: string
@@ -46,28 +61,7 @@ export interface AuraPalette {
 
 export const AURA_PALETTE: Record<AuraKind, AuraPalette> = {
     active: { color: "#ffd700", strength: 0.55, radius: 0.62, pulseMs: 1200 },
-    manipulated: { color: MANIPULATION_PALETTE.glow, strength: 0.7, radius: 0.68, pulseMs: 700 },
-}
-
-// As casas destacadas quando uma peça está selecionada.
-export interface RangePalette {
-    move: string
-    attack: string
-    both: string
-}
-
-export const RANGE_PALETTE: RangePalette = {
-    move: "#d6b52b",
-    attack: "#b3352c",
-    both: "#dd7a1c",
-}
-
-export const BOARD_PALETTE = {
-    floorLight: "#4b2f26",
-    floorDark: "#3b241c",
-    wall: "#000000",
-    cellBorder: "rgba(0,0,0,0.2)",
-    selected: "#ffd700",
+    manipulated: { color: MANIPULATION_GLOW, strength: 0.7, radius: 0.68, pulseMs: 700 },
 }
 
 export const VIGOR_PALETTE = {
@@ -92,89 +86,335 @@ export const ITEM_PALETTE: Record<PieceColor, { bg: string; outline: string; tex
     gray: { bg: "#888888", outline: "#222222", text: "#ffffff", textStroke: "#000000" },
 }
 
-// Superfícies que o MUI desenha por conta própria: papel dos modais e dos menus de
-// contexto. O tema escuro em `Providers.tsx` nasce daqui, então qualquer componente que
-// não traga cor própria acompanha o resto do jogo em vez de cair no tema claro padrão.
-export const SURFACE_PALETTE = {
-    bg: "#17131f",
-    border: "#4a3f5e",
-    text: "#e6dff5",
-    textMuted: "#8f85a8",
-    // Realce da linha sob o cursor
-    hover: "rgba(255, 255, 255, 0.08)",
-    // Botões e ações dentro dessas superfícies
-    accent: "#cfc2ec",
+// ---------------------------------------------------------------------------
+// Superfície: as cores que mudam com o modo
+// ---------------------------------------------------------------------------
+
+// O modo escuro é a paleta de referência: o tipo `Palette` sai dele, então os outros dois
+// modos são obrigados pelo compilador a trazer exatamente os mesmos nomes. Trocar de modo
+// troca valores, nunca a lista de cores — é isso que faz um tema ser dado, e não código.
+const dark = {
+    // O fundo das telas, os textos soltos e os botões de menu
+    ui: {
+        screenBg: "#000000",
+        text: "#ffffff",
+        textBody: "#cccccc",
+        textMuted: "#777777",
+        textDim: "#888888",
+        textFaint: "#666666",
+        // Subtítulos e legendas
+        accentMuted: "#8f85a8",
+        buttonBg: "#222222",
+        // O contorno de todo botão que não seja de um time.
+        // Sai do tema do MUI, então vale para os botões do jogo inteiro.
+        buttonOutline: "#77778a",
+        // Botões de escolha que não são de um time
+        buttonAltBg: "#2a2a3a",
+        buttonDisabledText: "#555555",
+        languageEn: { bg: "#000011", text: "#ffaaaa" },
+        languagePt: { bg: "#001100", text: "#ffffaa" },
+    },
+
+    // Superfícies que o MUI desenha por conta própria: papel dos modais e dos menus de
+    // contexto. O tema em `Providers.tsx` nasce daqui, então qualquer componente que não
+    // traga cor própria acompanha o resto do jogo.
+    surface: {
+        bg: "#17131f",
+        border: "#4a3f5e",
+        text: "#e6dff5",
+        textMuted: "#8f85a8",
+        // Realce da linha sob o cursor
+        hover: "rgba(255, 255, 255, 0.08)",
+        // Botões e ações dentro dessas superfícies
+        accent: "#cfc2ec",
+    },
+
+    hud: {
+        bandBg: "#222222",
+        bandBorder: "#333333",
+        outline: "#555555",
+        text: "#ffffff",
+        logText: "#bbbbbb",
+        statusReady: "#4caf50",
+        statusWaiting: "#f44336",
+        statusIdle: "#aaaaaa",
+        endTurnBg: "#444444",
+        endTurnBusyBg: "#666666",
+        endTurnDisabledText: "#999999",
+    },
+
+    // O chão do labirinto, desenhado em React casa a casa (o Phaser só entra por cima)
+    board: {
+        floorLight: "#4b2f26",
+        floorDark: "#3b241c",
+        wall: "#000000",
+        cellBorder: "rgba(0,0,0,0.2)",
+        selected: "#ffd700",
+    },
+
+    // As casas destacadas quando uma peça está selecionada. Os três precisam se distinguir
+    // entre si em cima do chão do modo, senão o destaque deixa de informar.
+    range: {
+        move: "#d6b52b",
+        attack: "#b3352c",
+        both: "#dd7a1c",
+    },
+
+    manipulation: {
+        glow: MANIPULATION_GLOW,
+        bandBg: "#2e0f1d",
+        bandText: "#f06292",
+        bandOutline: "#8c2751",
+    },
+
+    roll: {
+        backdrop: "rgba(0,0,0,0.6)",
+        bg: "#17131f",
+        border: "#4a3f5e",
+        title: "#cfc2ec",
+        subtitle: "#8f85a8",
+        result: "#ffe9a8",
+        good: "#7fd18a",
+        bad: "#e07a7a",
+        neutral: "#e8d9a8",
+    },
+
+    die: {
+        face: "#2f2438",
+        faceEdge: "#c9b06a",
+        inner: "#453758",
+        innerEdge: "#8d7ab0",
+        value: "#ffe9a8",
+        valueStroke: "#2a1f36",
+    },
+
+    coin: {
+        rim: "#8a6a1e",
+        heads: "#e8c265",
+        tails: "#c9a44c",
+        edge: "#5c460f",
+        face: "#5c460f",
+        eyes: "#e8c265",
+        crown: "#4a3a12",
+    },
+
+    initiative: {
+        rank: "#8f85a8",
+        pieceId: "#bbbbbb",
+        value: "#ffe9a8",
+        valuePending: "#544c66",
+        idleId: "#777777",
+    },
 }
 
-export const UI_PALETTE = {
-    screenBg: "#000000",
-    text: "#ffffff",
-    textBody: "#cccccc",
-    textMuted: "#777777",
-    textDim: "#888888",
-    textFaint: "#666666",
-    // Subtítulos e legendas
-    accentMuted: "#8f85a8",
-    buttonBg: "#222222",
-    // Botões de escolha que não são de um time (todos os times, assistir, entrar na mansão)
-    buttonAltBg: "#2a2a3a",
-    buttonDisabledText: "#555555",
-    languageEn: { bg: "#000011", text: "#ffaaaa" },
-    languagePt: { bg: "#001100", text: "#ffffaa" },
+export type Palette = typeof dark
+
+// Modo claro: "A mansão de dia"
+const light: Palette = {
+    ui: {
+        screenBg: "#a89a7e",
+        text: "#191320",
+        textBody: "#2a2235",
+        textMuted: "#382e48",
+        textDim: "#392e4b",
+        textFaint: "#4e3f62",
+        accentMuted: "#412e12",
+        buttonBg: "#948567",
+        buttonOutline: "#3e3423",
+        buttonAltBg: "#9c8250",
+        buttonDisabledText: "#5f5747",
+        languageEn: { bg: "#94a2b8", text: "#4e1212" },
+        languagePt: { bg: "#a3ab8a", text: "#322408" },
+    },
+
+    surface: {
+        bg: "#bdb094",
+        border: "#8a7b60",
+        text: "#191320",
+        textMuted: "#382e48",
+        hover: "rgba(0, 0, 0, 0.1)",
+        accent: "#523310",
+    },
+
+    hud: {
+        bandBg: "#b3a68a",
+        bandBorder: "#8a7b60",
+        outline: "#74664e",
+        text: "#191320",
+        logText: "#2f2740",
+        statusReady: "#16451a",
+        statusWaiting: "#7d1616",
+        statusIdle: "#3d3250",
+        endTurnBg: "#948567",
+        endTurnBusyBg: "#82734f",
+        endTurnDisabledText: "#544c3c",
+    },
+
+    board: {
+        floorLight: "#9a8058",
+        floorDark: "#866c47",
+        wall: "#2e2016",
+        cellBorder: "rgba(0,0,0,0.25)",
+        selected: "#6d4404",
+    },
+
+    range: {
+        move: "#cba32a",
+        attack: "#9c3129",
+        both: "#b86c18",
+    },
+
+    manipulation: {
+        glow: MANIPULATION_GLOW,
+        bandBg: "#c19aa8",
+        bandText: "#4a1028",
+        bandOutline: "#8f4265",
+    },
+
+    roll: {
+        backdrop: "rgba(16,12,20,0.55)",
+        bg: "#bdb094",
+        border: "#8a7b60",
+        title: "#523310",
+        subtitle: "#382e48",
+        result: "#4d3608",
+        good: "#16451a",
+        bad: "#7d1616",
+        neutral: "#3a2f16",
+    },
+
+    die: {
+        face: "#b1a488",
+        faceEdge: "#5e4a12",
+        inner: "#9d9075",
+        innerEdge: "#55452a",
+        value: "#1c1405",
+        valueStroke: "#c8bb9f",
+    },
+
+    coin: {
+        rim: "#6f5819",
+        heads: "#c0a45a",
+        tails: "#a8853c",
+        edge: "#4c3a0d",
+        face: "#4c3a0d",
+        eyes: "#d0bb84",
+        crown: "#3d2f0f",
+    },
+
+    initiative: {
+        rank: "#382e48",
+        pieceId: "#2f2740",
+        value: "#4d3608",
+        valuePending: "#776a55",
+        idleId: "#4e3f62",
+    },
 }
 
-export const HUD_PALETTE = {
-    bandBg: "#222222",
-    bandBorder: "#333333",
-    outline: "#555555",
-    text: "#ffffff",
-    logText: "#bbbbbb",
-    statusReady: "#4caf50",
-    statusWaiting: "#f44336",
-    statusIdle: "#aaaaaa",
-    endTurnBg: "#444444",
-    endTurnBusyBg: "#666666",
-    endTurnDisabledText: "#999999",
+// O "modo cinza". É uma variação do escuro.
+// A mansão e a interface são de névoa cinza
+const gray: Palette = {
+    ui: {
+        screenBg: "#26262a",
+        text: "#f2f2f4",
+        textBody: "#cfcfd4",
+        textMuted: "#9a9aa2",
+        textDim: "#a8a8b0",
+        textFaint: "#85858d",
+        accentMuted: "#a8a8b4",
+        buttonBg: "#3c3c42",
+        buttonOutline: "#9a9aa4",
+        buttonAltBg: "#46464e",
+        buttonDisabledText: "#6e6e76",
+        languageEn: { bg: "#2c2933", text: "#ffb3b3" },
+        languagePt: { bg: "#2c3329", text: "#d8e8a4" },
+    },
+
+    surface: {
+        bg: "#2f2f34",
+        border: "#55555e",
+        text: "#eaeaee",
+        textMuted: "#a0a0a8",
+        hover: "rgba(255, 255, 255, 0.08)",
+        accent: "#c8c8d2",
+    },
+
+    hud: {
+        bandBg: "#303036",
+        bandBorder: "#45454c",
+        outline: "#6e6e77",
+        text: "#f2f2f4",
+        logText: "#b8b8c0",
+        statusReady: "#4caf50",
+        statusWaiting: "#f44336",
+        statusIdle: "#a0a0a8",
+        endTurnBg: "#4a4a52",
+        endTurnBusyBg: "#66666e",
+        endTurnDisabledText: "#93939b",
+    },
+
+    board: {
+        floorLight: "#4a4a4e",
+        floorDark: "#3b3b3f",
+        wall: "#101012",
+        cellBorder: "rgba(0,0,0,0.25)",
+        selected: "#ffd700",
+    },
+
+    range: {
+        move: "#d6b52b",
+        attack: "#b3352c",
+        both: "#dd7a1c",
+    },
+
+    manipulation: {
+        glow: MANIPULATION_GLOW,
+        bandBg: "#33202a",
+        bandText: "#f06292",
+        bandOutline: "#8c2751",
+    },
+
+    roll: {
+        backdrop: "rgba(0,0,0,0.6)",
+        bg: "#2f2f34",
+        border: "#55555e",
+        title: "#c8c8d2",
+        subtitle: "#a0a0a8",
+        result: "#ffe9a8",
+        good: "#7fd18a",
+        bad: "#e07a7a",
+        neutral: "#e8d9a8",
+    },
+
+    die: {
+        face: "#33333a",
+        faceEdge: "#c9b06a",
+        inner: "#45454e",
+        innerEdge: "#9a9aa6",
+        value: "#ffe9a8",
+        valueStroke: "#26262c",
+    },
+
+    coin: {
+        rim: "#8a6a1e",
+        heads: "#e8c265",
+        tails: "#c9a44c",
+        edge: "#5c460f",
+        face: "#5c460f",
+        eyes: "#e8c265",
+        crown: "#4a3a12",
+    },
+
+    initiative: {
+        rank: "#a0a0a8",
+        pieceId: "#c0c0c8",
+        value: "#ffe9a8",
+        valuePending: "#5c5c66",
+        idleId: "#85858d",
+    },
 }
 
-export const ROLL_PALETTE = {
-    backdrop: "rgba(0,0,0,0.6)",
-    bg: "#17131f",
-    border: "#4a3f5e",
-    title: "#cfc2ec",
-    subtitle: "#8f85a8",
-    result: "#ffe9a8",
-    good: "#7fd18a",
-    bad: "#e07a7a",
-    neutral: "#e8d9a8",
-}
-
-export const DIE_PALETTE = {
-    face: "#2f2438",
-    faceEdge: "#c9b06a",
-    inner: "#453758",
-    innerEdge: "#8d7ab0",
-    value: "#ffe9a8",
-    valueStroke: "#2a1f36",
-}
-
-export const COIN_PALETTE = {
-    rim: "#8a6a1e",
-    heads: "#e8c265",
-    tails: "#c9a44c",
-    edge: "#5c460f",
-    face: "#5c460f",
-    eyes: "#e8c265",
-    crown: "#4a3a12",
-}
-
-export const INITIATIVE_PALETTE = {
-    rank: "#8f85a8",
-    pieceId: "#bbbbbb",
-    value: "#ffe9a8",
-    valuePending: "#544c66",
-    idleId: "#777777",
-}
+export const PALETTES: Record<ColorMode, Palette> = { light, gray, dark }
 
 // Phaser trabalha com cores numéricas (0xrrggbb)
 export const hex = (css: string): number => parseInt(css.slice(1), 16)

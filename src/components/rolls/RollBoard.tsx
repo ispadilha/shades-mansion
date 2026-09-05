@@ -5,7 +5,7 @@ import { RollOutcome } from "./RollOutcome"
 import { COIN_FACES, rollDice, sidesOf, sumDice, type CoinFace, type RollView } from "../../logic/rolls"
 import { pickRandom } from "../../logic/random"
 import { useLanguage } from "../../hooks/useLanguage"
-import { ROLL_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 import { ROLL_HOLD_MS, ROLL_SHUFFLE_MS, ROLL_SPIN_MS } from "../../constants/rules"
 
 interface RollBoardProps {
@@ -34,6 +34,7 @@ const fitsRoll = (shown: CoinFace | number[], next: RollView): boolean => {
 // O conteúdo de uma rolagem: título, dados girando, resultado e leitura. Serve tanto ao
 // modal quanto a uma área fixa da tela. Quem usa decide a moldura pelo `sx`.
 export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }) => {
+    const palette = usePalette()
     const { t } = useLanguage()
     const [phase, setPhase] = useState<Phase>("spinning")
     const [preview, setPreview] = useState<CoinFace | number[]>([1])
@@ -125,10 +126,10 @@ export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }
                 ...(Array.isArray(sx) ? sx : [sx]),
             ]}
         >
-            <Typography sx={{ color: ROLL_PALETTE.title, fontSize: 15, letterSpacing: 1, textTransform: "uppercase" }}>
+            <Typography sx={{ color: palette.roll.title, fontSize: 15, letterSpacing: 1, textTransform: "uppercase" }}>
                 {roll?.title}
             </Typography>
-            {roll?.subtitle && <Typography sx={{ color: ROLL_PALETTE.subtitle, fontSize: 13 }}>{roll.subtitle}</Typography>}
+            {roll?.subtitle && <Typography sx={{ color: palette.roll.subtitle, fontSize: 13 }}>{roll.subtitle}</Typography>}
 
             <RollFaces kind={kind ?? "d12"} shown={shown} spinning={phase === "spinning"} />
 

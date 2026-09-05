@@ -2,7 +2,7 @@ import React from "react"
 import { Box, Typography } from "@mui/material"
 import type { PieceDefinition } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { HUD_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 interface TurnStatusProps {
     // Peça da vez (null só enquanto a partida está terminando)
@@ -13,6 +13,7 @@ interface TurnStatusProps {
 
 // De quem é a vez e o que o jogador pode fazer agora
 export const TurnStatus: React.FC<TurnStatusProps> = ({ activePiece, isPlayerTurn, spectating }) => {
+    const palette = usePalette()
     const { t, tTeam } = useLanguage()
 
     const turnLabel = activePiece ? `${activePiece.id} (${tTeam(activePiece.color)})` : "—"
@@ -20,17 +21,17 @@ export const TurnStatus: React.FC<TurnStatusProps> = ({ activePiece, isPlayerTur
 
     return (
         <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ color: HUD_PALETTE.text, whiteSpace: "nowrap" }}>
+            <Typography sx={{ color: palette.hud.text, whiteSpace: "nowrap" }}>
                 {t("turn")}: {turnLabel}
             </Typography>
             <Typography
                 sx={{
                     color:
                         spectating || acted
-                            ? HUD_PALETTE.statusIdle
+                            ? palette.hud.statusIdle
                             : isPlayerTurn
-                              ? HUD_PALETTE.statusReady
-                              : HUD_PALETTE.statusWaiting,
+                              ? palette.hud.statusReady
+                              : palette.hud.statusWaiting,
                     fontSize: 14,
                     whiteSpace: "nowrap",
                 }}

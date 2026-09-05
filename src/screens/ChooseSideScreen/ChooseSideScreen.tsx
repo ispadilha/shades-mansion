@@ -6,11 +6,12 @@ import type { PlayerSelection } from "../../logic/types"
 import { useLanguage } from "../../hooks/useLanguage"
 import { useGame } from "../../hooks/useGame"
 import { LINEUP_COLORS } from "../../constants/rules"
-import { UI_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 interface ChooseSideScreenProps {}
 
 export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
+    const palette = usePalette()
     const navigate = useNavigate()
     const { t, tTeam } = useLanguage()
     const { setSelection, setMatch } = useGame()
@@ -37,10 +38,10 @@ export const ChooseSideScreen: React.FC<ChooseSideScreenProps> = ({}) => {
             {/* Escolhas para comandar os três times (multi-jogador local)
             ou não comandar nenhum (assistir a uma partida de IA) */}
             <Box sx={{ display: "flex", gap: 2 }}>
-                <Button onClick={() => handleChooseSide("all")} sx={{ bgcolor: UI_PALETTE.buttonAltBg, color: UI_PALETTE.text }}>
+                <Button onClick={() => handleChooseSide("all")} sx={{ bgcolor: palette.ui.buttonAltBg, color: palette.ui.text }}>
                     {t("allTeams")}
                 </Button>
-                <Button onClick={() => handleChooseSide("none")} sx={{ bgcolor: UI_PALETTE.buttonAltBg, color: UI_PALETTE.text }}>
+                <Button onClick={() => handleChooseSide("none")} sx={{ bgcolor: palette.ui.buttonAltBg, color: palette.ui.text }}>
                     {t("noTeam")}
                 </Button>
             </Box>

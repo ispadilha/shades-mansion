@@ -2,7 +2,7 @@ import React from "react"
 import { Box, Modal } from "@mui/material"
 import { RollBoard } from "./RollBoard"
 import type { RollView } from "../../logic/rolls"
-import { ROLL_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 interface RollModalProps {
     roll: RollView | null
@@ -13,11 +13,13 @@ interface RollModalProps {
 }
 
 export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) => {
+    const palette = usePalette()
+
     return (
         <Modal
             open={roll !== null}
             disableEscapeKeyDown
-            slotProps={{ backdrop: { sx: { bgcolor: ROLL_PALETTE.backdrop } } }}
+            slotProps={{ backdrop: { sx: { bgcolor: palette.roll.backdrop } } }}
         >
             <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", outline: "none" }}>
                 <RollBoard
@@ -28,8 +30,8 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                         minWidth: 260,
                         px: 4,
                         py: 3,
-                        bgcolor: ROLL_PALETTE.bg,
-                        border: `1px solid ${ROLL_PALETTE.border}`,
+                        bgcolor: palette.roll.bg,
+                        border: `1px solid ${palette.roll.border}`,
                         borderRadius: 2,
                     }}
                 />

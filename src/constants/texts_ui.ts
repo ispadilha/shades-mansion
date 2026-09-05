@@ -4,6 +4,31 @@ export const texts_ui = {
         ptBR: "Idioma",
     },
 
+    colorSettings: {
+        enUS: "Colors",
+        ptBR: "Cores",
+    },
+
+    modeLight: {
+        enUS: "Light",
+        ptBR: "Claro",
+    },
+
+    modeGray: {
+        enUS: "Gray",
+        ptBR: "Cinza",
+    },
+
+    modeDark: {
+        enUS: "Dark",
+        ptBR: "Escuro",
+    },
+
+    modeSystem: {
+        enUS: "System",
+        ptBR: "Do sistema",
+    },
+
     enUS: {
         enUS: "English (US)",
         ptBR: "Inglês (EUA)",

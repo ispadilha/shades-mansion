@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react"
 import { Box } from "@mui/material"
 import { INITIATIVE_FADE_MS } from "../../../constants/rules"
-import { ROLL_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 // Altura de partida do compartimento, até a primeira rolagem ser medida
 const MIN_PANEL_HEIGHT = 260
@@ -22,6 +22,7 @@ interface InitiativePanelProps {
 // fila. A altura sai de uma medida da própria tela, e não de um número fixo, então
 // acompanha fonte, idioma e tamanho dos dados sem ajustar nada.
 export const InitiativePanel: React.FC<InitiativePanelProps> = ({ children, measuring, faded }) => {
+    const palette = usePalette()
     const panelRef = useRef<HTMLDivElement>(null)
     const [panelHeight, setPanelHeight] = useState<number>()
 
@@ -44,8 +45,8 @@ export const InitiativePanel: React.FC<InitiativePanelProps> = ({ children, meas
                 minHeight: panelHeight ?? MIN_PANEL_HEIGHT,
                 px: 2,
                 py: 2,
-                bgcolor: ROLL_PALETTE.bg,
-                borderTop: `1px solid ${ROLL_PALETTE.border}`,
+                bgcolor: palette.roll.bg,
+                borderTop: `1px solid ${palette.roll.border}`,
             }}
         >
             <Box

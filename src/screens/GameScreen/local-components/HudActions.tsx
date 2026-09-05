@@ -1,7 +1,7 @@
 import React from "react"
 import { Box, Button } from "@mui/material"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { HUD_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 interface HudActionsProps {
     isPlayerTurn: boolean
@@ -24,6 +24,7 @@ export const HudActions: React.FC<HudActionsProps> = ({
     onEndTurn,
     onQuit,
 }) => {
+    const palette = usePalette()
     const { t } = useLanguage()
 
     return (
@@ -34,7 +35,7 @@ export const HudActions: React.FC<HudActionsProps> = ({
                     <Button
                         onClick={onOpenInventory}
                         variant="outlined"
-                        sx={{ color: HUD_PALETTE.text, borderColor: HUD_PALETTE.outline }}
+                        sx={{ color: palette.hud.text, borderColor: palette.hud.outline }}
                     >
                         {t("inventory")} ({inventoryCount})
                     </Button>
@@ -43,16 +44,16 @@ export const HudActions: React.FC<HudActionsProps> = ({
                         variant="contained"
                         disabled={!isPlayerTurn || busy}
                         sx={{
-                            bgcolor: isPlayerTurn && !busy ? HUD_PALETTE.endTurnBg : HUD_PALETTE.endTurnBusyBg,
-                            color: HUD_PALETTE.text,
-                            "&:disabled": { color: HUD_PALETTE.endTurnDisabledText },
+                            bgcolor: isPlayerTurn && !busy ? palette.hud.endTurnBg : palette.hud.endTurnBusyBg,
+                            color: palette.hud.text,
+                            "&:disabled": { color: palette.hud.endTurnDisabledText },
                         }}
                     >
                         {t("endTurn")}
                     </Button>
                 </>
             )}
-            <Button onClick={onQuit} variant="outlined" sx={{ color: HUD_PALETTE.text, borderColor: HUD_PALETTE.outline }}>
+            <Button onClick={onQuit} variant="outlined" sx={{ color: palette.hud.text, borderColor: palette.hud.outline }}>
                 {t("quit")}
             </Button>
         </Box>

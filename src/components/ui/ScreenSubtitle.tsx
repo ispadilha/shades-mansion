@@ -1,6 +1,6 @@
 import React from "react"
 import { Typography, type SxProps, type Theme } from "@mui/material"
-import { UI_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 interface ScreenSubtitleProps {
     children: React.ReactNode
@@ -9,8 +9,10 @@ interface ScreenSubtitleProps {
 }
 
 export const ScreenSubtitle: React.FC<ScreenSubtitleProps> = ({ children, size = 15, sx }) => {
+    const palette = usePalette()
+
     return (
-        <Typography sx={[{ color: UI_PALETTE.accentMuted, fontSize: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
+        <Typography sx={[{ color: palette.ui.accentMuted, fontSize: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
             {children}
         </Typography>
     )

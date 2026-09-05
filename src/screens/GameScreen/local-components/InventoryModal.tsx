@@ -6,7 +6,7 @@ import { ModalCard } from "../../../components/ui"
 import type { PieceColor, PieceDefinition, MotivationItemKey, TeamInventory } from "../../../logic/types"
 import { itemUseFor } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { SURFACE_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 interface InventoryModalProps {
     open: boolean
@@ -27,6 +27,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
     onUseOwnItem,
     onUseManipulationItem,
 }) => {
+    const palette = usePalette()
     const { t } = useLanguage()
     const [itemMenu, setItemMenu] = useState<{ mouseX: number; mouseY: number; key: MotivationItemKey } | null>(null)
     const [examineKey, setExamineKey] = useState<MotivationItemKey | null>(null)
@@ -64,7 +65,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                     {t("inventory")}
                 </Typography>
 
-                {aggregated.length === 0 && <Typography sx={{ color: SURFACE_PALETTE.textMuted }}>{t("noItems")}</Typography>}
+                {aggregated.length === 0 && <Typography sx={{ color: palette.surface.textMuted }}>{t("noItems")}</Typography>}
 
                 <Stack gap={1} sx={{ maxHeight: "55vh", overflowY: "auto" }}>
                     {aggregated.map(({ key, count }) => (

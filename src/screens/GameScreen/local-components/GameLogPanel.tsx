@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import { Box, Typography } from "@mui/material"
-import { HUD_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 interface GameLogPanelProps {
     entries: string[]
@@ -8,6 +8,7 @@ interface GameLogPanelProps {
 
 // O histórico de jogadas, na faixa de cima do HUD
 export const GameLogPanel: React.FC<GameLogPanelProps> = ({ entries }) => {
+    const palette = usePalette()
     const logRef = useRef<HTMLDivElement>(null)
 
     // Mantém o log sempre rolado até a entrada mais recente (no rodapé da caixa)
@@ -21,7 +22,7 @@ export const GameLogPanel: React.FC<GameLogPanelProps> = ({ entries }) => {
             sx={{
                 flex: 1,
                 minWidth: 0,
-                borderLeft: `1px solid ${HUD_PALETTE.bandBorder}`,
+                borderLeft: `1px solid ${palette.hud.bandBorder}`,
                 overflowY: "auto",
                 overflowWrap: "anywhere",
                 px: 2,
@@ -29,7 +30,7 @@ export const GameLogPanel: React.FC<GameLogPanelProps> = ({ entries }) => {
             }}
         >
             {entries.map((entry, i) => (
-                <Typography key={i} sx={{ color: HUD_PALETTE.logText, fontSize: 13, lineHeight: 1.4 }}>
+                <Typography key={i} sx={{ color: palette.hud.logText, fontSize: 13, lineHeight: 1.4 }}>
                     {entry}
                 </Typography>
             ))}

@@ -6,7 +6,7 @@ import { ManipulationBanner } from "./ManipulationBanner"
 import { TurnStatus } from "./TurnStatus"
 import { TurnOrderBar } from "../../../components/initiative"
 import type { PieceDefinition, MotivationItemKey } from "../../../logic/types"
-import { HUD_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 // O HUD é feito de faixas horizontais de mesma altura e mesma cor.
 const BAND_HEIGHT = 76
@@ -49,12 +49,14 @@ export const HUD: React.FC<HUDProps> = ({
     manipulationKey,
     onCancelManipulation,
 }) => {
+    const palette = usePalette()
+
     return (
-        <Box sx={{ width: "100%", bgcolor: HUD_PALETTE.bandBg, flexShrink: 0, display: "flex", flexDirection: "column" }}>
+        <Box sx={{ width: "100%", bgcolor: palette.hud.bandBg, flexShrink: 0, display: "flex", flexDirection: "column" }}>
             {manipulationKey && <ManipulationBanner itemKey={manipulationKey} onCancel={onCancelManipulation} />}
 
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}
-            <Box sx={{ display: "flex", height: BAND_HEIGHT, borderBottom: `1px solid ${HUD_PALETTE.bandBorder}` }}>
+            <Box sx={{ display: "flex", height: BAND_HEIGHT, borderBottom: `1px solid ${palette.hud.bandBorder}` }}>
                 <Box sx={{ width: TURN_ORDER_WIDTH, flexShrink: 0, overflow: "hidden" }}>
                     <TurnOrderBar
                         order={turnOrder}

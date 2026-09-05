@@ -1,7 +1,7 @@
 import React from "react"
 import { Box } from "@mui/material"
 import type { PiecePosition } from "../../logic/types"
-import { BOARD_PALETTE, RANGE_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 interface CellProps {
     x: number
@@ -16,21 +16,22 @@ interface CellProps {
 }
 
 export const Cell: React.FC<CellProps> = ({ x, y, size, isWall, isHighlighted, isAttackHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
-    const base = (x + y) % 2 === 0 ? BOARD_PALETTE.floorLight : BOARD_PALETTE.floorDark
+    const palette = usePalette()
+    const base = (x + y) % 2 === 0 ? palette.board.floorLight : palette.board.floorDark
     const range =
         isHighlighted && isAttackHighlighted
-            ? RANGE_PALETTE.both
+            ? palette.range.both
             : isAttackHighlighted
-              ? RANGE_PALETTE.attack
+              ? palette.range.attack
               : isHighlighted
-                ? RANGE_PALETTE.move
+                ? palette.range.move
                 : null
-    const bg = isWall ? BOARD_PALETTE.wall : (range ?? base)
+    const bg = isWall ? palette.board.wall : (range ?? base)
     const border = isWall
-        ? `1px solid ${BOARD_PALETTE.wall}`
+        ? `1px solid ${palette.board.wall}`
         : isSelected
-          ? `2px solid ${BOARD_PALETTE.selected}`
-          : `1px solid ${BOARD_PALETTE.cellBorder}`
+          ? `2px solid ${palette.board.selected}`
+          : `1px solid ${palette.board.cellBorder}`
 
     return (
         <Box

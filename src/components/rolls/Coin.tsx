@@ -2,7 +2,7 @@ import React from "react"
 import { Box } from "@mui/material"
 import { keyframes } from "@emotion/react"
 import type { CoinFace } from "../../logic/rolls"
-import { COIN_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 const flip = keyframes`
     0% { transform: scaleY(1) }
@@ -23,6 +23,7 @@ interface CoinProps {
 }
 
 export const Coin: React.FC<CoinProps> = ({ face, size = 120, spinning = false }) => {
+    const palette = usePalette()
     const heads = face === "heads"
 
     return (
@@ -34,30 +35,30 @@ export const Coin: React.FC<CoinProps> = ({ face, size = 120, spinning = false }
             }}
         >
             <svg viewBox="0 0 64 64" width={size} height={size}>
-                <circle cx="32" cy="32" r="29" fill={COIN_PALETTE.rim} />
+                <circle cx="32" cy="32" r="29" fill={palette.coin.rim} />
                 <circle
                     cx="32"
                     cy="32"
                     r="26"
-                    fill={heads ? COIN_PALETTE.heads : COIN_PALETTE.tails}
-                    stroke={COIN_PALETTE.edge}
+                    fill={heads ? palette.coin.heads : palette.coin.tails}
+                    stroke={palette.coin.edge}
                     strokeWidth="2"
                 />
-                <circle cx="32" cy="32" r="21" fill="none" stroke={COIN_PALETTE.edge} strokeWidth="1" opacity="0.6" />
+                <circle cx="32" cy="32" r="21" fill="none" stroke={palette.coin.edge} strokeWidth="1" opacity="0.6" />
 
                 {heads ? (
                     <>
                         {/* Cara: um círculo com dois olhos */}
-                        <circle cx="32" cy="32" r="11.5" fill={COIN_PALETTE.face} />
-                        <circle cx="27.6" cy="29.6" r="2.4" fill={COIN_PALETTE.eyes} />
-                        <circle cx="36.4" cy="29.6" r="2.4" fill={COIN_PALETTE.eyes} />
+                        <circle cx="32" cy="32" r="11.5" fill={palette.coin.face} />
+                        <circle cx="27.6" cy="29.6" r="2.4" fill={palette.coin.eyes} />
+                        <circle cx="36.4" cy="29.6" r="2.4" fill={palette.coin.eyes} />
                     </>
                 ) : (
                     <>
                         {/* Coroa: base retangular com três pontas */}
                         <polygon
                             points="23,41 41,41 41,35 38,27 35,35 32,25.5 29,35 26,27 23,35"
-                            fill={COIN_PALETTE.crown}
+                            fill={palette.coin.crown}
                         />
                     </>
                 )}

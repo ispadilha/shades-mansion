@@ -5,13 +5,14 @@ import { TeamButton } from "../../../components/ui"
 import type { PieceColor } from "../../../logic/types"
 import { characterKeys } from "../../../constants/texts_characters"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { UI_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 interface TeamCharacterSectionProps {
     color: PieceColor
 }
 
 export const TeamCharacterSection: React.FC<TeamCharacterSectionProps> = ({ color }) => {
+    const palette = usePalette()
     const navigate = useNavigate()
     const { tTeam, tCharacter } = useLanguage()
 
@@ -19,7 +20,7 @@ export const TeamCharacterSection: React.FC<TeamCharacterSectionProps> = ({ colo
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
-            <Typography sx={{ color: UI_PALETTE.textMuted, fontSize: 16 }}>{tTeam(color)}</Typography>
+            <Typography sx={{ color: palette.ui.textMuted, fontSize: 16 }}>{tTeam(color)}</Typography>
 
             <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "center" }}>
                 {keys.map((key) => (

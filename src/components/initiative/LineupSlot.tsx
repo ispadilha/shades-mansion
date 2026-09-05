@@ -2,7 +2,7 @@ import React from "react"
 import { Box, Typography } from "@mui/material"
 import { PieceToken } from "../pieces"
 import type { PieceSlot } from "../../logic/setup"
-import { INITIATIVE_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 // A linha do número da ordem reserva a própria altura desde o começo, mesmo enquanto não há
 // número, para os bonecos não descerem quando a ordem é revelada. A altura de linha vai
@@ -21,6 +21,7 @@ interface LineupSlotProps {
 
 // Uma peça na fila da iniciativa: a colocação, o boneco, o id e o número que ela tirou
 export const LineupSlot: React.FC<LineupSlotProps> = ({ slot, rank = "", value, active }) => {
+    const palette = usePalette()
     const rolled = value !== undefined
 
     return (
@@ -29,15 +30,15 @@ export const LineupSlot: React.FC<LineupSlotProps> = ({ slot, rank = "", value, 
             `visibility` invalida só a pintura, e pintura pendente dentro da
             camada que acabou de ser animada pode não acontecer.
             Trocar o texto invalida o layout, que o navegador é obrigado a refazer. */}
-            <Typography sx={{ ...RANK_LINE, color: INITIATIVE_PALETTE.rank }}>{rank}</Typography>
+            <Typography sx={{ ...RANK_LINE, color: palette.initiative.rank }}>{rank}</Typography>
 
             <PieceToken color={slot.color} type={slot.type} aura={active ? "active" : null} dimmed={!rolled && !active} />
 
-            <Typography sx={{ color: INITIATIVE_PALETTE.pieceId, fontSize: 12 }}>{slot.id}</Typography>
+            <Typography sx={{ color: palette.initiative.pieceId, fontSize: 12 }}>{slot.id}</Typography>
 
             <Typography
                 sx={{
-                    color: rolled ? INITIATIVE_PALETTE.value : INITIATIVE_PALETTE.valuePending,
+                    color: rolled ? palette.initiative.value : palette.initiative.valuePending,
                     fontSize: 18,
                     fontWeight: 700,
                     lineHeight: 1.1,

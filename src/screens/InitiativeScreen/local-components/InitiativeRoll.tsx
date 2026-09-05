@@ -3,7 +3,7 @@ import { Button } from "@mui/material"
 import { RollBoard } from "../../../components/rolls"
 import type { RollView } from "../../../logic/rolls"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { UI_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 interface InitiativeRollProps {
     roll: RollView
@@ -14,6 +14,7 @@ interface InitiativeRollProps {
 }
 
 export const InitiativeRoll: React.FC<InitiativeRollProps> = ({ roll, onDone, onSkip }) => {
+    const palette = usePalette()
     const { t } = useLanguage()
 
     return (
@@ -21,7 +22,7 @@ export const InitiativeRoll: React.FC<InitiativeRollProps> = ({ roll, onDone, on
             roll={roll}
             onDone={onDone}
             footer={
-                <Button size="small" onClick={onSkip} sx={{ color: UI_PALETTE.accentMuted }}>
+                <Button size="small" onClick={onSkip} sx={{ color: palette.ui.accentMuted }}>
                     {t("skipRolls")}
                 </Button>
             }

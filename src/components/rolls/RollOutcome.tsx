@@ -3,19 +3,13 @@ import { Typography } from "@mui/material"
 import { keyframes } from "@emotion/react"
 import type { RollTone } from "../../logic/rolls"
 import { useLanguage } from "../../hooks/useLanguage"
-import { ROLL_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 const pulse = keyframes`
     0% { opacity: 0.45 }
     50% { opacity: 1 }
     100% { opacity: 0.45 }
 `
-
-const TONE_COLOR: Record<RollTone, string> = {
-    good: ROLL_PALETTE.good,
-    bad: ROLL_PALETTE.bad,
-    neutral: ROLL_PALETTE.neutral,
-}
 
 // As duas linhas de texto embaixo dos dados alternam entre vazias e preenchidas conforme a
 // fase da rolagem. A altura de linha vai declarada junto da reservada, e as duas batem: sem
@@ -38,21 +32,24 @@ interface RollOutcomeProps {
 }
 
 export const RollOutcome: React.FC<RollOutcomeProps> = ({ result, reading, tone, waiting, revealed }) => {
+    const palette = usePalette()
     const { t } = useLanguage()
 
     return (
         <>
-            <Typography sx={{ ...RESULT_LINE, color: ROLL_PALETTE.result, fontWeight: 700 }}>{result}</Typography>
+            <Typography sx={{ ...RESULT_LINE, color: palette.roll.result, fontWeight: 700 }}>{result}</Typography>
 
             {waiting ? (
-                <Typography sx={{ ...READING_LINE, color: ROLL_PALETTE.title, animation: `${pulse} 1.4s ease-in-out infinite` }}>
+                <Typography sx={{ ...READING_LINE, color: palette.roll.title, animation: `${pulse} 1.4s ease-in-out infinite` }}>
                     {t("clickToRoll")}
                 </Typography>
             ) : (
                 <Typography
                     sx={{
                         ...READING_LINE,
-                        color: TONE_COLOR[tone],
+                        // Os tons da rolagem têm o nome das cores que os pintam:
+                        // se um deles mudar de nome, o compilador cobra a paleta junto
+                        color: palette.roll[tone],
                         opacity: revealed ? 1 : 0,
                         transition: "opacity 150ms",
                     }}

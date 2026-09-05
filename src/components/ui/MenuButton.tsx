@@ -1,6 +1,6 @@
 import React from "react"
 import { Button, type SxProps, type Theme } from "@mui/material"
-import { UI_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 interface MenuButtonProps {
     children: React.ReactNode
@@ -10,13 +10,15 @@ interface MenuButtonProps {
 }
 
 export const MenuButton: React.FC<MenuButtonProps> = ({ children, onClick, disabled = false, sx }) => {
+    const palette = usePalette()
+
     return (
         <Button
             variant="contained"
             onClick={onClick}
             disabled={disabled}
             sx={[
-                { bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text, px: 4, py: 1.5 },
+                { bgcolor: palette.ui.buttonBg, color: palette.ui.text, px: 4, py: 1.5 },
                 ...(Array.isArray(sx) ? sx : [sx]),
             ]}
         >

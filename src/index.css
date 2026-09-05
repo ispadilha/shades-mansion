@@ -1,3 +1,34 @@
+/*
+ * O fundo da página é a única cor que o CSS precisa conhecer sozinho: ele pinta antes de
+ * o React montar. Os mesmos três valores estão em `constants/palette.ts`, em `screenBg`.
+ *
+ * `color-scheme` avisa ao navegador em que modo ele está, e é o que faz barra de
+ * rolagem, campos nativos e realce de seleção saírem no tom certo sem CSS nenhum.
+ */
+
+:root {
+    color-scheme: light;
+    --screen-bg: #a89a7e;
+}
+
+:root[data-theme="gray"] {
+    color-scheme: dark;
+    --screen-bg: #26262a;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --screen-bg: #000000;
+}
+
+/* Se o script de `index.html` não rodar, o modo do sistema ainda decide */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        color-scheme: dark;
+        --screen-bg: #000000;
+    }
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -10,6 +41,6 @@ html, body, #root {
 }
 
 body {
-    background: #000;
+    background: var(--screen-bg);
     font-family: Inter, Arial, sans-serif;
 }

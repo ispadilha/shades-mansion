@@ -4,11 +4,12 @@ import { Button } from "@mui/material"
 import { ScreenLayout, ScreenTitle } from "../../components/ui"
 import { useLanguage } from "../../hooks/useLanguage"
 import { useGame } from "../../hooks/useGame"
-import { UI_PALETTE } from "../../constants/palette"
+import { usePalette } from "../../hooks/usePalette"
 
 interface EndScreenProps {}
 
 export const EndScreen: React.FC<EndScreenProps> = ({}) => {
+    const palette = usePalette()
     const navigate = useNavigate()
     const { t } = useLanguage()
     const { winner, setWinner } = useGame()
@@ -24,7 +25,7 @@ export const EndScreen: React.FC<EndScreenProps> = ({}) => {
                 {winner === "light" ? t("lightWon") : winner === "dark" ? t("darkWon") : t("grayWon")}
             </ScreenTitle>
 
-            <Button onClick={handleRestart} sx={{ bgcolor: UI_PALETTE.buttonBg, color: UI_PALETTE.text }}>
+            <Button onClick={handleRestart} sx={{ bgcolor: palette.ui.buttonBg, color: palette.ui.text }}>
                 {t("playAgain")}
             </Button>
         </ScreenLayout>

@@ -69,6 +69,14 @@ export const controlledColorsFor = (selection: PlayerSelection | null): PieceCol
 }
 
 export type Language = "enUS" | "ptBR"
+
+// Modo de cores da interface.
+// O cinza é uma variação do escuro, com a mansão e a interface em névoa
+export type ColorMode = "light" | "gray" | "dark"
+
+// O que o jogador escolheu nas opções: um modo fixo, ou acompanhar o sistema
+export type ColorModeSetting = ColorMode | "system"
+
 export type TextKey = keyof typeof texts_ui
 
 // Verbetes da biblioteca (personagens e regras).

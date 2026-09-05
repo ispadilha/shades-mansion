@@ -16,7 +16,10 @@ export const TeamButton: React.FC<TeamButtonProps> = ({ children, color, onClick
     const palette = TEAM_BUTTON_PALETTE[color]
 
     return (
-        <Button onClick={onClick} sx={[{ bgcolor: palette.bg, color: palette.text }, ...(Array.isArray(sx) ? sx : [sx])]}>
+        <Button
+            onClick={onClick}
+            sx={[{ bgcolor: palette.bg, color: palette.text, borderColor: palette.outline }, ...(Array.isArray(sx) ? sx : [sx])]}
+        >
             {children}
         </Button>
     )

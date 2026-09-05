@@ -5,7 +5,7 @@ import { ItemBadge } from "../../../components/pieces"
 import type { PieceColor, MotivationItemKey, TextKey } from "../../../logic/types"
 import { itemKeyColor } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { SURFACE_PALETTE } from "../../../constants/palette"
+import { usePalette } from "../../../hooks/usePalette"
 
 // O verbete de um item depende de quem olha:
 // o do próprio time revigora ou promove a peça correspondente,
@@ -31,6 +31,7 @@ interface ItemInfoModalProps {
 }
 
 export const ItemInfoModal: React.FC<ItemInfoModalProps> = ({ open, onClose, itemKey, playerColor }) => {
+    const palette = usePalette()
     const { t } = useLanguage()
 
     const describe = (key: MotivationItemKey) => {
@@ -51,7 +52,7 @@ export const ItemInfoModal: React.FC<ItemInfoModalProps> = ({ open, onClose, ite
                     <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
                         <ItemBadge itemKey={itemKey} size={72} />
                     </Box>
-                    <Typography sx={{ fontSize: 14, color: SURFACE_PALETTE.textMuted }}>{describe(itemKey)}</Typography>
+                    <Typography sx={{ fontSize: 14, color: palette.surface.textMuted }}>{describe(itemKey)}</Typography>
                     <Box sx={{ mt: 2, display: "flex", justifyContent: "flex-end" }}>
                         <Button onClick={onClose}>{t("close")}</Button>
                     </Box>
