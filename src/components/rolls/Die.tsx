@@ -27,7 +27,7 @@ interface DieShape {
 
 const SHAPES: Record<DieSides, DieShape> = {
     // Tetraedro: triângulo com um vértice apontando para cima
-    4: { outer: "32,5 59,52 5,52", inner: null, textY: 41 },
+    4: { outer: "32,5 59,52 5,52", inner: null, textY: 37 },
     // Cubo: quadrado, e a face de cima é outro quadrado
     6: { outer: "9,9 55,9 55,55 9,55", inner: "18,18 46,18 46,46 18,46", textY: 32 },
     // Octaedro em pé: losango, e a face virada para quem lê é um triângulo
@@ -48,8 +48,10 @@ const SHAPES: Record<DieSides, DieShape> = {
     },
 }
 
-// O "vértice pra cima" do d4: um ponto com brilho que se dissolve a partir dele
-const APEX = { x: 32, y: 19, dot: 2.8, glow: 23 }
+// O d4 não tem face para cima, e sim um vértice bem no meio do triângulo.
+// No lugar de uma face poligonal fica este brilho: difuso, sem ponto
+// nem contorno, no centro e por trás do número.
+const GLOW = { x: 32, y: 35, radius: 26 }
 
 interface DieProps {
     sides: DieSides
@@ -83,9 +85,9 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                             <polygon points={shape.outer} />
                         </clipPath>
                         <radialGradient id={`die-glow-${uid}`}>
-                            <stop offset="0%" stopColor={palette.die.innerEdge} stopOpacity="0.8" />
-                            <stop offset="30%" stopColor={palette.die.innerEdge} stopOpacity="0.45" />
-                            <stop offset="65%" stopColor={palette.die.inner} stopOpacity="0.22" />
+                            <stop offset="0%" stopColor={palette.die.inner} stopOpacity="0.85" />
+                            <stop offset="40%" stopColor={palette.die.inner} stopOpacity="0.6" />
+                            <stop offset="75%" stopColor={palette.die.inner} stopOpacity="0.25" />
                             <stop offset="100%" stopColor={palette.die.inner} stopOpacity="0" />
                         </radialGradient>
                     </defs>
@@ -108,10 +110,13 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                         strokeLinejoin="round"
                     />
                 ) : (
-                    <g clipPath={`url(#die-face-${uid})`}>
-                        <circle cx={APEX.x} cy={APEX.y} r={APEX.glow} fill={`url(#die-glow-${uid})`} />
-                        <circle cx={APEX.x} cy={APEX.y} r={APEX.dot} fill={palette.die.innerEdge} />
-                    </g>
+                    <circle
+                        cx={GLOW.x}
+                        cy={GLOW.y}
+                        r={GLOW.radius}
+                        fill={`url(#die-glow-${uid})`}
+                        clipPath={`url(#die-face-${uid})`}
+                    />
                 )}
 
                 <text

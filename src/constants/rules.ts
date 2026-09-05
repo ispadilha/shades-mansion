@@ -175,6 +175,9 @@ export const MAX_FIRE_BURSTS = 8
 // Quanto tempo a câmera fica presa no item que caiu de volta no tabuleiro
 export const ITEM_DROP_HOLD_MS = 1000
 
+// Quanto a partida espera a animação de um golpe antes de seguir
+export const ATTACK_EFFECT_HOLD_MS = 1000
+
 // Rolagem da câmera quando o cursor encosta na borda da viewport
 export const EDGE_SCROLL = { edgeSize: 80, maxSpeed: 20 }
 

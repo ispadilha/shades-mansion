@@ -8,40 +8,49 @@ import { TEAM_BUTTON_PALETTE } from "../../../constants/palette"
 
 interface ColorModeOptionsProps {}
 
-const MODE_BUTTONS: Array<{ setting: ColorModeSetting; label: TextKey; team: PieceColor | null }> = [
+const MODE_BUTTONS: Array<{ setting: ColorModeSetting; label: TextKey; team: PieceColor }> = [
     { setting: "light", label: "modeLight", team: "light" },
     { setting: "gray", label: "modeGray", team: "gray" },
     { setting: "dark", label: "modeDark", team: "dark" },
-    { setting: "system", label: "modeSystem", team: null },
 ]
+
+interface ModeColors {
+    bg: string
+    text: string
+    outline: string
+}
 
 export const ColorModeOptions: React.FC<ColorModeOptionsProps> = ({}) => {
     const palette = usePalette()
     const { t } = useLanguage()
     const { setting, setSetting } = useColorMode()
 
-    return (
-        <Box sx={{ display: "flex", gap: 2 }}>
-            {MODE_BUTTONS.map((button) => {
-                const colors = button.team
-                    ? TEAM_BUTTON_PALETTE[button.team]
-                    : { bg: palette.ui.buttonAltBg, text: palette.ui.text, outline: palette.ui.buttonOutline }
+    const modeButton = (choice: ColorModeSetting, label: TextKey, colors: ModeColors) => (
+        <Button
+            key={choice}
+            onClick={() => setSetting(choice)}
+            sx={{
+                bgcolor: colors.bg,
+                color: colors.text,
+                borderColor: colors.outline,
+                outline: setting === choice ? `2px solid ${palette.ui.text}` : "none",
+                outlineOffset: "2px",
+            }}
+        >
+            {t(label)}
+        </Button>
+    )
 
-                return (
-                    <Button
-                        key={button.setting}
-                        onClick={() => setSetting(button.setting)}
-                        sx={{
-                            bgcolor: colors.bg,
-                            color: colors.text,
-                            borderColor: colors.outline,
-                            outline: setting === button.setting ? `2px solid ${palette.ui.text}` : "none",
-                            outlineOffset: "2px",
-                        }}
-                    >
-                        {t(button.label)}
-                    </Button>
-                )
+    return (
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2 }}>
+                {MODE_BUTTONS.map((button) => modeButton(button.setting, button.label, TEAM_BUTTON_PALETTE[button.team]))}
+            </Box>
+
+            {modeButton("system", "modeSystem", {
+                bg: palette.ui.buttonAltBg,
+                text: palette.ui.text,
+                outline: palette.ui.buttonOutline,
             })}
         </Box>
     )

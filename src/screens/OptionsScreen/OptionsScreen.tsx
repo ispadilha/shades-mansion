@@ -13,7 +13,7 @@ export const OptionsScreen: React.FC<OptionsScreenProps> = ({}) => {
     const { t } = useLanguage()
 
     return (
-        <ScreenLayout gap={4}>
+        <ScreenLayout gap={4} padded>
             <ScreenTitle size={28}>{t("languageSettings")}</ScreenTitle>
             <LanguageOptions />
 

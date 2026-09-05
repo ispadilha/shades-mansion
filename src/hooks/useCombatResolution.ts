@@ -8,7 +8,6 @@ import {
     rollDamage,
     rollDefense,
     rollManipulation,
-    type AttackArea,
     type DamageRoll,
     type DefenseOutcome,
     type FireBurst,
@@ -19,12 +18,20 @@ import { useLanguage } from "./useLanguage"
 import type { GameLog } from "./useGameLog"
 import type { RollQueue } from "./useRolls"
 import {
+    ATTACK_EFFECT_HOLD_MS,
     ATTACK_ROLL_TIMING,
     DEFENSE_DIE,
     DODGE_ROLL_TIMING,
     ITEM_DROP_HOLD_MS,
     MAX_FIRE_BURSTS,
 } from "../constants/rules"
+
+// Uma peça atingida e quanto ela levou. As defesas são roladas uma a uma, mas o dano
+// fica guardado aqui até o fim: ninguém sai do tabuleiro no meio das rolagens.
+interface Hit {
+    pieceId: string
+    damage: number
+}
 
 const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }> = {
     dodged: { label: "dodgeTotal", tone: "good" },
@@ -74,15 +81,19 @@ export const useCombatResolution = ({
     const damageTimerRef = useRef<number | null>(null)
     // A queda do item devolvido segura a partida enquanto a câmera a acompanha
     const dropTimerRef = useRef<number | null>(null)
+    // A animação do golpe segura a partida enquanto acontece
+    const effectTimerRef = useRef<number | null>(null)
 
     useEffect(() => {
         return () => {
             if (damageTimerRef.current !== null) clearTimeout(damageTimerRef.current)
             if (dropTimerRef.current !== null) clearTimeout(dropTimerRef.current)
+            if (effectTimerRef.current !== null) clearTimeout(effectTimerRef.current)
         }
     }, [])
 
-    // O atacante rola o dano e, em cima dele, cada peça atingida rola sua defesa
+    // O atacante rola o dano e, em cima dele, cada peça atingida rola sua defesa.
+    // Só quando não sobra rolagem é que o golpe aparece no tabuleiro.
     const resolveAttack = (attack: PendingAttack) => {
         // Quem joga os dados do golpe: o time da peça, ou quem a está manipulando
         const attackerColor = attack.consumerColor ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
@@ -91,13 +102,15 @@ export const useCombatResolution = ({
         damageTimerRef.current = window.setTimeout(() => {
             damageTimerRef.current = null
 
-            // O tiro caiu: trazendo uma área, ela pega fogo antes de qualquer conta
-            const burning = attack.area ? igniteArea(attack.area, attack.attackerId) : []
-            const defenders = defendersOf(attack, burning)
+            // As casas que o golpe alcança saem antes das rolagens, porque é delas que vem
+            // quem se defende. Nada é animado ainda: o tabuleiro só reage depois dos dados.
+            const reached = attack.area ? areaCells(maze, attack.area.center, attack.area.side) : []
+            const defenders = defendersOf(attack, reached)
 
-            // Fogo em casa vazia, ou alvo que já saiu do tabuleiro: nada para rolar
+            // Golpe no vazio (área sem ninguém, ou alvo que já saiu do tabuleiro): não há o
+            // que rolar, mas a animação acontece do mesmo jeito
             if (defenders.length === 0) {
-                rolls.setResolving(false)
+                settleAttack(attack, reached, [])
                 return
             }
 
@@ -114,38 +127,31 @@ export const useCombatResolution = ({
                     manual: attackerColor !== null && isManualRoll(attackerColor),
                     ...ATTACK_ROLL_TIMING,
                 },
-                () => resolveDefenders(attack, damage, defenders, 0),
+                () => resolveDefenders(attack, reached, damage, defenders, 0, []),
             )
         }, attack.delayMs)
     }
 
-    // O incêndio acontece com ou sem peça(s) para queimar
-    const igniteArea = (area: AttackArea, attackerId: string): PiecePosition[] => {
-        const burning = areaCells(maze, area.center, area.side)
-        setFireBursts((prev) => [
-            ...prev.slice(-MAX_FIRE_BURSTS + 1),
-            { id: `fire-${attackerId}-${Date.now()}`, center: area.center, cells: burning },
-        ])
-        return burning
-    }
-
     // Quem se defende: a peça mirada, ou todas as da área quando o golpe incendeia
-    const defendersOf = (attack: PendingAttack, burning: PiecePosition[]): PieceDefinition[] => {
-        if (attack.area) return piecesInBlast(pieces, burning, attack.area.center)
+    const defendersOf = (attack: PendingAttack, reached: PiecePosition[]): PieceDefinition[] => {
+        if (attack.area) return piecesInBlast(pieces, reached, attack.area.center)
         const target = pieces.find((p) => p.id === attack.targetId)
         return target ? [target] : []
     }
 
-    // Uma defesa de cada vez, rolada por quem comanda a peça atingida
+    // Uma defesa de cada vez, rolada por quem comanda a peça atingida. O que cada uma leva
+    // vai se somando em `hits` e só é aplicado no fim.
     const resolveDefenders = (
         attack: PendingAttack,
+        reached: PiecePosition[],
         damage: DamageRoll,
         defenders: PieceDefinition[],
         index: number,
+        hits: Hit[],
     ) => {
         const defender = defenders[index]
         if (!defender) {
-            rolls.setResolving(false)
+            settleAttack(attack, reached, hits)
             return
         }
 
@@ -164,20 +170,57 @@ export const useCombatResolution = ({
                 ...DODGE_ROLL_TIMING,
             },
             () => {
-                if (defense.damage > 0) applyDamage(defender.id, defense.damage)
-
                 if (defense.outcome === "dodged") log.attackDodged(attack.attackerId, defender.id)
                 else if (defense.outcome === "guarded") log.attackGuarded(attack.attackerId, defender.id, defense.damage)
                 else log.attackHit(attack.attackerId, defender.id, defense.damage)
 
-                resolveDefenders(attack, damage, defenders, index + 1)
+                const next = defense.damage > 0 ? [...hits, { pieceId: defender.id, damage: defense.damage }] : hits
+                resolveDefenders(attack, reached, damage, defenders, index + 1, next)
             },
         )
     }
 
+    // Fim das rolagens: agora sim o golpe aparece no tabuleiro, e o dano de todas as peças
+    // atingidas entra junto com ele. Nenhuma peça sai do tabuleiro antes de a animação
+    // mostrar o que a tirou de lá.
+    const settleAttack = (attack: PendingAttack, reached: PiecePosition[], hits: Hit[]) => {
+        const animated = playAttackEffect(attack, reached)
+        if (hits.length > 0) applyDamage(hits)
+
+        if (!animated) {
+            rolls.setResolving(false)
+            return
+        }
+
+        effectTimerRef.current = window.setTimeout(() => {
+            effectTimerRef.current = null
+            rolls.setResolving(false)
+        }, ATTACK_EFFECT_HOLD_MS)
+    }
+
+    // A animação do golpe, e se houve alguma para a partida esperar.
+    // É por aqui que cada tipo de ataque mostra o que fez.
+    const playAttackEffect = (attack: PendingAttack, reached: PiecePosition[]): boolean => {
+        const { area } = attack
+        if (!area) return false
+
+        setFireBursts((prev) => [
+            ...prev.slice(-MAX_FIRE_BURSTS + 1),
+            { id: `fire-${attack.attackerId}-${Date.now()}`, center: area.center, cells: reached },
+        ])
+        return true
+    }
+
     // Quem chega a zero sai do tabuleiro
-    const applyDamage = (pieceId: string, damage: number) => {
-        setPieces((prev) => prev.map((p) => (p.id === pieceId ? { ...p, vigor: p.vigor - damage } : p)).filter((p) => p.vigor > 0))
+    const applyDamage = (hits: Hit[]) => {
+        setPieces((prev) =>
+            prev
+                .map((piece) => {
+                    const hit = hits.find((h) => h.pieceId === piece.id)
+                    return hit ? { ...piece, vigor: piece.vigor - hit.damage } : piece
+                })
+                .filter((piece) => piece.vigor > 0),
+        )
     }
 
     const resolveManipulation = (

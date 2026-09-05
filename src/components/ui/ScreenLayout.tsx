@@ -27,8 +27,11 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({ children, gap = 0, p
                     bgcolor: palette.ui.screenBg,
                     display: "flex",
                     flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
+                    // "safe" só centraliza enquanto o conteúdo cabe: passando do tamanho da
+                    // janela, o alinhamento vira "start" e a tela rola inteira. Centralizar
+                    // sem isso empurra o começo do conteúdo para fora de alcance.
+                    alignItems: "safe center",
+                    justifyContent: "safe center",
                     boxSizing: "border-box",
                     overflow: "auto",
                     gap,
