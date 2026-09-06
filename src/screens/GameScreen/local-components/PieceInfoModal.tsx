@@ -25,7 +25,7 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
             <Typography>{t("damage")}: {diceLabel(stats.damage)}</Typography>
             {/* Peça pesada demais para desviar de corpo inteiro só conta com o aparo */}
             <Typography>
-                {t("dodge")}: {canDodge(piece.type) ? defenseTarget(stats.dodge) : t("dodgeNever")}
+                {t("dodge")}: {canDodge(piece.type) ? defenseTarget(stats.dodge) : t("cannotDodge")}
             </Typography>
             <Typography>{t("guard")}: {defenseTarget(stats.guard)}</Typography>
             <Typography>

@@ -13,17 +13,20 @@ import {
     type FireBurst,
     type PendingAttack,
 } from "../logic/combat"
-import { dieKind, type RollTone } from "../logic/rolls"
+import { dieKind, type RollTarget, type RollTone } from "../logic/rolls"
 import { useLanguage } from "./useLanguage"
 import type { GameLog } from "./useGameLog"
 import type { RollQueue } from "./useRolls"
 import {
     ATTACK_EFFECT_HOLD_MS,
     ATTACK_ROLL_TIMING,
+    canDodge,
     DEFENSE_DIE,
     DODGE_ROLL_TIMING,
     ITEM_DROP_HOLD_MS,
     MAX_FIRE_BURSTS,
+    statsFor,
+    SUCCESS_FACE,
 } from "../constants/rules"
 
 // Uma peça atingida e quanto ela levou. As defesas são roladas uma a uma, mas o dano
@@ -139,6 +142,18 @@ export const useCombatResolution = ({
         return target ? [target] : []
     }
 
+    // Os números que o d20 da defesa tenta alcançar
+    const defenseTargets = (defender: PieceDefinition): RollTarget[] => {
+        const { dodge, guard } = statsFor(defender.type, defender.level)
+
+        return [
+            canDodge(defender.type)
+                ? { value: String(dodge), label: t("toDodge") }
+                : { label: t("cannotDodge") },
+            { value: String(guard), label: t("toGuard") },
+        ]
+    }
+
     // Uma defesa de cada vez, rolada por quem comanda a peça atingida. O que cada uma leva
     // vai se somando em `hits` e só é aplicado no fim.
     const resolveDefenders = (
@@ -165,6 +180,7 @@ export const useCombatResolution = ({
                 value: [defense.die],
                 title: t("dodgeRoll"),
                 subtitle: defender.id,
+                targets: defenseTargets(defender),
                 outcome: { label: t(reading.label), tone: reading.tone },
                 manual: isManualRoll(defender.color),
                 ...DODGE_ROLL_TIMING,
@@ -238,6 +254,7 @@ export const useCombatResolution = ({
                 value: face,
                 title: t("manipulationRoll"),
                 subtitle: itemKey,
+                targets: [{ value: t(SUCCESS_FACE === "heads" ? "coinHeads" : "coinTails"), label: t("toManipulate") }],
                 outcome: {
                     label: success ? t("manipulationWorked") : t("manipulationFailed"),
                     tone: success ? "good" : "bad",

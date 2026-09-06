@@ -48,6 +48,13 @@ export const diceLabel = (spec: DiceSpec): string => `${spec.count}d${spec.sides
 // Como o resultado é lido na tela: acertou, falhou, ou é só um número
 export type RollTone = "good" | "bad" | "neutral"
 
+// Um número que a rolagem precisa alcançar, escrito no card.
+// Sem `value`, sobra só a frase. É o caso de quem não tem esquiva.
+export interface RollTarget {
+    value?: string
+    label: string
+}
+
 // Uma rolagem para exibir. O resultado já foi sorteado por quem pediu a rolagem:
 // a tela só encena o giro e revela o valor.
 export interface RollView {
@@ -58,6 +65,7 @@ export interface RollView {
     value: CoinFace | number[]
     title: string
     subtitle?: string
+    targets?: RollTarget[]
     outcome?: { label: string; tone?: RollTone }
     // Rolagem do jogador: o dado fica parado esperando um clique em cima dele.
     // As dos times que ele não comanda rolam sozinhas.

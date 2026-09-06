@@ -131,6 +131,22 @@ export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }
             </Typography>
             {roll?.subtitle && <Typography sx={{ color: palette.roll.subtitle, fontSize: 13 }}>{roll.subtitle}</Typography>}
 
+            {/* Números alvo */}
+            {roll?.targets && roll.targets.length > 0 && (
+                <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.25 }}>
+                    {roll.targets.map((target, index) => (
+                        <Typography key={index} sx={{ color: palette.roll.subtitle, fontSize: 12 }}>
+                            {target.value && (
+                                <Box component="span" sx={{ color: palette.roll.target, fontWeight: 700 }}>
+                                    {target.value}{" "}
+                                </Box>
+                            )}
+                            {target.label}
+                        </Typography>
+                    ))}
+                </Box>
+            )}
+
             <RollFaces kind={kind ?? "d12"} shown={shown} spinning={phase === "spinning"} />
 
             <RollOutcome

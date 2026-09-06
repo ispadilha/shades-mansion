@@ -199,8 +199,18 @@ export const texts_ui = {
         ptBR: "Aparo",
     },
 
-    dodgeNever: {
-        enUS: "too heavy",
+    toDodge: {
+        enUS: "to dodge",
+        ptBR: "para esquivar",
+    },
+
+    toGuard: {
+        enUS: "to guard",
+        ptBR: "para aparar",
+    },
+
+    cannotDodge: {
+        enUS: "cannot dodge",
         ptBR: "não desvia",
     },
 
