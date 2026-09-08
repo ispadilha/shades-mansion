@@ -13,7 +13,7 @@
 
 :root[data-theme="gray"] {
     color-scheme: dark;
-    --screen-bg: #26262a;
+    --screen-bg: #232832;
 }
 
 :root[data-theme="dark"] {
