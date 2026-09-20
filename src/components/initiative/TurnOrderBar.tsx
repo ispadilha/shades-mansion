@@ -10,10 +10,13 @@ interface TurnOrderBarProps {
     // Peças ainda em jogo, já na ordem de iniciativa
     order: PieceDefinition[]
     auras: PieceAuras
+    // Peça da vez: token clicável para selecionar e centralizar na câmera
+    activeId: string | null
+    onActivate?: () => void
     round: number
 }
 
-export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, round }) => {
+export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, activeId, onActivate, round }) => {
     const palette = usePalette()
     const { t } = useLanguage()
 
@@ -36,11 +39,19 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, round 
             >
                 {order.map((piece) => {
                     const aura = auras[piece.id] ?? null
+                    const clickable = piece.id === activeId && onActivate !== undefined
 
                     return (
                         <Box
                             key={piece.id}
-                            sx={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}
+                            onClick={clickable ? onActivate : undefined}
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                flexShrink: 0,
+                                cursor: clickable ? "pointer" : "default",
+                            }}
                         >
                             <PieceToken
                                 color={piece.color}

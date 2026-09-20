@@ -1,44 +1,27 @@
 import React from "react"
-import { Box, Button, Typography } from "@mui/material"
+import { HudBanner } from "./HudBanner"
 import type { MotivationItemKey } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
 interface ManipulationBannerProps {
-    // Peça que está sob manipulação
-    itemKey: MotivationItemKey
+    itemKey: MotivationItemKey | null
     onCancel: () => void
 }
 
-// Aviso de manipulação enquanto ocorre, sobre o HUD
 export const ManipulationBanner: React.FC<ManipulationBannerProps> = ({ itemKey, onCancel }) => {
     const palette = usePalette()
     const { t } = useLanguage()
 
     return (
-        <Box
-            sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 2,
-                px: 3,
-                py: 0.75,
-                bgcolor: palette.manipulation.bandBg,
-                borderBottom: `1px solid ${palette.manipulation.bandOutline}`,
-            }}
-        >
-            <Typography sx={{ color: palette.manipulation.bandText, fontSize: 13 }}>
-                {t("manipulatingPiece")}: {itemKey}
-            </Typography>
-            <Button
-                size="small"
-                variant="outlined"
-                onClick={onCancel}
-                sx={{ color: palette.manipulation.bandText, borderColor: palette.manipulation.bandOutline, py: 0.25 }}
-            >
-                {t("cancelManipulation")}
-            </Button>
-        </Box>
+        <HudBanner
+            open={itemKey !== null}
+            bg={palette.manipulation.bandBg}
+            outline={palette.manipulation.bandOutline}
+            textColor={palette.manipulation.bandText}
+            message={itemKey ? `${t("manipulatingPiece")}: ${itemKey}` : ""}
+            actionLabel={t("cancelManipulation")}
+            onAction={onCancel}
+        />
     )
 }

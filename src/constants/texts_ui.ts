@@ -229,7 +229,6 @@ export const texts_ui = {
         ptBR: "Área de efeito",
     },
 
-    // Habilidades: o botão do HUD, a lista, a faixa de aviso e o que o menu oferece
     skills: {
         enUS: "Skills",
         ptBR: "Habilidades",
@@ -263,6 +262,16 @@ export const texts_ui = {
     skillBurn: {
         enUS: "Fire",
         ptBR: "Incendiar",
+    },
+
+    hintSelectPiece: {
+        enUS: "Left click to select a piece, right click to choose an action (if selected piece is on its turn)",
+        ptBR: "Clique esquerdo para selecionar uma peça, clique direito para escolher uma ação (se a peça selecionada estiver em seu turno)",
+    },
+
+    gotIt: {
+        enUS: "Got it",
+        ptBR: "Entendi",
     },
 
     usingSkill: {
@@ -346,8 +355,8 @@ export const texts_ui = {
     },
 
     noItems: {
-        enUS: "No items collected yet.",
-        ptBR: "Nenhum item coletado ainda.",
+        enUS: "No items in the inventory.",
+        ptBR: "Nenhum item no inventário.",
     },
 
     manipulatingPiece: {

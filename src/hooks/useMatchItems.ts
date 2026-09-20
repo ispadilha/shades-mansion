@@ -16,6 +16,8 @@ export interface MatchItems {
     // Coleta agendada para quando a peça chegar na casa (delay = nº de passos × STEP_MS)
     schedulePickup: (color: PieceColor, position: PiecePosition, delayMs: number) => void
     removeFromInventory: (color: PieceColor, key: MotivationItemKey) => void
+    // Desfaz a saída do item: por exemplo em manipulação cancelada
+    returnToInventory: (color: PieceColor, key: MotivationItemKey) => void
     // Devolve um item ao labirinto, em uma casa livre sorteada. Null se não sobrou casa.
     dropOnBoard: (key: MotivationItemKey, maze: Maze, pieces: PieceDefinition[]) => MotivationItem | null
 }
@@ -51,6 +53,10 @@ export const useMatchItems = (initialItems: MotivationItem[]): MatchItems => {
         })
     }
 
+    const returnToInventory = (color: PieceColor, key: MotivationItemKey) => {
+        setInventories((prev) => ({ ...prev, [color]: [...prev[color], key] }))
+    }
+
     const dropOnBoard = (key: MotivationItemKey, maze: Maze, pieces: PieceDefinition[]): MotivationItem | null => {
         const position = randomFreeCell(maze, pieces, itemsRef.current)
         if (!position) return null
@@ -60,5 +66,14 @@ export const useMatchItems = (initialItems: MotivationItem[]): MatchItems => {
         return item
     }
 
-    return { items, inventories, setInventories, itemAt, schedulePickup, removeFromInventory, dropOnBoard }
+    return {
+        items,
+        inventories,
+        setInventories,
+        itemAt,
+        schedulePickup,
+        removeFromInventory,
+        returnToInventory,
+        dropOnBoard,
+    }
 }

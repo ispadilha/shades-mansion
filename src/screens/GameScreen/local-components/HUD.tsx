@@ -2,6 +2,7 @@ import React from "react"
 import { Box } from "@mui/material"
 import { GameLogPanel } from "./GameLogPanel"
 import { HudActions } from "./HudActions"
+import { HintBanner } from "./HintBanner"
 import { ManipulationBanner } from "./ManipulationBanner"
 import { SkillBanner } from "./SkillBanner"
 import { TurnStatus } from "./TurnStatus"
@@ -34,6 +35,9 @@ interface HUDProps {
     log: string[]
     manipulationKey: MotivationItemKey | null
     onCancelManipulation: () => void
+    onFocusActivePiece: () => void
+    hintVisible: boolean
+    onDismissHint: () => void
     // Habilidade em uso e a peça que a está usando
     activeSkill: Skill | null
     skillPieceId: string | null
@@ -56,6 +60,9 @@ export const HUD: React.FC<HUDProps> = ({
     log,
     manipulationKey,
     onCancelManipulation,
+    onFocusActivePiece,
+    hintVisible,
+    onDismissHint,
     activeSkill,
     skillPieceId,
     onCancelSkill,
@@ -64,15 +71,22 @@ export const HUD: React.FC<HUDProps> = ({
 
     return (
         <Box sx={{ width: "100%", bgcolor: palette.hud.bandBg, flexShrink: 0, display: "flex", flexDirection: "column" }}>
-            {manipulationKey && <ManipulationBanner itemKey={manipulationKey} onCancel={onCancelManipulation} />}
-            {activeSkill && skillPieceId && (
-                <SkillBanner skill={activeSkill} pieceId={skillPieceId} onCancel={onCancelSkill} />
-            )}
+            {/* Banners sempre montados: cada um "decide sozinho" quando entrar e sair,
+                e precisa continuar na árvore para conseguir deslizar de volta. */}
+            <ManipulationBanner itemKey={manipulationKey} onCancel={onCancelManipulation} />
+            <SkillBanner skill={activeSkill} pieceId={skillPieceId} onCancel={onCancelSkill} />
+            <HintBanner open={hintVisible} onDismiss={onDismissHint} />
 
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}
             <Box sx={{ display: "flex", height: BAND_HEIGHT, borderBottom: `1px solid ${palette.hud.bandBorder}` }}>
                 <Box sx={{ width: TURN_ORDER_WIDTH, flexShrink: 0, overflow: "hidden" }}>
-                    <TurnOrderBar order={turnOrder} auras={auras} round={round} />
+                    <TurnOrderBar
+                        order={turnOrder}
+                        auras={auras}
+                        activeId={activePiece?.id ?? null}
+                        onActivate={isPlayerTurn ? onFocusActivePiece : undefined}
+                        round={round}
+                    />
                 </Box>
 
                 <GameLogPanel entries={log} />

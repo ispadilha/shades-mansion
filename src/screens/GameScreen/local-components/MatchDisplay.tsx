@@ -34,6 +34,7 @@ import { useEliminations } from "../../../hooks/useEliminations"
 import { useGame } from "../../../hooks/useGame"
 import { useGameLog } from "../../../hooks/useGameLog"
 import { useHighlightedCells } from "../../../hooks/useHighlightedCells"
+import { useIdleHint } from "../../../hooks/useIdleHint"
 import { useMatchItems } from "../../../hooks/useMatchItems"
 import { useRolls } from "../../../hooks/useRolls"
 import { ACTION_SETTLE_MS, ITEM_DROP_HOLD_MS, SKILL_MODAL_DELAY_MS, STEP_MS, statsFor } from "../../../constants/rules"
@@ -56,8 +57,16 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const spectating = controlledColors.length === 0
 
     const [pieces, setPieces] = useState<PieceDefinition[]>(match.pieces)
-    const { items, inventories, setInventories, itemAt, schedulePickup, removeFromInventory, dropOnBoard } =
-        useMatchItems(match.items)
+    const {
+        items,
+        inventories,
+        setInventories,
+        itemAt,
+        schedulePickup,
+        removeFromInventory,
+        returnToInventory,
+        dropOnBoard,
+    } = useMatchItems(match.items)
     const [turnIndex, setTurnIndex] = useState(0)
     const [round, setRound] = useState(1)
     const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -66,7 +75,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [inventoryOpen, setInventoryOpen] = useState(false)
-    const [manipulation, setManipulation] = useState<{ itemKey: MotivationItemKey } | null>(null)
+    const [manipulation, setManipulation] = useState<{ itemKey: MotivationItemKey; color: PieceColor } | null>(null)
     // Peça sob manipulação, do lançamento da moeda até a ação forçada acabar:
     // é ela que a câmera segue e quem ganha a aura de manipulação
     const [manipulatedId, setManipulatedId] = useState<string | null>(null)
@@ -333,6 +342,11 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         if (canSkill) actions.push("skill")
         if (actions.length === 0) return
 
+        // Só dispensa a dica de vez se o menu de fato ofereceu uma ação:
+        // o jogador fez o que a dica ia apontar.
+        // Um menu só de informação não conta, ali ele ainda não agiu,
+        // e a contagem recomeça quando o menu fechar.
+        if (actions.some((action) => action !== "info" && action !== "itemInfo")) hint.dismiss()
         setContextMenu({
             mouseX: event.clientX,
             mouseY: event.clientY,
@@ -437,11 +451,20 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         })
     }
 
-    // Botão "habilidades": seleciona a peça da vez e a centraliza na câmera
-    const handleOpenSkills = () => {
-        if (!activePiece || !isPlayerTurn || rolls.resolving || manipulation) return
-        setSelectedId(activePiece.id)
+    // Traz a câmera até a peça da vez e, se ela ainda tiver ação, a seleciona.
+    // É o que o token dela no HUD faz ao ser clicado,
+    // e o primeiro passo do botão de habilidades.
+    // Peça que já agiu só é mostrada, não selecionada.
+    const focusActivePiece = () => {
+        if (!activePiece || !isPlayerTurn || rolls.resolving || manipulation) return false
+        if (!activePiece.movedThisTurn) setSelectedId(activePiece.id)
         setCameraNudge((nudge) => nudge + 1)
+        return true
+    }
+
+    // Botão "habilidades": traz a vista para a peça, espera um instante e abre a lista
+    const handleOpenSkills = () => {
+        if (!focusActivePiece()) return
 
         if (skillTimerRef.current !== null) clearTimeout(skillTimerRef.current)
         skillTimerRef.current = window.setTimeout(() => {
@@ -501,15 +524,35 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         log.usedTo(color, key, "toManipulate")
         combat.resolveManipulation(color, key, (success) => {
             if (!success) return
-            setManipulation({ itemKey: key })
+            setManipulation({ itemKey: key, color })
             setSelectedId(key)
         })
     }
 
     const cancelManipulation = () => {
+        if (manipulation) returnToInventory(manipulation.color, manipulation.itemKey)
         setManipulation(null)
         setSelectedId(null)
     }
+
+    // Dica de como jogar, após tempo sem ação.
+    // A "fase" é o que o jogador já fez: seleção de peça ou abertura de menu.
+    const hint = useIdleHint({
+        enabled:
+            isPlayerTurn &&
+            // Quem já agiu não tem o que selecionar nem que ação escolher: só encerrar
+            activePiece?.movedThisTurn !== true &&
+            !rolls.resolving &&
+            !manipulation &&
+            !activeSkill &&
+            !inventoryOpen &&
+            !skillsOpen &&
+            infoPiece === null &&
+            itemInfoKey === null &&
+            // Menu aberto é o jogador ocupado: a contagem para, e recomeça quando ele fecha
+            contextMenu === null,
+        phase: `${turnIndex}:${selectedId ?? ""}`,
+    })
 
     // Destaques do tabuleiro ("auras")
     // Tanto o tabuleiro como o HUD desenham
@@ -557,6 +600,9 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
                 auras={auras}
                 manipulationKey={manipulation?.itemKey ?? null}
                 onCancelManipulation={cancelManipulation}
+                onFocusActivePiece={focusActivePiece}
+                hintVisible={hint.visible}
+                onDismissHint={hint.dismiss}
                 onOpenSkills={handleOpenSkills}
                 activeSkill={activeSkill}
                 skillPieceId={skillPieceId}

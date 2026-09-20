@@ -172,6 +172,12 @@ export const ITEM_DROP_HOLD_MS = 1000
 // Tempo para a câmera ir até a peça que vai usar habilidade, antes de abrir o modal
 export const SKILL_MODAL_DELAY_MS = 500
 
+// Tempo para a barra de dica aparecer
+export const IDLE_HINT_MS = 5000
+
+// Tempo para a barra de dica deslizar
+export const HUD_BANNER_SLIDE_MS = 500
+
 // Quanto a partida espera a animação de um golpe antes de seguir
 export const ATTACK_EFFECT_HOLD_MS = 1000
 
