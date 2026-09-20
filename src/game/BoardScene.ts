@@ -4,6 +4,7 @@ import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
+import { isSpent } from "../logic/turn"
 import { pickRandom, randomInt } from "../logic/random"
 import {
     AURA_PALETTE,
@@ -166,8 +167,9 @@ export class BoardScene extends Phaser.Scene {
         for (const piece of pieces) {
             seen.add(piece.id)
             const targetPx = this.cellToPixel(piece.position)
-            // Peças que já se moveram no turno ficam translúcidas para indicar isso
-            const targetAlpha = piece.movedThisTurn ? MOVED_PIECE_ALPHA : 1
+            // Quem esgotou o turno inteiro (movimento e/ou ataque básico e habilidade)
+            // fica translúcido para indicar isso
+            const targetAlpha = isSpent(piece) ? MOVED_PIECE_ALPHA : 1
 
             let sprite = this.sprites.get(piece.id)
             if (!sprite) {

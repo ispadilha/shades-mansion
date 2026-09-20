@@ -26,6 +26,7 @@ export interface PieceDefinition {
     type: PieceType
     position: PiecePosition
     movedThisTurn: boolean
+    usedSkillThisTurn: boolean
     vigor: number
     maxVigor: number
     level: number

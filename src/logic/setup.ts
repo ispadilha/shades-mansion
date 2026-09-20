@@ -74,6 +74,7 @@ export function createInitialPieces(maze: Maze): PieceDefinition[] {
                 type,
                 position,
                 movedThisTurn: false,
+                usedSkillThisTurn: false,
                 vigor: maxVigor,
                 maxVigor,
                 level: 1,

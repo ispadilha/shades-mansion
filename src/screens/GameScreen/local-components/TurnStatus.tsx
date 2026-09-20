@@ -1,6 +1,7 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import type { PieceDefinition } from "../../../logic/types"
+import type { PieceDefinition, TextKey } from "../../../logic/types"
+import { turnStageOf } from "../../../logic/turn"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
@@ -17,7 +18,14 @@ export const TurnStatus: React.FC<TurnStatusProps> = ({ activePiece, isPlayerTur
     const { t, tTeam } = useLanguage()
 
     const turnLabel = activePiece ? `${activePiece.id} (${tTeam(activePiece.color)})` : "—"
-    const acted = isPlayerTurn && activePiece?.movedThisTurn
+
+    // Três estados na vez do jogador:
+    // ainda tem tudo,
+    // já gastou a ação comum mas ainda tem a habilidade,
+    // ou não tem mais nada
+    const stage = isPlayerTurn && activePiece ? turnStageOf(activePiece) : null
+    const spent = stage === "spent"
+    const statusKey: TextKey = stage === "spent" ? "alreadyActed" : stage === "moved" ? "alreadyMoved" : "yourTurn"
 
     return (
         <Box sx={{ minWidth: 0 }}>
@@ -27,7 +35,7 @@ export const TurnStatus: React.FC<TurnStatusProps> = ({ activePiece, isPlayerTur
             <Typography
                 sx={{
                     color:
-                        spectating || acted
+                        spectating || spent
                             ? palette.hud.statusIdle
                             : isPlayerTurn
                               ? palette.hud.statusReady
@@ -36,7 +44,7 @@ export const TurnStatus: React.FC<TurnStatusProps> = ({ activePiece, isPlayerTur
                     whiteSpace: "nowrap",
                 }}
             >
-                {isPlayerTurn ? (acted ? t("alreadyActed") : t("yourTurn")) : spectating ? t("spectating") : t("wait")}
+                {isPlayerTurn ? t(statusKey) : spectating ? t("spectating") : t("wait")}
             </Typography>
         </Box>
     )

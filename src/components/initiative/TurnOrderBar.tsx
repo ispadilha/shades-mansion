@@ -2,6 +2,7 @@ import React from "react"
 import { Box, Typography } from "@mui/material"
 import { PieceToken } from "../pieces"
 import type { PieceAuras, PieceDefinition } from "../../logic/types"
+import { isSpent } from "../../logic/turn"
 import { useLanguage } from "../../hooks/useLanguage"
 import { usePalette } from "../../hooks/usePalette"
 import { AURA_PALETTE } from "../../constants/palette"
@@ -58,7 +59,7 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, active
                                 type={piece.type}
                                 size={34}
                                 aura={aura}
-                                dimmed={piece.movedThisTurn && !aura}
+                                dimmed={isSpent(piece) && !aura}
                             />
                             <Typography sx={{ color: aura ? AURA_PALETTE[aura].color : palette.initiative.idleId, fontSize: 10 }}>
                                 {piece.id}

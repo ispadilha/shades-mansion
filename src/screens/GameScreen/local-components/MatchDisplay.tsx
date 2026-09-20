@@ -25,6 +25,7 @@ import { findApproachCell, lineOfFire, pathLength } from "../../../logic/movemen
 import { nextTurnIndex } from "../../../logic/initiative"
 import { attackArea, type FireBurst } from "../../../logic/combat"
 import type { Skill } from "../../../logic/skills"
+import { hasSkillLeft, turnStageOf } from "../../../logic/turn"
 import type { MatchSetup } from "../../../logic/setup"
 import { useAiTurn } from "../../../hooks/useAiTurn"
 import { useBoardCamera, type CameraFocus } from "../../../hooks/useBoardCamera"
@@ -163,7 +164,12 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     }, [manipulatedId, manipulation, rolls.resolving, focusHeldUntil])
 
     // Casas destacadas pela seleção: até onde a peça anda e o que ela alcança
-    const highlighted = useHighlightedCells(selectedId, pieces, maze, activeSkill?.ranged === true)
+    // A peça selecionada ainda tem a ação comum? É isso que decide se há casas destacadas.
+    const selectedPiece = pieces.find((p) => p.id === selectedId) ?? null
+    const highlighted = useHighlightedCells(selectedId, pieces, maze, {
+        rangedSkill: activeSkill?.ranged === true,
+        basicAvailable: selectedPiece !== null && (!selectedPiece.movedThisTurn || manipulation !== null),
+    })
 
     // Retorna a chave de ação adequada (mover vs coletar) consultando se há item no destino.
     // O log da coleta é registrado no ato da decisão (no callsite), não na coleta em si.
@@ -179,14 +185,19 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         setManipulation(null)
         setActiveSkill(null)
 
+        const endingId = turnOrder[turnIndex]
         const inPlay = new Set(pieces.map((p) => p.id))
         const next = nextTurnIndex(turnOrder, (id) => inPlay.has(id), turnIndex)
         if (!next) return
 
-        if (next.newRound) {
-            setPieces((prev) => prev.map((p) => ({ ...p, movedThisTurn: false })))
-            setRound((prev) => prev + 1)
-        }
+        setPieces((prev) =>
+            next.newRound
+                ? // Rodada nova: todas recomeçam com as duas ações (comum e habilidade)
+                  prev.map((p) => ({ ...p, movedThisTurn: false, usedSkillThisTurn: false }))
+                : // Encerrar fecha a vez da peça: se tinha habilidade disponível e não usou, perdeu
+                  prev.map((p) => (p.id === endingId ? { ...p, movedThisTurn: true, usedSkillThisTurn: true } : p)),
+        )
+        if (next.newRound) setRound((prev) => prev + 1)
         setTurnIndex(next.index)
     }
 
@@ -267,8 +278,9 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
             setSelectedId(null)
             return
         }
-        // A peça da vez que já agiu não pode ser re-selecionada (só lhe resta encerrar o turno)
-        if (clickedPiece.id === activePiece?.id && clickedPiece.movedThisTurn) {
+        // Só a peça que esgotou tudo é que não se seleciona mais:
+        // quem gastou a ação comum mas ainda tem habilidade, continua disponível
+        if (clickedPiece.id === activePiece?.id && turnStageOf(clickedPiece) === "spent") {
             setSelectedId(null)
             return
         }
@@ -292,7 +304,6 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
 
         const targetPiece = atPosition(pieces, pos)
         const itemAtPos = atPosition(items, pos)
-        const selectedPiece = pieces.find((p) => p.id === selectedId)
 
         // Quem age é a peça da vez. Durante a manipulação, a peça-alvo é tratada
         // como "própria" para efeitos da ação forçada.
@@ -302,9 +313,9 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         const isOwnSelection =
             !readOnly &&
             !!selectedPiece &&
-            (isManipulating
-                ? selectedPiece.id === manipulation.itemKey
-                : selectedPiece.id === activePiece?.id && !selectedPiece.movedThisTurn)
+            (isManipulating ? selectedPiece.id === manipulation.itemKey : selectedPiece.id === activePiece?.id)
+        // A ação comum é uma só por turno, habilidade é outra coisa e não depende dela
+        const hasBasicAction = isOwnSelection && (isManipulating || !selectedPiece!.movedThisTurn)
         const inMoveRange = includesPosition(highlighted.move, pos)
 
         // Com habilidade em uso a peça só pode mirar e olhar
@@ -313,8 +324,8 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
 
         const canInfo = !!targetPiece && (!selectedId || usingSkill) && !isManipulating
         const canItemInfo = !selectedId && !targetPiece && !!itemAtPos && !isManipulating
-        const canMove = !usingSkill && isOwnSelection && !targetPiece && !itemAtPos && inMoveRange
-        const canCollect = !usingSkill && isOwnSelection && !targetPiece && !!itemAtPos && inMoveRange
+        const canMove = !usingSkill && hasBasicAction && !targetPiece && !itemAtPos && inMoveRange
+        const canCollect = !usingSkill && hasBasicAction && !targetPiece && !!itemAtPos && inMoveRange
 
         // Alvo legítimo: peça inimiga, ou qualquer uma durante manipulação
         const hitsPiece =
@@ -324,7 +335,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
             (isManipulating || targetPiece.color !== selectedPiece.color)
 
         // Ataque básico corpo a corpo
-        const canAttack = !usingSkill && isOwnSelection && hitsPiece && canHitTarget(selectedPiece!, targetPiece!, false)
+        const canAttack = !usingSkill && hasBasicAction && hitsPiece && canHitTarget(selectedPiece!, targetPiece!, false)
         // Habilidade
         const canSkill =
             usingSkill &&
@@ -423,7 +434,14 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         const forcedBy = manipulation ? activeColor : null
         setPieces((prev) =>
             prev.map((p) =>
-                p.id === attacker.id ? { ...p, position: newPos, movedThisTurn: p.movedThisTurn || !forcedBy } : p,
+                p.id === attacker.id
+                    ? {
+                          ...p,
+                          position: newPos,
+                          movedThisTurn: p.movedThisTurn || (!forcedBy && !skill),
+                          usedSkillThisTurn: p.usedSkillThisTurn || skill !== null,
+                      }
+                    : p,
             ),
         )
         if (!ranged) schedulePickup(attacker.color, newPos, delayMs)
@@ -457,7 +475,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     // Peça que já agiu só é mostrada, não selecionada.
     const focusActivePiece = () => {
         if (!activePiece || !isPlayerTurn || rolls.resolving || manipulation) return false
-        if (!activePiece.movedThisTurn) setSelectedId(activePiece.id)
+        if (turnStageOf(activePiece) !== "spent") setSelectedId(activePiece.id)
         setCameraNudge((nudge) => nudge + 1)
         return true
     }
@@ -626,7 +644,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
                 open={skillsOpen}
                 onClose={() => setSkillsOpen(false)}
                 piece={activePiece}
-                disabled={!isPlayerTurn || activePiece?.movedThisTurn === true || rolls.resolving}
+                disabled={!isPlayerTurn || rolls.resolving || !activePiece || !hasSkillLeft(activePiece)}
                 onUse={handleUseSkill}
             />
 

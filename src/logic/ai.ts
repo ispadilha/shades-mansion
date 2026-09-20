@@ -79,7 +79,7 @@ export class SimpleAI {
         if (possibleMoves.length > 0) {
             const randomMove = pickRandom(possibleMoves)
             const updatedPieces = pieces.map((p) =>
-                p.id === activePiece.id ? { ...p, position: randomMove, movedThisTurn: true } : p,
+                p.id === activePiece.id ? { ...p, position: randomMove, movedThisTurn: true, usedSkillThisTurn: true } : p,
             )
             return { updatedPieces }
         }
@@ -87,7 +87,7 @@ export class SimpleAI {
         // Sem ataque nem movimento possível: a peça está presa entre paredes e outras peças.
         // Ela passa a vez — do contrário o turno ficaria travado esperando uma ação que
         // nunca acontece.
-        return { updatedPieces: pieces.map((p) => (p.id === activePiece.id ? { ...p, movedThisTurn: true } : p)) }
+        return { updatedPieces: pieces.map((p) => (p.id === activePiece.id ? { ...p, movedThisTurn: true, usedSkillThisTurn: true } : p)) }
     }
 
     // Para cada item de manipulação no inventário, verifica se a peça correspondente
@@ -168,7 +168,7 @@ export class SimpleAI {
 
         if (bestDist >= distance) return null
 
-        const updatedPieces = pieces.map((p) => (p.id === piece.id ? { ...p, position: bestCell, movedThisTurn: true } : p))
+        const updatedPieces = pieces.map((p) => (p.id === piece.id ? { ...p, position: bestCell, movedThisTurn: true, usedSkillThisTurn: true } : p))
         return { updatedPieces }
     }
 
@@ -181,7 +181,7 @@ export class SimpleAI {
     ): AIMoveResult {
         const moveSteps = pathLength(attacker.position, approach, maze)
         const area = attackArea(attacker, target.position)
-        const updatedPieces = pieces.map((p) => (p.id === attacker.id ? { ...p, position: approach, movedThisTurn: true } : p))
+        const updatedPieces = pieces.map((p) => (p.id === attacker.id ? { ...p, position: approach, movedThisTurn: true, usedSkillThisTurn: true } : p))
         return {
             updatedPieces,
             pendingAttack: {

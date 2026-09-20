@@ -574,6 +574,11 @@ export const texts_ui = {
         ptBR: "desviou de",
     },
 
+    alreadyMoved: {
+        enUS: "Already moved",
+        ptBR: "Já se moveu",
+    },
+
     alreadyActed: {
         enUS: "Already acted",
         ptBR: "Já agiu",
