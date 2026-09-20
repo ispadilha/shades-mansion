@@ -6,7 +6,8 @@ import { positionKey } from "./grid"
 import { pickRandom } from "./random"
 import type { Maze } from "./maze"
 import { alliesInBlast, attackArea, type PendingAttack } from "./combat"
-import { ACTION_SETTLE_MS, STEP_MS, isRanged, statsFor } from "../constants/rules"
+import { hasRangedSkill } from "./skills"
+import { ACTION_SETTLE_MS, STEP_MS, statsFor } from "../constants/rules"
 
 export interface AIMoveResult {
     updatedPieces: PieceDefinition[]
@@ -208,7 +209,7 @@ export class SimpleAI {
         const sparesAllies = (target: PieceDefinition) =>
             alliesInBlast(myPiece, target, pieces, maze, friendlyColor).length === 0
 
-        if (isRanged(myPiece.type)) {
+        if (hasRangedSkill(myPiece.type)) {
             const { targets } = lineOfFire(myPiece, pieces, maze, range)
             return targets
                 .filter((target) => enemyPieces.some((e) => e.id === target.id))

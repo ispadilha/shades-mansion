@@ -66,28 +66,22 @@ export interface PieceStats {
     dodge: number
     // Aparo (dano parcial)
     guard: number
-    ranged?: boolean
-    areaAttack?: boolean
 }
 
 export const PIECE_STATS: Record<PieceType, PieceStats> = {
-    // Ágil: pouco vigor e pouco dano, mas é a única que desvia totalmente com frequência
+    // "Ágil"
     A: { moveRange: 9, attackRange: 7, maxVigor: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
-    // Balanceada: sem esquiva total, apara quase metade dos golpes
+    // "Balanceada"
     B: { moveRange: 7, attackRange: 5, maxVigor: 12, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 12 },
-    // Campeã: mais vigor e o maior golpe do jogo, mas menor movimento
+    // "Campeã"
     C: { moveRange: 5, attackRange: 3, maxVigor: 16, damage: { count: 2, sides: 8 }, dodge: NO_DODGE, guard: 14 },
-    // Atiradora: acerta de longe, mas é a mais frágil depois da ágil
-    D: { moveRange: 5, attackRange: 7, maxVigor: 10, damage: { count: 1, sides: 6 }, dodge: 18, guard: 14, ranged: true },
-    // Exótica: entre a balanceada e a campeã, com um resto de esquiva
+    // "Distância"
+    D: { moveRange: 5, attackRange: 7, maxVigor: 10, damage: { count: 1, sides: 6 }, dodge: 18, guard: 14 },
+    // "Exótica"
     E: { moveRange: 7, attackRange: 5, maxVigor: 13, damage: { count: 1, sides: 8 }, dodge: 20, guard: 13 },
-    // Incendiária: ataque em área, que pode alcançar várias peças de uma vez
-    F: { moveRange: 5, attackRange: 5, maxVigor: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13, ranged: true, areaAttack: true },
+    // "Fogo"
+    F: { moveRange: 5, attackRange: 5, maxVigor: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13 },
 }
-
-export const isRanged = (type: PieceType) => PIECE_STATS[type].ranged === true
-
-export const isAreaAttack = (type: PieceType) => PIECE_STATS[type].areaAttack === true
 
 export const canDodge = (type: PieceType) => PIECE_STATS[type].dodge <= 20
 
@@ -174,6 +168,9 @@ export const MAX_FIRE_BURSTS = 8
 
 // Quanto tempo a câmera fica presa no item que caiu de volta no tabuleiro
 export const ITEM_DROP_HOLD_MS = 1000
+
+// Tempo para a câmera ir até a peça que vai usar habilidade, antes de abrir o modal
+export const SKILL_MODAL_DELAY_MS = 500
 
 // Quanto a partida espera a animação de um golpe antes de seguir
 export const ATTACK_EFFECT_HOLD_MS = 1000

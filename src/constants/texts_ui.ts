@@ -224,14 +224,55 @@ export const texts_ui = {
         ptBR: "Corpo a corpo",
     },
 
-    attackStyleRanged: {
-        enUS: "Ranged",
-        ptBR: "À distância",
-    },
-
     attackArea: {
         enUS: "Area of effect",
         ptBR: "Área de efeito",
+    },
+
+    // Habilidades: o botão do HUD, a lista, a faixa de aviso e o que o menu oferece
+    skills: {
+        enUS: "Skills",
+        ptBR: "Habilidades",
+    },
+
+    skill: {
+        enUS: "Skill",
+        ptBR: "Habilidade",
+    },
+
+    skillNone: {
+        enUS: "None",
+        ptBR: "Nenhuma",
+    },
+
+    skillLongShot: {
+        enUS: "Long shot",
+        ptBR: "Tiro longo",
+    },
+
+    skillFire: {
+        enUS: "Fire",
+        ptBR: "Incêndio",
+    },
+
+    skillShoot: {
+        enUS: "Shoot",
+        ptBR: "Atirar",
+    },
+
+    skillBurn: {
+        enUS: "Fire",
+        ptBR: "Incendiar",
+    },
+
+    usingSkill: {
+        enUS: "Using skill",
+        ptBR: "Usando habilidade",
+    },
+
+    cancelSkill: {
+        enUS: "Cancel skill",
+        ptBR: "Cancelar habilidade",
     },
 
     turn: {

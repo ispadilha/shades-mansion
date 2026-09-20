@@ -9,17 +9,19 @@ interface HudActionsProps {
     busy: boolean
     spectating: boolean
     inventoryCount: number
+    onOpenSkills: () => void
     onOpenInventory: () => void
     onEndTurn: () => void
     onQuit: () => void
 }
 
-// Os botões do HUD: inventário, encerrar o turno e sair da partida
+// Os botões do HUD: habilidades, inventário, encerrar o turno e sair da partida
 export const HudActions: React.FC<HudActionsProps> = ({
     isPlayerTurn,
     busy,
     spectating,
     inventoryCount,
+    onOpenSkills,
     onOpenInventory,
     onEndTurn,
     onQuit,
@@ -32,6 +34,19 @@ export const HudActions: React.FC<HudActionsProps> = ({
             {/* Quem só assiste não tem inventário nem turno para encerrar */}
             {!spectating && (
                 <>
+                    {/* Habilidade é ação da peça da vez, então só o dono da vez abre a lista */}
+                    <Button
+                        onClick={onOpenSkills}
+                        variant="outlined"
+                        disabled={!isPlayerTurn || busy}
+                        sx={{
+                            color: palette.hud.text,
+                            borderColor: palette.hud.outline,
+                            "&:disabled": { color: palette.hud.endTurnDisabledText },
+                        }}
+                    >
+                        {t("skills")}
+                    </Button>
                     <Button
                         onClick={onOpenInventory}
                         variant="outlined"

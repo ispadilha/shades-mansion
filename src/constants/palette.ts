@@ -47,10 +47,8 @@ export const TEAM_BUTTON_PALETTE: Record<PieceColor, { bg: string; text: string;
     dark: { bg: "#111111", text: "#ffffff", outline: "#dedede" },
 }
 
-// A cor da manipulação é a mesma nos três modos: é estado de jogo, e o brilho sobre a
-// peça manipulada é desenhado pelo Phaser. A faixa do HUD acompanha o modo (mais abaixo),
-// mas nasce deste mesmo rosa.
 const MANIPULATION_GLOW = "#c2185b"
+const SKILL_GLOW = "#1e88e5"
 
 export interface AuraPalette {
     color: string
@@ -62,6 +60,7 @@ export interface AuraPalette {
 export const AURA_PALETTE: Record<AuraKind, AuraPalette> = {
     active: { color: "#ffd700", strength: 0.55, radius: 0.62, pulseMs: 1200 },
     manipulated: { color: MANIPULATION_GLOW, strength: 0.7, radius: 0.68, pulseMs: 700 },
+    skill: { color: SKILL_GLOW, strength: 0.7, radius: 0.68, pulseMs: 900 },
 }
 
 export const VIGOR_PALETTE = {
@@ -165,6 +164,13 @@ const dark = {
         bandBg: "#2e0f1d",
         bandText: "#f06292",
         bandOutline: "#8c2751",
+    },
+
+    skill: {
+        glow: SKILL_GLOW,
+        bandBg: "#0e2133",
+        bandText: "#6cb8f7",
+        bandOutline: "#1f5f92",
     },
 
     roll: {
@@ -272,6 +278,13 @@ const light: Palette = {
         bandOutline: "#8f4265",
     },
 
+    skill: {
+        glow: SKILL_GLOW,
+        bandBg: "#9fb4c6",
+        bandText: "#0c2135",
+        bandOutline: "#3d688c",
+    },
+
     roll: {
         backdrop: "rgba(0,0,0,0.55)",
         bg: "#b8a69c",
@@ -373,6 +386,13 @@ const gray: Palette = {
         bandBg: "#33202a",
         bandText: "#f06292",
         bandOutline: "#8c2751",
+    },
+
+    skill: {
+        glow: SKILL_GLOW,
+        bandBg: "#1a2c3e",
+        bandText: "#6cb8f7",
+        bandOutline: "#1f5f92",
     },
 
     roll: {

@@ -6,6 +6,7 @@ import { HUD } from "./HUD"
 import { InventoryModal } from "./InventoryModal"
 import { ItemInfoModal } from "./ItemInfoModal"
 import { PieceInfoModal } from "./PieceInfoModal"
+import { SkillsModal } from "./SkillsModal"
 import { RollModal } from "../../../components/rolls"
 import { ScreenLayout } from "../../../components/ui"
 import type {
@@ -23,6 +24,7 @@ import { atPosition, includesPosition } from "../../../logic/grid"
 import { findApproachCell, lineOfFire, pathLength } from "../../../logic/movement"
 import { nextTurnIndex } from "../../../logic/initiative"
 import { attackArea, type FireBurst } from "../../../logic/combat"
+import type { Skill } from "../../../logic/skills"
 import type { MatchSetup } from "../../../logic/setup"
 import { useAiTurn } from "../../../hooks/useAiTurn"
 import { useBoardCamera, type CameraFocus } from "../../../hooks/useBoardCamera"
@@ -34,7 +36,7 @@ import { useGameLog } from "../../../hooks/useGameLog"
 import { useHighlightedCells } from "../../../hooks/useHighlightedCells"
 import { useMatchItems } from "../../../hooks/useMatchItems"
 import { useRolls } from "../../../hooks/useRolls"
-import { ACTION_SETTLE_MS, ITEM_DROP_HOLD_MS, STEP_MS, isAreaAttack, isRanged, statsFor } from "../../../constants/rules"
+import { ACTION_SETTLE_MS, ITEM_DROP_HOLD_MS, SKILL_MODAL_DELAY_MS, STEP_MS, statsFor } from "../../../constants/rules"
 
 interface MatchDisplayProps {
     match: MatchSetup
@@ -74,6 +76,22 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const [contextMenu, setContextMenu] = useState<BoardMenuState | null>(null)
     // Item que acabou de cair de volta no tabuleiro: a câmera para em cima dele
     const [droppedItem, setDroppedItem] = useState<MotivationItem | null>(null)
+    const [skillsOpen, setSkillsOpen] = useState(false)
+    // Habilidade em uso: 
+    // a peça fica selecionada e o menu mostra a habilidade no lugar do ataque comum
+    const [activeSkill, setActiveSkill] = useState<Skill | null>(null)
+    // A câmera só se mexe quando a chave do foco muda. Este contador entra na chave para
+    // o botão de habilidades conseguir trazê-la de volta à peça da vez, mesmo que ela já
+    // fosse o foco e o jogador tenha passeado com a tela.
+    const [cameraNudge, setCameraNudge] = useState(0)
+
+    // A espera entre o clique em "habilidades" e o modal abrir
+    const skillTimerRef = useRef<number | null>(null)
+    useEffect(() => {
+        return () => {
+            if (skillTimerRef.current !== null) clearTimeout(skillTimerRef.current)
+        }
+    }, [])
 
     const log = useGameLog()
     const rolls = useRolls()
@@ -96,7 +114,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
 
     const scrollRef = useRef<HTMLDivElement>(null)
     useEdgeScroll(scrollRef, {
-        enabled: contextMenu === null && !infoPiece && !inventoryOpen && rolls.current === null,
+        enabled: contextMenu === null && !infoPiece && !inventoryOpen && !skillsOpen && rolls.current === null,
     })
 
     // Câmera: começa perto da base do jogador (quem comanda todos os times ou só assiste
@@ -109,7 +127,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const cameraFocus: CameraFocus | undefined = droppedItem
         ? { key: droppedItem.id, position: droppedItem.position }
         : focusPiece && {
-              key: manipulatedId ? `${focusPiece.id}:${focusPiece.position.x},${focusPiece.position.y}` : focusPiece.id,
+              key: `${manipulatedId ? `${focusPiece.id}:${focusPiece.position.x},${focusPiece.position.y}` : focusPiece.id}#${cameraNudge}`,
               position: focusPiece.position,
           }
     useBoardCamera(scrollRef, {
@@ -136,7 +154,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     }, [manipulatedId, manipulation, rolls.resolving, focusHeldUntil])
 
     // Casas destacadas pela seleção: até onde a peça anda e o que ela alcança
-    const highlighted = useHighlightedCells(selectedId, pieces, maze)
+    const highlighted = useHighlightedCells(selectedId, pieces, maze, activeSkill?.ranged === true)
 
     // Retorna a chave de ação adequada (mover vs coletar) consultando se há item no destino.
     // O log da coleta é registrado no ato da decisão (no callsite), não na coleta em si.
@@ -150,6 +168,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const endTurn = () => {
         setSelectedId(null)
         setManipulation(null)
+        setActiveSkill(null)
 
         const inPlay = new Set(pieces.map((p) => p.id))
         const next = nextTurnIndex(turnOrder, (id) => inPlay.has(id), turnIndex)
@@ -232,7 +251,8 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     }, [pieces, navigate, setWinner])
 
     const onCellClick = (pos: PiecePosition) => {
-        if (!activeColor || manipulation) return
+        // Com habilidade em uso a peça fica travada: sair dela é só pelo botão de cancelar
+        if (!activeColor || manipulation || activeSkill) return
         const clickedPiece = atPosition(pieces, pos)
         if (!clickedPiece) {
             setSelectedId(null)
@@ -246,12 +266,11 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         setSelectedId((prev) => (prev === clickedPiece.id ? null : clickedPiece.id))
     }
 
-    // Peças de ataque à distância atingem quem estiver na mira, com a linha de tiro livre
-    // (paredes e outras peças cobrem o alvo).
-    // As demais precisam de uma casa livre adjacente ao alvo.
-    const canHitTarget = (attacker: PieceDefinition, target: PieceDefinition) => {
+    // Ataque básico corpo a corpo: precisa de uma casa livre ao lado do alvo.
+    // Alcançar de longe é habilidade, e aí o que vale é a linha de tiro livre
+    const canHitTarget = (attacker: PieceDefinition, target: PieceDefinition, ranged: boolean) => {
         const { attackRange } = statsFor(attacker.type, attacker.level)
-        if (isRanged(attacker.type)) {
+        if (ranged) {
             return lineOfFire(attacker, pieces, maze, attackRange).targets.some((t) => t.id === target.id)
         }
         return findApproachCell(attacker, target, pieces, maze, attackRange) !== null
@@ -279,19 +298,31 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
                 : selectedPiece.id === activePiece?.id && !selectedPiece.movedThisTurn)
         const inMoveRange = includesPosition(highlighted.move, pos)
 
-        const canInfo = !selectedId && !!targetPiece && !isManipulating
+        // Com habilidade em uso a peça só pode mirar e olhar
+        // Mover ou atacar gastaria a ação e jogaria a habilidade fora
+        const usingSkill = activeSkill !== null
+
+        const canInfo = !!targetPiece && (!selectedId || usingSkill) && !isManipulating
         const canItemInfo = !selectedId && !targetPiece && !!itemAtPos && !isManipulating
-        const canMove = isOwnSelection && !targetPiece && !itemAtPos && inMoveRange
-        const canCollect = isOwnSelection && !targetPiece && !!itemAtPos && inMoveRange
-        // Ataque em uma peça: durante manipulação, o alvo pode ser de qualquer cor.
-        // Ataque no chão: só a peça incendiária, e só em casa dentro da linha de tiro dela.
-        const canAttack =
+        const canMove = !usingSkill && isOwnSelection && !targetPiece && !itemAtPos && inMoveRange
+        const canCollect = !usingSkill && isOwnSelection && !targetPiece && !!itemAtPos && inMoveRange
+
+        // Alvo legítimo: peça inimiga, ou qualquer uma durante manipulação
+        const hitsPiece =
+            !!targetPiece &&
+            !!selectedPiece &&
+            targetPiece.id !== selectedPiece.id &&
+            (isManipulating || targetPiece.color !== selectedPiece.color)
+
+        // Ataque básico corpo a corpo
+        const canAttack = !usingSkill && isOwnSelection && hitsPiece && canHitTarget(selectedPiece!, targetPiece!, false)
+        // Habilidade
+        const canSkill =
+            usingSkill &&
             isOwnSelection &&
             (targetPiece
-                ? targetPiece.id !== selectedPiece!.id &&
-                  (isManipulating || targetPiece.color !== selectedPiece!.color) &&
-                  canHitTarget(selectedPiece!, targetPiece)
-                : isAreaAttack(selectedPiece!.type) && includesPosition(highlighted.attack, pos))
+                ? hitsPiece && canHitTarget(selectedPiece!, targetPiece, activeSkill.ranged)
+                : activeSkill.area && includesPosition(highlighted.attack, pos))
 
         const actions: BoardAction[] = []
         if (canInfo) actions.push("info")
@@ -299,9 +330,18 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         if (canMove) actions.push("move")
         if (canCollect) actions.push("collect")
         if (canAttack) actions.push("attack")
+        if (canSkill) actions.push("skill")
         if (actions.length === 0) return
 
-        setContextMenu({ mouseX: event.clientX, mouseY: event.clientY, position: pos, targetPiece, itemAtPos, actions })
+        setContextMenu({
+            mouseX: event.clientX,
+            mouseY: event.clientY,
+            position: pos,
+            targetPiece,
+            itemAtPos,
+            actions,
+            ...(activeSkill ? { skillAction: activeSkill.action } : {}),
+        })
     }
 
     const closeContextMenu = () => setContextMenu(null)
@@ -341,18 +381,23 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
     const handleMove = () => contextMenu?.position && moveSelectedTo(contextMenu.position)
     const handleCollect = () => contextMenu?.position && moveSelectedTo(contextMenu.position)
 
-    const handleAttack = () => {
+    // O mesmo caminho serve ao golpe básico e à habilidade
+    const performAttack = (viaSkill: boolean) => {
         if (!selectedId || !contextMenu || !activeColor) return
         const attacker = pieces.find((p) => p.id === selectedId)
         if (!attacker) return
 
+        const skill = viaSkill ? activeSkill : null
+
         // O golpe cai em uma casa, que pode ou não ter uma peça em cima
+        // Mirar o chão é só para habilidade que atinge área
         const target = contextMenu.targetPiece
-        const area = attackArea(attacker, target?.position ?? contextMenu.position)
+        const area = skill?.area ? attackArea(attacker, target?.position ?? contextMenu.position) : undefined
         if (!target && !area) return
 
-        // Ataque à distância acerta de onde a peça está. Os outros tipos se aproximam do alvo antes.
-        const ranged = isRanged(attacker.type)
+        // Habilidade de alcance acerta de onde a peça está
+        // Para golpe básico, se aproxima antes
+        const ranged = skill?.ranged === true
         const newPos =
             ranged || !target
                 ? attacker.position
@@ -369,6 +414,7 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         )
         if (!ranged) schedulePickup(attacker.color, newPos, delayMs)
         setSelectedId(null)
+        setActiveSkill(null)
         closeContextMenu()
 
         // Sem peça mirada não há alvo para nomear no histórico
@@ -389,6 +435,29 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
             ...(area ? { area } : {}),
             ...(forcedBy ? { consumedItemKey: attacker.id as MotivationItemKey, consumerColor: forcedBy } : {}),
         })
+    }
+
+    // Botão "habilidades": seleciona a peça da vez e a centraliza na câmera
+    const handleOpenSkills = () => {
+        if (!activePiece || !isPlayerTurn || rolls.resolving || manipulation) return
+        setSelectedId(activePiece.id)
+        setCameraNudge((nudge) => nudge + 1)
+
+        if (skillTimerRef.current !== null) clearTimeout(skillTimerRef.current)
+        skillTimerRef.current = window.setTimeout(() => {
+            skillTimerRef.current = null
+            setSkillsOpen(true)
+        }, SKILL_MODAL_DELAY_MS)
+    }
+
+    const handleUseSkill = (skill: Skill) => {
+        setSkillsOpen(false)
+        setActiveSkill(skill)
+    }
+
+    const cancelSkill = () => {
+        setActiveSkill(null)
+        setSelectedId(null)
     }
 
     const handleShowInfo = () => {
@@ -442,14 +511,17 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
         setSelectedId(null)
     }
 
-    // Destaques do tabuleiro: a peça da vez e, por cima dela, a que está sob manipulação
+    // Destaques do tabuleiro ("auras")
+    // Tanto o tabuleiro como o HUD desenham
     const activePieceId = activePiece?.id ?? null
+    const skillPieceId = activeSkill ? selectedId : null
     const auras = useMemo<PieceAuras>(() => {
         const result: PieceAuras = {}
         if (activePieceId) result[activePieceId] = "active"
+        if (skillPieceId) result[skillPieceId] = "skill"
         if (manipulatedId) result[manipulatedId] = "manipulated"
         return result
-    }, [activePieceId, manipulatedId])
+    }, [activePieceId, skillPieceId, manipulatedId])
 
     const playerInventory = inventoryColor ? inventories[inventoryColor] : []
 
@@ -482,9 +554,13 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
                 onOpenInventory={() => setInventoryOpen(true)}
                 inventoryCount={playerInventory.length}
                 log={log.entries}
-                manipulatedId={manipulatedId}
+                auras={auras}
                 manipulationKey={manipulation?.itemKey ?? null}
                 onCancelManipulation={cancelManipulation}
+                onOpenSkills={handleOpenSkills}
+                activeSkill={activeSkill}
+                skillPieceId={skillPieceId}
+                onCancelSkill={cancelSkill}
             />
 
             <BoardContextMenu
@@ -494,10 +570,19 @@ export const MatchDisplay: React.FC<MatchDisplayProps> = ({ match }) => {
                 onShowItemInfo={handleShowItemInfo}
                 onMove={handleMove}
                 onCollect={handleCollect}
-                onAttack={handleAttack}
+                onAttack={() => performAttack(false)}
+                onSkill={() => performAttack(true)}
             />
 
             <PieceInfoModal piece={infoPiece} onClose={() => setInfoPiece(null)} />
+
+            <SkillsModal
+                open={skillsOpen}
+                onClose={() => setSkillsOpen(false)}
+                piece={activePiece}
+                disabled={!isPlayerTurn || activePiece?.movedThisTurn === true || rolls.resolving}
+                onUse={handleUseSkill}
+            />
 
             <ItemInfoModal
                 open={itemInfoKey !== null}

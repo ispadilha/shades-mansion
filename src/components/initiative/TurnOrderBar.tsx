@@ -1,7 +1,7 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
 import { PieceToken } from "../pieces"
-import type { AuraKind, PieceDefinition } from "../../logic/types"
+import type { PieceAuras, PieceDefinition } from "../../logic/types"
 import { useLanguage } from "../../hooks/useLanguage"
 import { usePalette } from "../../hooks/usePalette"
 import { AURA_PALETTE } from "../../constants/palette"
@@ -9,13 +9,11 @@ import { AURA_PALETTE } from "../../constants/palette"
 interface TurnOrderBarProps {
     // Peças ainda em jogo, já na ordem de iniciativa
     order: PieceDefinition[]
-    activeId: string | null
-    // Peça sob manipulação
-    manipulatedId: string | null
+    auras: PieceAuras
     round: number
 }
 
-export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, activeId, manipulatedId, round }) => {
+export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, round }) => {
     const palette = usePalette()
     const { t } = useLanguage()
 
@@ -37,8 +35,7 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, activeId, man
                 }}
             >
                 {order.map((piece) => {
-                    const aura: AuraKind | null =
-                        piece.id === manipulatedId ? "manipulated" : piece.id === activeId ? "active" : null
+                    const aura = auras[piece.id] ?? null
 
                     return (
                         <Box

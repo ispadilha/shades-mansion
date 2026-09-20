@@ -1,10 +1,10 @@
 import React from "react"
 import { Menu, MenuItem } from "@mui/material"
-import type { PieceDefinition, PiecePosition, MotivationItem } from "../../../logic/types"
+import type { PieceDefinition, PiecePosition, MotivationItem, TextKey } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
 
 // As ações que uma casa oferece. Quais valem é decidido na hora de abrir o menu.
-export type BoardAction = "info" | "itemInfo" | "move" | "collect" | "attack"
+export type BoardAction = "info" | "itemInfo" | "move" | "collect" | "attack" | "skill"
 
 // A casa em que o jogador clicou com o botão direito, e o que havia nela
 export interface BoardMenuState {
@@ -14,6 +14,9 @@ export interface BoardMenuState {
     targetPiece?: PieceDefinition
     itemAtPos?: MotivationItem
     actions: BoardAction[]
+    // Como a ação da habilidade se chama nesta casa ("atirar", "incendiar"):
+    // cada habilidade traz o próprio rótulo
+    skillAction?: TextKey
 }
 
 interface BoardContextMenuProps {
@@ -24,6 +27,7 @@ interface BoardContextMenuProps {
     onMove: () => void
     onCollect: () => void
     onAttack: () => void
+    onSkill: () => void
 }
 
 export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
@@ -34,6 +38,7 @@ export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
     onMove,
     onCollect,
     onAttack,
+    onSkill,
 }) => {
     const { t } = useLanguage()
 
@@ -51,6 +56,7 @@ export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
             {has("move") && <MenuItem onClick={onMove}>{t("move")}</MenuItem>}
             {has("collect") && <MenuItem onClick={onCollect}>{t("collect")}</MenuItem>}
             {has("attack") && <MenuItem onClick={onAttack}>{t("attack")}</MenuItem>}
+            {has("skill") && menu?.skillAction && <MenuItem onClick={onSkill}>{t(menu.skillAction)}</MenuItem>}
         </Menu>
     )
 }

@@ -4,7 +4,8 @@ import { ModalCard } from "../../../components/ui"
 import type { PieceDefinition } from "../../../logic/types"
 import { diceLabel } from "../../../logic/rolls"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { DEFENSE_DIE, FIRE_AREA_SIDE, canDodge, isAreaAttack, isRanged, statsFor } from "../../../constants/rules"
+import { skillFor } from "../../../logic/skills"
+import { DEFENSE_DIE, FIRE_AREA_SIDE, canDodge, statsFor } from "../../../constants/rules"
 
 // O número que o d20 da defesa precisa alcançar
 const defenseTarget = (target: number) => `d${DEFENSE_DIE} ≥ ${target}`
@@ -13,6 +14,7 @@ const defenseTarget = (target: number) => `d${DEFENSE_DIE} ≥ ${target}`
 const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
     const { t, tTeam } = useLanguage()
     const stats = statsFor(piece.type, piece.level)
+    const skill = skillFor(piece.type)
 
     return (
         <>
@@ -29,9 +31,9 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
             </Typography>
             <Typography>{t("guard")}: {defenseTarget(stats.guard)}</Typography>
             <Typography>
-                {t("attackStyle")}: {t(isRanged(piece.type) ? "attackStyleRanged" : "attackStyleMelee")}
+                {t("skill")}: {skill ? t(skill.name) : t("skillNone")}
             </Typography>
-            {isAreaAttack(piece.type) && (
+            {skill?.area && (
                 <Typography>
                     {t("attackArea")}: {FIRE_AREA_SIDE} × {FIRE_AREA_SIDE}
                 </Typography>

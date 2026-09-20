@@ -2,7 +2,7 @@ import { useEffect, useState } from "react"
 import type { PieceDefinition, PiecePosition } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { lineOfFire, meleeAttackCells, reachableCells } from "../logic/movement"
-import { isRanged, statsFor } from "../constants/rules"
+import { statsFor } from "../constants/rules"
 
 export interface HighlightedCells {
     // Casas em que a peça selecionada pode terminar o movimento
@@ -11,11 +11,14 @@ export interface HighlightedCells {
     attack: PiecePosition[]
 }
 
-// Recalcula as casas destacadas sempre que a seleção (ou o tabuleiro) muda
+// Recalcula as casas destacadas sempre que a seleção (ou o tabuleiro) muda.
+// O alcance depende de como a peça vai agir: por padrão é ataque corpo a corpo,
+// vira linha de tiro quando uma habilidade de alcance está em uso.
 export const useHighlightedCells = (
     selectedId: string | null,
     pieces: PieceDefinition[],
     maze: Maze,
+    rangedSkill: boolean,
 ): HighlightedCells => {
     const [move, setMove] = useState<PiecePosition[]>([])
     const [attack, setAttack] = useState<PiecePosition[]>([])
@@ -32,16 +35,16 @@ export const useHighlightedCells = (
         const stats = statsFor(piece.type, piece.level)
         setMove(reachableCells(piece, pieces, maze, stats.moveRange))
 
-        // Peças de ataque à distância destacam tudo o que estiver na mira:
+        // Habilidade de alcance em uso: destaca tudo o que estiver na mira,
         // as casas até onde a linha de tiro chega livre
-        if (isRanged(piece.type)) {
+        if (rangedSkill) {
             setAttack(lineOfFire(piece, pieces, maze, stats.attackRange).cells)
             return
         }
 
         // Corpo-a-corpo: casas dentro do alcance, contornando as paredes
         setAttack(meleeAttackCells(piece, pieces, maze, stats.attackRange))
-    }, [selectedId, pieces, maze])
+    }, [selectedId, pieces, maze, rangedSkill])
 
     return { move, attack }
 }

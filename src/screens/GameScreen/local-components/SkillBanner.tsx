@@ -1,17 +1,19 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
-import type { MotivationItemKey } from "../../../logic/types"
+import type { Skill } from "../../../logic/skills"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
-interface ManipulationBannerProps {
-    // Peça que está sob manipulação
-    itemKey: MotivationItemKey
+interface SkillBannerProps {
+    // Habilidade em uso
+    skill: Skill
+    // Peça que a está usando
+    pieceId: string
     onCancel: () => void
 }
 
-// Aviso de manipulação enquanto ocorre, sobre o HUD
-export const ManipulationBanner: React.FC<ManipulationBannerProps> = ({ itemKey, onCancel }) => {
+// Aviso de habilidade em uso, sobre o HUD
+export const SkillBanner: React.FC<SkillBannerProps> = ({ skill, pieceId, onCancel }) => {
     const palette = usePalette()
     const { t } = useLanguage()
 
@@ -24,20 +26,20 @@ export const ManipulationBanner: React.FC<ManipulationBannerProps> = ({ itemKey,
                 gap: 2,
                 px: 3,
                 py: 0.75,
-                bgcolor: palette.manipulation.bandBg,
-                borderBottom: `1px solid ${palette.manipulation.bandOutline}`,
+                bgcolor: palette.skill.bandBg,
+                borderBottom: `1px solid ${palette.skill.bandOutline}`,
             }}
         >
-            <Typography sx={{ color: palette.manipulation.bandText, fontSize: 13 }}>
-                {t("manipulatingPiece")}: {itemKey}
+            <Typography sx={{ color: palette.skill.bandText, fontSize: 13 }}>
+                {t("usingSkill")}: {t(skill.name)} ({pieceId})
             </Typography>
             <Button
                 size="small"
                 variant="outlined"
                 onClick={onCancel}
-                sx={{ color: palette.manipulation.bandText, borderColor: palette.manipulation.bandOutline, py: 0.25 }}
+                sx={{ color: palette.skill.bandText, borderColor: palette.skill.bandOutline, py: 0.25 }}
             >
-                {t("cancelManipulation")}
+                {t("cancelSkill")}
             </Button>
         </Box>
     )

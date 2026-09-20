@@ -3,7 +3,8 @@ import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { manhattan, neighbors, positionKey } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
-import { DEFENSE_DIE, FIRE_AREA_SIDE, SUCCESS_FACE, isAreaAttack, statsFor } from "../constants/rules"
+import { hasAreaSkill } from "./skills"
+import { DEFENSE_DIE, FIRE_AREA_SIDE, SUCCESS_FACE, statsFor } from "../constants/rules"
 
 export interface CoinCheck {
     face: CoinFace
@@ -105,7 +106,7 @@ export interface AttackArea {
 }
 
 export const attackArea = (attacker: PieceDefinition, target: PiecePosition): AttackArea | undefined =>
-    isAreaAttack(attacker.type) ? { center: { ...target }, side: FIRE_AREA_SIDE } : undefined
+    hasAreaSkill(attacker.type) ? { center: { ...target }, side: FIRE_AREA_SIDE } : undefined
 
 // Um ataque já decidido (alvo ou casa escolhidos, atacante a caminho) esperando os dados.
 // `delayMs` é o tempo que o atacante leva para chegar até o alvo — os dados só são
