@@ -1,17 +1,15 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Box, Button, Typography } from "@mui/material"
 import { keyframes } from "@emotion/react"
-import { HUD_BANNER_SLIDE_MS } from "../../../constants/rules"
-
-const BANNER_HEIGHT = 40
+import { HUD_BANNER_HEIGHT, HUD_BANNER_SLIDE_MS } from "../../../constants/rules"
 
 const unroll = keyframes`
     from { height: 0 }
-    to { height: ${BANNER_HEIGHT}px }
+    to { height: ${HUD_BANNER_HEIGHT}px }
 `
 
 const rollBack = keyframes`
-    from { height: ${BANNER_HEIGHT}px }
+    from { height: ${HUD_BANNER_HEIGHT}px }
     to { height: 0 }
 `
 
@@ -67,7 +65,7 @@ export const HudBanner: React.FC<HudBannerProps> = ({ open, ...content }) => {
             <Box
                 sx={{
                     width: "100%",
-                    height: BANNER_HEIGHT,
+                    height: HUD_BANNER_HEIGHT,
                     flexShrink: 0,
                     display: "flex",
                     alignItems: "center",

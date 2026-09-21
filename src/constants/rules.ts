@@ -101,8 +101,11 @@ const DAMAGE_LADDER: DieSides[] = [4, 6, 8, 10, 12, 20]
 // quem é pesado demais para desviar não aprende a desviar.
 export const LEVEL_BONUS = { maxVigor: 3, moveRange: 1, guard: -1, damageSteps: 1 }
 
-// Subida de dano para habilidades
-export const strongerDamage = (damage: DiceSpec, steps: number): DiceSpec => {
+// Sobe o dado de dano alguns "degraus na escada".
+// Uma escada só, para as duas coisas que fortalecem um ataque:
+// Subir de nível, e usar uma habilidade.
+// (Depende da habilidade. Aliás em geral, depende de quem chama.)
+export const climbDamageLadder = (damage: DiceSpec, steps: number): DiceSpec => {
     if (steps <= 0) return damage
     const rung = Math.min(DAMAGE_LADDER.indexOf(damage.sides) + steps, DAMAGE_LADDER.length - 1)
     return { ...damage, sides: DAMAGE_LADDER[rung] }
@@ -114,17 +117,13 @@ export const statsFor = (type: PieceType, level: number): PieceStats => {
     const steps = Math.max(0, level - 1)
     const moveRange = base.moveRange + steps * LEVEL_BONUS.moveRange
 
-    const degrau = Math.min(
-        DAMAGE_LADDER.indexOf(base.damage.sides) + steps * LEVEL_BONUS.damageSteps,
-        DAMAGE_LADDER.length - 1,
-    )
     return {
         ...base,
         maxVigor: base.maxVigor + steps * LEVEL_BONUS.maxVigor,
         moveRange,
         attackRange: moveRange + STRIKE_REACH_BONUS,
         guard: base.guard + steps * LEVEL_BONUS.guard,
-        damage: { ...base.damage, sides: DAMAGE_LADDER[degrau] },
+        damage: climbDamageLadder(base.damage, steps * LEVEL_BONUS.damageSteps),
     }
 }
 
@@ -145,6 +144,10 @@ export const DEFENSE_DIE: DieSides = 20
 
 export const INITIATIVE_DIE: DieSides = 20
 export const INITIATIVE_DICE = 2
+
+// Quantas somas diferentes os dados da iniciativa conseguem produzir. É o teto de peças
+// que cabem em uma ordem sem empate, e é por ele que o sorteio sabe quando desistir.
+export const DISTINCT_INITIATIVE_TOTALS = INITIATIVE_DICE * INITIATIVE_DIE - INITIATIVE_DICE + 1
 
 // ---------------------------------------------------------------------------
 // Itens
@@ -245,3 +248,30 @@ export const ITEM_DROP_HEIGHT = 1.6
 export const PIECE_FADE_MS = 280
 export const ITEM_FADE_MS = 220
 export const ALPHA_TWEEN_MS = 200
+
+// ---------------------------------------------------------------------------
+// Medidas da interface
+// ---------------------------------------------------------------------------
+
+// O HUD é feito de faixas horizontais de mesma altura e mesma cor
+export const HUD_BAND_HEIGHT = 76
+export const HUD_TURN_ORDER_WIDTH = "75%"
+
+// As faixas temporárias que deslizam por trás do HUD (manipulação, habilidade, dica)
+export const HUD_BANNER_HEIGHT = 40
+
+// Medidas que existem para a tela não pular. Texto que alterna entre vazio e preenchido
+// (o número da ordem, o resultado de uma rolagem) reserva a própria altura desde o começo,
+// com a altura de linha declarada junto da reservada para as duas baterem: sem isso a
+// medida ficaria por conta do padrão do tema (1,5 × o tamanho da fonte) e a caixa cresceria
+// alguns pixels sempre que o texto entrasse, sacudindo tudo em volta a cada fase.
+export const INITIATIVE_PANEL_MIN_HEIGHT = 260
+export const LINEUP_RANK_LINE = { fontSize: 12, lineHeight: "18px", minHeight: "18px" }
+export const ROLL_RESULT_LINE = { fontSize: 22, lineHeight: "32px", minHeight: "32px" }
+export const ROLL_READING_LINE = { fontSize: 16, lineHeight: "24px", minHeight: "24px" }
+
+// O brilho difuso atrás do número do d4, no quadrado de 64 do desenho do dado
+export const DIE_GLOW = { x: 32, y: 35, radius: 26 }
+
+// A barra de vigor sob a peça, em frações da casa
+export const VIGOR_BAR = { width: 0.56, height: 0.1, offsetY: 0.42, inset: 1 }

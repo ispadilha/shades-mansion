@@ -1,7 +1,5 @@
 import { rollDice, sumDice } from "./rolls"
-import { INITIATIVE_DICE, INITIATIVE_DIE } from "../constants/rules"
-
-const DISTINCT_TOTALS = INITIATIVE_DICE * INITIATIVE_DIE - INITIATIVE_DICE + 1
+import { DISTINCT_INITIATIVE_TOTALS, INITIATIVE_DICE, INITIATIVE_DIE } from "../constants/rules"
 
 // Uma jogada dos dados. As recusadas (accepted: false) ficam no histórico porque a tela
 // de iniciativa mostra a re-rolagem acontecendo.
@@ -36,7 +34,7 @@ export function rollInitiative(pieceIds: string[]): InitiativeResult {
         // Com mais peças do que somas possíveis não sobraria número livre:
         // aí o valor repetido seria aceito,
         // e o desempate seria a ordem em que as peças rolaram.
-        while (taken.has(attempt.total) && taken.size < DISTINCT_TOTALS) {
+        while (taken.has(attempt.total) && taken.size < DISTINCT_INITIATIVE_TOTALS) {
             attempts.push({ pieceId, ...attempt, accepted: false })
             attempt = roll()
         }

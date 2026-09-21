@@ -2,9 +2,7 @@ import React, { useLayoutEffect, useRef, useState } from "react"
 import { Box } from "@mui/material"
 import { INITIATIVE_FADE_MS } from "../../../constants/rules"
 import { usePalette } from "../../../hooks/usePalette"
-
-// Altura de partida do compartimento, até a primeira rolagem ser medida
-const MIN_PANEL_HEIGHT = 260
+import { INITIATIVE_PANEL_MIN_HEIGHT } from "../../../constants/rules"
 
 interface InitiativePanelProps {
     children: React.ReactNode
@@ -42,7 +40,7 @@ export const InitiativePanel: React.FC<InitiativePanelProps> = ({ children, meas
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
-                minHeight: panelHeight ?? MIN_PANEL_HEIGHT,
+                minHeight: panelHeight ?? INITIATIVE_PANEL_MIN_HEIGHT,
                 px: 2,
                 py: 2,
                 bgcolor: palette.roll.bg,

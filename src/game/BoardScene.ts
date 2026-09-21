@@ -8,6 +8,7 @@ import { isSpent } from "../logic/turn"
 import { pickRandom, randomInt } from "../logic/random"
 import {
     AURA_PALETTE,
+    FIRE_COLORS,
     FIRE_PALETTE,
     VIGOR_PALETTE,
     ITEM_PALETTE,
@@ -27,11 +28,8 @@ import {
     MOVED_PIECE_ALPHA,
     PIECE_FADE_MS,
     STEP_MS,
+    VIGOR_BAR,
 } from "../constants/rules"
-
-const FIRE_COLORS = FIRE_PALETTE.flames.map(hex)
-
-const VIGOR_BAR = { width: 0.56, height: 0.1, offsetY: 0.42, inset: 1 }
 
 const vigorColor = (ratio: number) =>
     ratio > 0.5 ? VIGOR_PALETTE.high : ratio > 0.25 ? VIGOR_PALETTE.medium : VIGOR_PALETTE.low

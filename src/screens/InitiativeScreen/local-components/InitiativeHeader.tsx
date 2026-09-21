@@ -1,6 +1,6 @@
 import React from "react"
 import { Box } from "@mui/material"
-import { InitiativeLineup } from "../../../components/initiative"
+import { InitiativeLineup } from "./InitiativeLineup"
 import { ScreenSubtitle, ScreenTitle } from "../../../components/ui"
 import type { PieceSlot } from "../../../logic/setup"
 import { useLanguage } from "../../../hooks/useLanguage"

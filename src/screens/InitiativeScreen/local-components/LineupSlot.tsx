@@ -1,13 +1,9 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import { PieceToken } from "../pieces"
-import type { PieceSlot } from "../../logic/setup"
-import { usePalette } from "../../hooks/usePalette"
-
-// A linha do número da ordem reserva a própria altura desde o começo, mesmo enquanto não há
-// número, para os bonecos não descerem quando a ordem é revelada. A altura de linha vai
-// declarada junto da reservada para as duas baterem (12px × 1.5 é o padrão do tema).
-const RANK_LINE = { fontSize: 12, lineHeight: "18px", minHeight: "18px" }
+import { PieceToken } from "../../../components/pieces"
+import type { PieceSlot } from "../../../logic/setup"
+import { usePalette } from "../../../hooks/usePalette"
+import { LINEUP_RANK_LINE } from "../../../constants/rules"
 
 interface LineupSlotProps {
     slot: PieceSlot
@@ -30,7 +26,7 @@ export const LineupSlot: React.FC<LineupSlotProps> = ({ slot, rank = "", value, 
             `visibility` invalida só a pintura, e pintura pendente dentro da
             camada que acabou de ser animada pode não acontecer.
             Trocar o texto invalida o layout, que o navegador é obrigado a refazer. */}
-            <Typography sx={{ ...RANK_LINE, color: palette.initiative.rank }}>{rank}</Typography>
+            <Typography sx={{ ...LINEUP_RANK_LINE, color: palette.initiative.rank }}>{rank}</Typography>
 
             <PieceToken color={slot.color} type={slot.type} aura={active ? "active" : null} dimmed={!rolled && !active} />
 

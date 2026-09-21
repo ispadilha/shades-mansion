@@ -2,6 +2,7 @@ import type { PiecePosition, PieceDefinition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { ORTHOGONAL_STEPS, SURROUNDING_STEPS, atPosition, positionKey } from "./grid"
+import { statsFor } from "../constants/rules"
 
 interface WalkNode {
     position: PiecePosition
@@ -216,4 +217,23 @@ export function lineOfFire(
     }
 
     return { cells, targets }
+}
+
+// O que a peça anda para golpear: o mesmo que ela anda para se mover. Encostar é que
+// alcança a casa seguinte, e isso já está em `meleeAttackCells` e `findApproachCell`.
+export const strikeWalkRange = (piece: PieceDefinition) => statsFor(piece.type, piece.level).moveRange
+
+// A peça consegue acertar o alvo daqui? De longe vale a linha de tiro, de perto vale ter
+// onde encostar. É a mesma pergunta que o destaque do tabuleiro responde em cores.
+export function canHitTarget(
+    attacker: PieceDefinition,
+    target: PieceDefinition,
+    pieces: PieceDefinition[],
+    maze: Maze,
+    reach: { ranged: boolean; range: number },
+): boolean {
+    if (reach.ranged) {
+        return lineOfFire(attacker, pieces, maze, reach.range).targets.some((t) => t.id === target.id)
+    }
+    return findApproachCell(attacker, target, pieces, maze, reach.range) !== null
 }

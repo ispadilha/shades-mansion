@@ -1,31 +1,15 @@
 import React from "react"
 import { Menu, MenuItem } from "@mui/material"
-import type { PieceDefinition, PiecePosition, MotivationItem, TextKey } from "../../../logic/types"
+import type { BoardAction, BoardMenuState } from "../../../logic/boardMenu"
 import { useLanguage } from "../../../hooks/useLanguage"
-
-// As ações que uma casa oferece. Quais valem é decidido na hora de abrir o menu.
-export type BoardAction = "info" | "itemInfo" | "move" | "collect" | "attack" | "skill"
-
-// A casa em que o jogador clicou com o botão direito, e o que havia nela
-export interface BoardMenuState {
-    mouseX: number
-    mouseY: number
-    position: PiecePosition
-    targetPiece?: PieceDefinition
-    itemAtPos?: MotivationItem
-    actions: BoardAction[]
-    // Como a ação da habilidade se chama nesta casa ("atirar", "incendiar"):
-    // cada habilidade traz o próprio rótulo
-    skillAction?: TextKey
-}
 
 interface BoardContextMenuProps {
     menu: BoardMenuState | null
     onClose: () => void
     onShowPieceInfo: () => void
     onShowItemInfo: () => void
-    onMove: () => void
-    onCollect: () => void
+    // Andar até a casa, coletando o item que estiver nela
+    onWalk: () => void
     onAttack: () => void
     onSkill: () => void
 }
@@ -35,8 +19,7 @@ export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
     onClose,
     onShowPieceInfo,
     onShowItemInfo,
-    onMove,
-    onCollect,
+    onWalk,
     onAttack,
     onSkill,
 }) => {
@@ -53,8 +36,8 @@ export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
         >
             {has("info") && <MenuItem onClick={onShowPieceInfo}>{t("info")}</MenuItem>}
             {has("itemInfo") && <MenuItem onClick={onShowItemInfo}>{t("info")}</MenuItem>}
-            {has("move") && <MenuItem onClick={onMove}>{t("move")}</MenuItem>}
-            {has("collect") && <MenuItem onClick={onCollect}>{t("collect")}</MenuItem>}
+            {has("move") && <MenuItem onClick={onWalk}>{t("move")}</MenuItem>}
+            {has("collect") && <MenuItem onClick={onWalk}>{t("collect")}</MenuItem>}
             {has("attack") && <MenuItem onClick={onAttack}>{t("attack")}</MenuItem>}
             {has("skill") && menu?.skillAction && <MenuItem onClick={onSkill}>{t(menu.skillAction)}</MenuItem>}
         </Menu>

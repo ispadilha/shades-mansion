@@ -100,7 +100,6 @@ const dark = {
         textBody: "#cccccc",
         textMuted: "#777777",
         textDim: "#888888",
-        textFaint: "#666666",
         // Subtítulos e legendas
         accentMuted: "#8f85a8",
         buttonBg: "#222222",
@@ -160,14 +159,12 @@ const dark = {
     },
 
     manipulation: {
-        glow: MANIPULATION_GLOW,
         bandBg: "#2e0f1d",
         bandText: "#f06292",
         bandOutline: "#8c2751",
     },
 
     skill: {
-        glow: SKILL_GLOW,
         bandBg: "#0e2133",
         bandText: "#6cb8f7",
         bandOutline: "#1f5f92",
@@ -224,7 +221,6 @@ const light: Palette = {
         textBody: "#19130e",
         textMuted: "#281f15",
         textDim: "#2f2419",
-        textFaint: "#3e2f21",
         accentMuted: "#36251b",
         buttonBg: "#948567",
         buttonOutline: "#402b1f",
@@ -272,14 +268,12 @@ const light: Palette = {
     },
 
     manipulation: {
-        glow: MANIPULATION_GLOW,
         bandBg: "#c19aa8",
         bandText: "#4a1028",
         bandOutline: "#8f4265",
     },
 
     skill: {
-        glow: SKILL_GLOW,
         bandBg: "#9fb4c6",
         bandText: "#0c2135",
         bandOutline: "#3d688c",
@@ -334,7 +328,6 @@ const gray: Palette = {
         textBody: "#cad1dd",
         textMuted: "#93a0b6",
         textDim: "#a2afc4",
-        textFaint: "#8795ac",
         accentMuted: "#9bb0d4",
         buttonBg: "#363f4d",
         buttonOutline: "#859dc6",
@@ -382,14 +375,12 @@ const gray: Palette = {
     },
 
     manipulation: {
-        glow: MANIPULATION_GLOW,
         bandBg: "#33202a",
         bandText: "#f06292",
         bandOutline: "#8c2751",
     },
 
     skill: {
-        glow: SKILL_GLOW,
         bandBg: "#1a2c3e",
         bandText: "#6cb8f7",
         bandOutline: "#1f5f92",
@@ -440,6 +431,9 @@ export const PALETTES: Record<ColorMode, Palette> = { light, gray, dark }
 
 // Phaser trabalha com cores numéricas (0xrrggbb)
 export const hex = (css: string): number => parseInt(css.slice(1), 16)
+
+// As chamas já no inteiro que o Phaser usa, prontas para a cena sortear entre elas
+export const FIRE_COLORS = FIRE_PALETTE.flames.map(hex)
 
 export const rgba = (css: string, alpha: number): string => {
     const value = hex(css)

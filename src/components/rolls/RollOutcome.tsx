@@ -4,21 +4,13 @@ import { keyframes } from "@emotion/react"
 import type { RollTone } from "../../logic/rolls"
 import { useLanguage } from "../../hooks/useLanguage"
 import { usePalette } from "../../hooks/usePalette"
+import { ROLL_READING_LINE, ROLL_RESULT_LINE } from "../../constants/rules"
 
 const pulse = keyframes`
     0% { opacity: 0.45 }
     50% { opacity: 1 }
     100% { opacity: 0.45 }
 `
-
-// As duas linhas de texto embaixo dos dados alternam entre vazias e preenchidas conforme a
-// fase da rolagem. A altura de linha vai declarada junto da reservada, e as duas batem: sem
-// isso a medida ficaria por conta do padrão do tema (1.5 × o tamanho da fonte) e a caixa
-// cresceria alguns pixels sempre que o texto entrasse. A rolagem inteira tremeria a cada
-// troca de fase. Reservar por baixo (`minHeight`) mantém a saída graciosa se um texto longo
-// quebrar em duas linhas.
-const RESULT_LINE = { fontSize: 22, lineHeight: "32px", minHeight: "32px" }
-const READING_LINE = { fontSize: 16, lineHeight: "24px", minHeight: "24px" }
 
 interface RollOutcomeProps {
     // O valor que saiu, já em texto (vazio enquanto a rolagem não foi revelada)
@@ -37,16 +29,16 @@ export const RollOutcome: React.FC<RollOutcomeProps> = ({ result, reading, tone,
 
     return (
         <>
-            <Typography sx={{ ...RESULT_LINE, color: palette.roll.result, fontWeight: 700 }}>{result}</Typography>
+            <Typography sx={{ ...ROLL_RESULT_LINE, color: palette.roll.result, fontWeight: 700 }}>{result}</Typography>
 
             {waiting ? (
-                <Typography sx={{ ...READING_LINE, color: palette.roll.title, animation: `${pulse} 1.4s ease-in-out infinite` }}>
+                <Typography sx={{ ...ROLL_READING_LINE, color: palette.roll.title, animation: `${pulse} 1.4s ease-in-out infinite` }}>
                     {t("clickToRoll")}
                 </Typography>
             ) : (
                 <Typography
                     sx={{
-                        ...READING_LINE,
+                        ...ROLL_READING_LINE,
                         // Os tons da rolagem têm o nome das cores que os pintam:
                         // se um deles mudar de nome, o compilador cobra a paleta junto
                         color: palette.roll[tone],

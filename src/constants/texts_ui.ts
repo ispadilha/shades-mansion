@@ -214,16 +214,6 @@ export const texts_ui = {
         ptBR: "não desvia",
     },
 
-    attackStyle: {
-        enUS: "Attack style",
-        ptBR: "Estilo de ataque",
-    },
-
-    attackStyleMelee: {
-        enUS: "Melee",
-        ptBR: "Corpo a corpo",
-    },
-
     attackArea: {
         enUS: "Area of effect",
         ptBR: "Área de efeito",
@@ -592,11 +582,6 @@ export const texts_ui = {
     alreadyActed: {
         enUS: "Already acted",
         ptBR: "Já agiu",
-    },
-
-    waitingTurn: {
-        enUS: "Waiting for its turn...",
-        ptBR: "Esperando a vez...",
     },
 
     clickToRoll: {

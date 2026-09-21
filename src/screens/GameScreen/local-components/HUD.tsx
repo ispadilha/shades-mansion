@@ -6,14 +6,11 @@ import { HintBanner } from "./HintBanner"
 import { ManipulationBanner } from "./ManipulationBanner"
 import { SkillBanner } from "./SkillBanner"
 import { TurnStatus } from "./TurnStatus"
-import { TurnOrderBar } from "../../../components/initiative"
+import { TurnOrderBar } from "./TurnOrderBar"
 import type { PieceAuras, PieceDefinition, MotivationItemKey } from "../../../logic/types"
 import type { ActiveSkill } from "../../../logic/skills"
 import { usePalette } from "../../../hooks/usePalette"
-
-// O HUD é feito de faixas horizontais de mesma altura e mesma cor.
-const BAND_HEIGHT = 76
-const TURN_ORDER_WIDTH = "75%"
+import { HUD_BAND_HEIGHT, HUD_TURN_ORDER_WIDTH } from "../../../constants/rules"
 
 interface HUDProps {
     // Peça da vez na ordem de iniciativa (null só enquanto a partida está terminando)
@@ -75,8 +72,8 @@ export const HUD: React.FC<HUDProps> = ({
             <HintBanner open={hintVisible} onDismiss={onDismissHint} />
 
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}
-            <Box sx={{ display: "flex", height: BAND_HEIGHT, borderBottom: `1px solid ${palette.hud.bandBorder}` }}>
-                <Box sx={{ width: TURN_ORDER_WIDTH, flexShrink: 0, overflow: "hidden" }}>
+            <Box sx={{ display: "flex", height: HUD_BAND_HEIGHT, borderBottom: `1px solid ${palette.hud.bandBorder}` }}>
+                <Box sx={{ width: HUD_TURN_ORDER_WIDTH, flexShrink: 0, overflow: "hidden" }}>
                     <TurnOrderBar
                         order={turnOrder}
                         auras={auras}
@@ -93,7 +90,7 @@ export const HUD: React.FC<HUDProps> = ({
             <Box
                 sx={{
                     display: "flex",
-                    height: BAND_HEIGHT,
+                    height: HUD_BAND_HEIGHT,
                     alignItems: "center",
                     justifyContent: "space-between",
                     gap: 2,

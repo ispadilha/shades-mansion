@@ -1,11 +1,11 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import { PieceToken } from "../pieces"
-import type { PieceAuras, PieceDefinition } from "../../logic/types"
-import { isSpent } from "../../logic/turn"
-import { useLanguage } from "../../hooks/useLanguage"
-import { usePalette } from "../../hooks/usePalette"
-import { AURA_PALETTE } from "../../constants/palette"
+import { PieceToken } from "../../../components/pieces"
+import type { PieceAuras, PieceDefinition } from "../../../logic/types"
+import { isSpent } from "../../../logic/turn"
+import { useLanguage } from "../../../hooks/useLanguage"
+import { usePalette } from "../../../hooks/usePalette"
+import { AURA_PALETTE } from "../../../constants/palette"
 
 interface TurnOrderBarProps {
     // Peças ainda em jogo, já na ordem de iniciativa

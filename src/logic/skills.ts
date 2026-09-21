@@ -1,6 +1,6 @@
 import type { PieceDefinition, PieceType, TextKey } from "./types"
 import type { DiceSpec } from "./rolls"
-import { statsFor, strongerDamage } from "../constants/rules"
+import { statsFor, climbDamageLadder } from "../constants/rules"
 
 export type SkillId = "extraMove" | "longShot" | "fire"
 
@@ -101,5 +101,5 @@ export const baseRangeOf = (skill: Skill, piece: PieceDefinition) =>
 
 export const damageOf = (piece: PieceDefinition, skill: Skill | null): DiceSpec => {
     const { damage } = statsFor(piece.type, piece.level)
-    return skill ? strongerDamage(damage, skill.damageSteps) : damage
+    return skill ? climbDamageLadder(damage, skill.damageSteps) : damage
 }

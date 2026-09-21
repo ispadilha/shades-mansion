@@ -3,6 +3,7 @@ import { Box } from "@mui/material"
 import { keyframes } from "@emotion/react"
 import type { DieSides } from "../../logic/rolls"
 import { usePalette } from "../../hooks/usePalette"
+import { DIE_GLOW } from "../../constants/rules"
 
 const tumble = keyframes`
     0% { transform: rotate(0deg) scale(1) }
@@ -47,11 +48,6 @@ const SHAPES: Record<DieSides, DieShape> = {
         textY: 37,
     },
 }
-
-// O d4 não tem face para cima, e sim um vértice bem no meio do triângulo.
-// No lugar de uma face poligonal fica este brilho: difuso, sem ponto
-// nem contorno, no centro e por trás do número.
-const GLOW = { x: 32, y: 35, radius: 26 }
 
 interface DieProps {
     sides: DieSides
@@ -110,10 +106,13 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                         strokeLinejoin="round"
                     />
                 ) : (
+                    // O d4 não tem face para cima, e sim um vértice bem no meio do triângulo.
+                    // No lugar de uma face poligonal fica este brilho: difuso, sem ponto
+                    // nem contorno, no centro e por trás do número.
                     <circle
-                        cx={GLOW.x}
-                        cy={GLOW.y}
-                        r={GLOW.radius}
+                        cx={DIE_GLOW.x}
+                        cy={DIE_GLOW.y}
+                        r={DIE_GLOW.radius}
                         fill={`url(#die-glow-${uid})`}
                         clipPath={`url(#die-face-${uid})`}
                     />
