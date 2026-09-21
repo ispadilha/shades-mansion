@@ -12,6 +12,19 @@ export const ORTHOGONAL_STEPS: Array<[number, number]> = [
     [0, -1],
 ]
 
+// As oito em volta, diagonais inclusive. É por elas que uma peça encosta em outra:
+// andar é ortogonal, mas golpear alcança o canto.
+export const SURROUNDING_STEPS: Array<[number, number]> = [
+    [-1, -1],
+    [0, -1],
+    [1, -1],
+    [-1, 0],
+    [1, 0],
+    [-1, 1],
+    [0, 1],
+    [1, 1],
+]
+
 // Identificador de uma casa, para guardá-la em Set/Map
 export const positionKey = (p: PiecePosition) => `${p.x},${p.y}`
 

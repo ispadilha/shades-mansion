@@ -244,6 +244,11 @@ export const texts_ui = {
         ptBR: "Nenhuma",
     },
 
+    skillExtraMove: {
+        enUS: "Extra move",
+        ptBR: "Movimento extra",
+    },
+
     skillLongShot: {
         enUS: "Long shot",
         ptBR: "Tiro longo",
@@ -272,6 +277,11 @@ export const texts_ui = {
     gotIt: {
         enUS: "Got it",
         ptBR: "Entendi",
+    },
+
+    extraCells: {
+        enUS: "extra cells",
+        ptBR: "casas extras",
     },
 
     usingSkill: {

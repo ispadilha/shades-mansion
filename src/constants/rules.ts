@@ -68,19 +68,21 @@ export interface PieceStats {
     guard: number
 }
 
-export const PIECE_STATS: Record<PieceType, PieceStats> = {
+export const STRIKE_REACH_BONUS = 1
+
+export const PIECE_STATS: Record<PieceType, Omit<PieceStats, "attackRange">> = {
     // "Ágil"
-    A: { moveRange: 9, attackRange: 7, maxVigor: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
+    A: { moveRange: 9, maxVigor: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
     // "Balanceada"
-    B: { moveRange: 7, attackRange: 5, maxVigor: 12, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 12 },
+    B: { moveRange: 7, maxVigor: 12, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 12 },
     // "Campeã"
-    C: { moveRange: 5, attackRange: 3, maxVigor: 16, damage: { count: 2, sides: 8 }, dodge: NO_DODGE, guard: 14 },
+    C: { moveRange: 5, maxVigor: 16, damage: { count: 2, sides: 8 }, dodge: NO_DODGE, guard: 14 },
     // "Distância"
-    D: { moveRange: 5, attackRange: 7, maxVigor: 10, damage: { count: 1, sides: 6 }, dodge: 18, guard: 14 },
+    D: { moveRange: 5, maxVigor: 10, damage: { count: 1, sides: 6 }, dodge: 18, guard: 14 },
     // "Exótica"
-    E: { moveRange: 7, attackRange: 5, maxVigor: 13, damage: { count: 1, sides: 8 }, dodge: 20, guard: 13 },
+    E: { moveRange: 7, maxVigor: 13, damage: { count: 1, sides: 8 }, dodge: 20, guard: 13 },
     // "Fogo"
-    F: { moveRange: 5, attackRange: 5, maxVigor: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13 },
+    F: { moveRange: 5, maxVigor: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13 },
 }
 
 export const canDodge = (type: PieceType) => PIECE_STATS[type].dodge <= 20
@@ -99,11 +101,18 @@ const DAMAGE_LADDER: DieSides[] = [4, 6, 8, 10, 12, 20]
 // quem é pesado demais para desviar não aprende a desviar.
 export const LEVEL_BONUS = { maxVigor: 3, moveRange: 1, guard: -1, damageSteps: 1 }
 
+// Subida de dano para habilidades
+export const strongerDamage = (damage: DiceSpec, steps: number): DiceSpec => {
+    if (steps <= 0) return damage
+    const rung = Math.min(DAMAGE_LADDER.indexOf(damage.sides) + steps, DAMAGE_LADDER.length - 1)
+    return { ...damage, sides: DAMAGE_LADDER[rung] }
+}
+
 // Os atributos de uma peça no nível em que ela está
 export const statsFor = (type: PieceType, level: number): PieceStats => {
     const base = PIECE_STATS[type]
     const steps = Math.max(0, level - 1)
-    if (steps === 0) return base
+    const moveRange = base.moveRange + steps * LEVEL_BONUS.moveRange
 
     const degrau = Math.min(
         DAMAGE_LADDER.indexOf(base.damage.sides) + steps * LEVEL_BONUS.damageSteps,
@@ -112,7 +121,8 @@ export const statsFor = (type: PieceType, level: number): PieceStats => {
     return {
         ...base,
         maxVigor: base.maxVigor + steps * LEVEL_BONUS.maxVigor,
-        moveRange: base.moveRange + steps * LEVEL_BONUS.moveRange,
+        moveRange,
+        attackRange: moveRange + STRIKE_REACH_BONUS,
         guard: base.guard + steps * LEVEL_BONUS.guard,
         damage: { ...base.damage, sides: DAMAGE_LADDER[degrau] },
     }

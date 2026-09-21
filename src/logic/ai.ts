@@ -6,7 +6,7 @@ import { positionKey } from "./grid"
 import { pickRandom } from "./random"
 import type { Maze } from "./maze"
 import { alliesInBlast, attackArea, type PendingAttack } from "./combat"
-import { hasRangedSkill } from "./skills"
+import { baseRangeOf, damageOf, hasRangedSkill, skillFor } from "./skills"
 import { ACTION_SETTLE_MS, STEP_MS, statsFor } from "../constants/rules"
 
 export interface AIMoveResult {
@@ -123,7 +123,7 @@ export class SimpleAI {
                 updatedPieces,
                 pendingAttack: {
                     attackerId: manipulated.id,
-                    damageDice: statsFor(manipulated.type, manipulated.level).damage,
+                    damageDice: damageOf(manipulated, this.rangedSkillOf(manipulated)),
                     targetId: best.target.id,
                     delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                     ...(area ? { area } : {}),
@@ -172,6 +172,14 @@ export class SimpleAI {
         return { updatedPieces }
     }
 
+    // A habilidade de alcance da peça, quando ela tem uma.
+    // É com ela que a IA atira. A IA não abre lista de habilidades, ela já escolhe a melhor ação,
+    // e é dela que vêm o alcance e o dano do tiro.
+    // Sem isso a atiradora da IA acertaria menos longe e mais fraco que a do jogador.
+    private static rangedSkillOf(piece: PieceDefinition) {
+        return hasRangedSkill(piece.type) ? skillFor(piece.type) : null
+    }
+
     private static buildAttack(
         attacker: PieceDefinition,
         target: PieceDefinition,
@@ -186,7 +194,7 @@ export class SimpleAI {
             updatedPieces,
             pendingAttack: {
                 attackerId: attacker.id,
-                damageDice: statsFor(attacker.type, attacker.level).damage,
+                damageDice: damageOf(attacker, this.rangedSkillOf(attacker)),
                 targetId: target.id,
                 delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                 ...(area ? { area } : {}),
@@ -205,21 +213,22 @@ export class SimpleAI {
         maze: Maze,
         friendlyColor: PieceColor,
     ): Array<{ target: PieceDefinition; approach: PiecePosition }> {
-        const range = statsFor(myPiece.type, myPiece.level).attackRange
+        const skill = this.rangedSkillOf(myPiece)
         const sparesAllies = (target: PieceDefinition) =>
             alliesInBlast(myPiece, target, pieces, maze, friendlyColor).length === 0
 
-        if (hasRangedSkill(myPiece.type)) {
-            const { targets } = lineOfFire(myPiece, pieces, maze, range)
+        if (skill) {
+            const { targets } = lineOfFire(myPiece, pieces, maze, baseRangeOf(skill, myPiece))
             return targets
                 .filter((target) => enemyPieces.some((e) => e.id === target.id))
                 .filter(sparesAllies)
                 .map((target) => ({ target, approach: myPiece.position }))
         }
 
+        const walkRange = statsFor(myPiece.type, myPiece.level).moveRange
         const result: Array<{ target: PieceDefinition; approach: PiecePosition }> = []
         for (const enemy of enemyPieces) {
-            const approach = findApproachCell(myPiece, enemy, pieces, maze, range)
+            const approach = findApproachCell(myPiece, enemy, pieces, maze, walkRange)
             if (approach) result.push({ target: enemy, approach })
         }
         return result

@@ -8,7 +8,7 @@ import { SkillBanner } from "./SkillBanner"
 import { TurnStatus } from "./TurnStatus"
 import { TurnOrderBar } from "../../../components/initiative"
 import type { PieceAuras, PieceDefinition, MotivationItemKey } from "../../../logic/types"
-import type { Skill } from "../../../logic/skills"
+import type { ActiveSkill } from "../../../logic/skills"
 import { usePalette } from "../../../hooks/usePalette"
 
 // O HUD é feito de faixas horizontais de mesma altura e mesma cor.
@@ -38,9 +38,7 @@ interface HUDProps {
     onFocusActivePiece: () => void
     hintVisible: boolean
     onDismissHint: () => void
-    // Habilidade em uso e a peça que a está usando
-    activeSkill: Skill | null
-    skillPieceId: string | null
+    activeSkill: ActiveSkill | null
     onCancelSkill: () => void
 }
 
@@ -64,7 +62,6 @@ export const HUD: React.FC<HUDProps> = ({
     hintVisible,
     onDismissHint,
     activeSkill,
-    skillPieceId,
     onCancelSkill,
 }) => {
     const palette = usePalette()
@@ -74,7 +71,7 @@ export const HUD: React.FC<HUDProps> = ({
             {/* Banners sempre montados: cada um "decide sozinho" quando entrar e sair,
                 e precisa continuar na árvore para conseguir deslizar de volta. */}
             <ManipulationBanner itemKey={manipulationKey} onCancel={onCancelManipulation} />
-            <SkillBanner skill={activeSkill} pieceId={skillPieceId} onCancel={onCancelSkill} />
+            <SkillBanner active={activeSkill} onCancel={onCancelSkill} />
             <HintBanner open={hintVisible} onDismiss={onDismissHint} />
 
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}

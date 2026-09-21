@@ -1,7 +1,7 @@
 import type { PiecePosition, PieceDefinition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
-import { ORTHOGONAL_STEPS, atPosition, positionKey } from "./grid"
+import { ORTHOGONAL_STEPS, SURROUNDING_STEPS, atPosition, positionKey } from "./grid"
 
 interface WalkNode {
     position: PiecePosition
@@ -82,14 +82,14 @@ export function reachableCells(piece: PieceDefinition, pieces: PieceDefinition[]
 }
 
 // Encontra a casa adjacente ao alvo (8 vizinhas, com diagonais) livre e mais barata de
-// alcançar andando, respeitando "range" passos. Se o atacante já está adjacente, retorna
-// sua própria posição. Retorna null se nenhuma casa em volta do alvo estiver ao alcance.
+// alcançar andando. Se o atacante já está adjacente, retorna sua própria posição.
+// Retorna null se nenhuma casa em volta do alvo estiver ao alcance.
 export function findApproachCell(
     attacker: PieceDefinition,
     target: PieceDefinition,
     pieces: PieceDefinition[],
     maze: Maze,
-    range: number,
+    walkRange: number,
 ): PiecePosition | null {
     const dxAbs = Math.abs(attacker.position.x - target.position.x)
     const dyAbs = Math.abs(attacker.position.y - target.position.y)
@@ -97,15 +97,12 @@ export function findApproachCell(
         return attacker.position
     }
 
-    const candidates: PiecePosition[] = []
-    for (let dx = -1; dx <= 1; dx++) {
-        for (let dy = -1; dy <= 1; dy++) {
-            if (dx === 0 && dy === 0) continue
-            candidates.push({ x: target.position.x + dx, y: target.position.y + dy })
-        }
-    }
+    const candidates = SURROUNDING_STEPS.map(([dx, dy]) => ({
+        x: target.position.x + dx,
+        y: target.position.y + dy,
+    }))
 
-    const visited = walkFrom(attacker.position, maze, range)
+    const visited = walkFrom(attacker.position, maze, walkRange)
     let best: { cell: PiecePosition; distance: number } | null = null
 
     for (const candidate of candidates) {
@@ -121,24 +118,29 @@ export function findApproachCell(
     return best?.cell ?? null
 }
 
-// Casas destacadas no ataque corpo-a-corpo: as que o atacante alcança andando dentro do
-// alcance e as ocupadas por peças que ele consegue abordar por alguma casa vizinha.
 export function meleeAttackCells(
     piece: PieceDefinition,
     pieces: PieceDefinition[],
     maze: Maze,
-    range: number,
+    walkRange: number,
 ): PiecePosition[] {
-    const cells: PiecePosition[] = []
-
-    for (const [, node] of walkFrom(piece.position, maze, range)) {
-        if (node.distance === 0) continue
-        const occupant = atPosition(pieces, node.position)
-        if (occupant && !findApproachCell(piece, occupant, pieces, maze, range)) continue
-        cells.push(node.position)
+    const cells = new Map<string, PiecePosition>()
+    const add = (cell: PiecePosition) => {
+        if (!isWalkable(maze, cell.x, cell.y)) return
+        cells.set(positionKey(cell), cell)
     }
 
-    return cells
+    for (const [, node] of walkFrom(piece.position, maze, walkRange)) {
+        add(node.position)
+        for (const [dx, dy] of SURROUNDING_STEPS) add({ x: node.position.x + dx, y: node.position.y + dy })
+    }
+    cells.delete(positionKey(piece.position))
+
+    // Casa ocupada só entra se sobrar onde encostar na peça que está nela
+    return [...cells.values()].filter((cell) => {
+        const occupant = atPosition(pieces, cell)
+        return !occupant || occupant.id === piece.id || findApproachCell(piece, occupant, pieces, maze, walkRange) !== null
+    })
 }
 
 // Coordenada da linha de tiro em um dos eixos. Normalmente ela cai

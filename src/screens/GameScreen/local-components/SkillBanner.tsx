@@ -1,26 +1,32 @@
 import React from "react"
 import { HudBanner } from "./HudBanner"
-import type { Skill } from "../../../logic/skills"
+import type { ActiveSkill } from "../../../logic/skills"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
 interface SkillBannerProps {
-    skill: Skill | null
-    pieceId: string | null
+    // Habilidade em uso, ou null quando nenhuma
+    active: ActiveSkill | null
     onCancel: () => void
 }
 
-export const SkillBanner: React.FC<SkillBannerProps> = ({ skill, pieceId, onCancel }) => {
+export const SkillBanner: React.FC<SkillBannerProps> = ({ active, onCancel }) => {
     const palette = usePalette()
     const { t } = useLanguage()
 
+    // Habilidade que rola dado anuncia o resultado
+    const message = active
+        ? `${t("usingSkill")}: ${t(active.skill.name)} (${active.pieceId})` +
+          (active.skill.roll ? ` — ${active.range} ${t("cells")}` : "")
+        : ""
+
     return (
         <HudBanner
-            open={skill !== null && pieceId !== null}
+            open={active !== null}
             bg={palette.skill.bandBg}
             outline={palette.skill.bandOutline}
             textColor={palette.skill.bandText}
-            message={skill ? `${t("usingSkill")}: ${t(skill.name)} (${pieceId})` : ""}
+            message={message}
             actionLabel={t("cancelSkill")}
             onAction={onCancel}
         />
