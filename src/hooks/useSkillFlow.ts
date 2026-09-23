@@ -35,8 +35,13 @@ export interface SkillFlow {
     reach: SkillReach | null
     use: (skill: Skill) => void
     cancel: () => void
-    // Encerra o uso sem cobrar nada: é o que fazer depois que a habilidade acertou
+    // Encerra o uso sem gasto de habilidade
     clear: () => void
+    // Marca a habilidade da peça como gasta no turno
+    spend: (pieceId: string) => void
+    // Passa o ponto sem volta sem fechar a vez:
+    // por exemplo, uma habilidade foi usada parcialmente, e o jogador quer encerrá-la
+    commit: () => void
 }
 
 // O caminho de uma habilidade: abrir a lista, escolher, entrar em uso e sair de uso.
@@ -70,6 +75,8 @@ export const useSkillFlow = ({
 
     // Botão "habilidades": traz a vista para a peça, espera um instante e abre a lista
     const openList = () => {
+        // Com uma habilidade já em uso, a lista não abre
+        if (active) return
         if (!focusActivePiece()) return
 
         if (timerRef.current !== null) clearTimeout(timerRef.current)
@@ -100,6 +107,10 @@ export const useSkillFlow = ({
 
     // Desistir: antes do ponto sem volta não custa nada.
     // Depois dele, custa a habilidade do turno.
+    const commit = () => {
+        setActive((prev) => (prev && !prev.committed ? { ...prev, committed: true } : prev))
+    }
+
     const cancel = () => {
         if (cancelCostsSkill(active)) spend(active!.pieceId)
         setActive(null)
@@ -115,5 +126,7 @@ export const useSkillFlow = ({
         use,
         cancel,
         clear: () => setActive(null),
+        spend,
+        commit,
     }
 }

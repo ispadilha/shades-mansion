@@ -214,6 +214,16 @@ export const texts_ui = {
         ptBR: "não desvia",
     },
 
+    skillRange: {
+        enUS: "Skill range",
+        ptBR: "Alcance da habilidade",
+    },
+
+    skillCharges: {
+        enUS: "Uses per turn",
+        ptBR: "Usos por turno",
+    },
+
     attackArea: {
         enUS: "Area of effect",
         ptBR: "Área de efeito",
@@ -249,6 +259,16 @@ export const texts_ui = {
         ptBR: "Incêndio",
     },
 
+    skillBarrier: {
+        enUS: "Paranormal Barrier",
+        ptBR: "Barreira Paranormal",
+    },
+
+    skillCreateBarrier: {
+        enUS: "Create barrier",
+        ptBR: "Criar barreira",
+    },
+
     skillShoot: {
         enUS: "Shoot",
         ptBR: "Atirar",
@@ -279,9 +299,29 @@ export const texts_ui = {
         ptBR: "Usando habilidade",
     },
 
+    finishSkill: {
+        enUS: "Finish",
+        ptBR: "Encerrar",
+    },
+
     cancelSkill: {
         enUS: "Cancel skill",
         ptBR: "Cancelar habilidade",
+    },
+
+    barriersLeft: {
+        enUS: "barriers left",
+        ptBR: "barreiras restantes",
+    },
+
+    barriersWoreOff: {
+        enUS: "lost its barriers",
+        ptBR: "perdeu suas barreiras",
+    },
+
+    toCreateBarrier: {
+        enUS: "to light a barrier",
+        ptBR: "para acender uma barreira",
     },
 
     turn: {

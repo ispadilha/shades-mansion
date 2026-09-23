@@ -35,9 +35,10 @@ export interface BoardMenuContext {
     manipulatedPieceId: string | null
     activeSkill: ActiveSkill | null
     skillReach: SkillReach | null
-    // As casas que o tabuleiro já está destacando para a peça selecionada
+    // As casas que o tabuleiro está destacando para a peça selecionada
     moveCells: PiecePosition[]
     attackCells: PiecePosition[]
+    skillCells: PiecePosition[]
 }
 
 // O que a casa clicada oferece. Vazio quer dizer que o menu nem abre.
@@ -55,6 +56,7 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
         skillReach,
         moveCells,
         attackCells,
+        skillCells,
     } = context
 
     const targetPiece = atPosition(pieces, position)
@@ -101,11 +103,16 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
     }
 
     if (usingSkill && ownSelection) {
-        const reach = { ranged: skillReach!.ranged, range: skillReach!.attack }
-        const reachesPiece = hitsPiece && canHitTarget(selectedPiece!, targetPiece!, pieces, maze, reach)
-        // Sem peça mirada, só habilidade de área tem o que fazer
-        const burnsGround = !targetPiece && activeSkill.skill.area && includesPosition(attackCells, position)
-        if (reachesPiece || burnsGround) actions.push("skill")
+        if (skillReach!.places) {
+            // Habilidade que cria algo: vale onde ela alcança, e lá já é casa livre
+            if (includesPosition(skillCells, position)) actions.push("skill")
+        } else {
+            const reach = { ranged: skillReach!.ranged, range: skillReach!.attack }
+            const reachesPiece = hitsPiece && canHitTarget(selectedPiece!, targetPiece!, pieces, maze, reach)
+            // Sem peça mirada, só habilidade de área tem o que fazer
+            const burnsGround = !targetPiece && activeSkill.skill.area && includesPosition(attackCells, position)
+            if (reachesPiece || burnsGround) actions.push("skill")
+        }
     }
 
     return actions

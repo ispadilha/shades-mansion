@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
-import type { PieceAuras, PieceDefinition, MotivationItem } from "../../logic/types"
+import type { Barrier, PieceAuras, PieceDefinition, MotivationItem } from "../../logic/types"
 import type { FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { BoardScene } from "../../game/BoardScene"
@@ -10,6 +10,7 @@ interface PhaserBoardProps {
     maze: Maze
     pieces: PieceDefinition[]
     items: MotivationItem[]
+    barriers: Barrier[]
     fireBursts: FireBurst[]
     auras: PieceAuras
     droppedItemId: string | null
@@ -20,6 +21,7 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     maze,
     pieces,
     items,
+    barriers,
     fireBursts,
     auras,
     droppedItemId,
@@ -55,6 +57,10 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     useEffect(() => {
         if (droppedItemId) sceneRef.current?.playItemDrop(droppedItemId)
     }, [droppedItemId])
+
+    useEffect(() => {
+        sceneRef.current?.syncBarriers(barriers)
+    }, [barriers])
 
     useEffect(() => {
         sceneRef.current?.syncPieces(pieces)

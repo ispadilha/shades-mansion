@@ -17,14 +17,11 @@ export interface GameLog {
     promoted: (color: PieceColor, piece: string, level: number) => void
     // Item que saiu de uma manipulação falha e caiu de volta no labirinto
     returned: (itemKey: string) => void
-    // Golpe que passou inteiro pela defesa
     attackHit: (attackerId: string, targetId: string, damage: number) => void
-    // Golpe aparado: o defensor levou metade
     attackGuarded: (attackerId: string, targetId: string, damage: number) => void
-    // Golpe desviado
     attackDodged: (attackerId: string, targetId: string) => void
-    // Resultado da moeda de manipulação
     manipulationRoll: (itemKey: string, success: boolean) => void
+    barriersWoreOff: (pieceId: string) => void
     eliminated: (pieceId: string) => void
     defeated: (color: PieceColor) => void
 }
@@ -84,6 +81,10 @@ export const useGameLog = (): GameLog => {
         add(`${itemKey} ${t(success ? "verbFellUnderManipulation" : "verbResistedManipulation")}`)
     }
 
+    const barriersWoreOff = (pieceId: string) => {
+        add(`${pieceId} ${t("barriersWoreOff")}`)
+    }
+
     const eliminated = (pieceId: string) => {
         add(`${pieceId} ${t("wasEliminated")}!`)
     }
@@ -104,6 +105,7 @@ export const useGameLog = (): GameLog => {
         attackGuarded,
         attackDodged,
         manipulationRoll,
+        barriersWoreOff,
         eliminated,
         defeated,
     }

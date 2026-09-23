@@ -1,13 +1,15 @@
 import Phaser from "phaser"
-import type { AuraKind, PieceAuras, PiecePosition, PieceDefinition, MotivationItem } from "../logic/types"
+import type { AuraKind, Barrier, PieceAuras, PiecePosition, PieceDefinition, MotivationItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
+import { blockedCellsFor } from "../logic/grid"
 import { isSpent } from "../logic/turn"
 import { pickRandom, randomInt } from "../logic/random"
 import {
     AURA_PALETTE,
+    BARRIER_PALETTE,
     FIRE_COLORS,
     FIRE_PALETTE,
     VIGOR_PALETTE,
@@ -19,6 +21,11 @@ import {
 } from "../constants/palette"
 import {
     ALPHA_TWEEN_MS,
+    BARRIER_EDGE_WIDTH,
+    BARRIER_GLOW,
+    BARRIER_GLOW_ALPHA,
+    BARRIER_FLOOR_ALPHA,
+    BARRIER_PULSE_MS,
     ITEM_DROP_HEIGHT,
     ITEM_DROP_MS,
     AURA_TEXTURE_SIZE,
@@ -53,9 +60,14 @@ export class BoardScene extends Phaser.Scene {
     // a caminhada dela sem precisar de sincronia nenhuma.
     private auras: Map<string, { kind: AuraKind; sprite: Phaser.GameObjects.Image }> = new Map()
     private vigorBars: Map<string, VigorBar> = new Map()
+    private barrierSprites: Map<string, Phaser.GameObjects.Container> = new Map()
+    // A última lista recebida: o caminho de uma peça contorna as barreiras dos oponentes,
+    // e é aqui que o passo-a-passo da caminhada consulta quais são.
+    private barriers: Barrier[] = []
     // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
     private pendingPieces: PieceDefinition[] | null = null
     private pendingItems: MotivationItem[] | null = null
+    private pendingBarriers: Barrier[] | null = null
     private pendingBursts: FireBurst[] = []
     private pendingDrops: string[] = []
     private pendingAuras: PieceAuras | null = null
@@ -72,6 +84,11 @@ export class BoardScene extends Phaser.Scene {
         if (this.pendingItems) {
             this.applyItems(this.pendingItems)
             this.pendingItems = null
+        }
+        // Barreiras antes das peças porque aliadas caminham por cima do chão aceso
+        if (this.pendingBarriers) {
+            this.applyBarriers(this.pendingBarriers)
+            this.pendingBarriers = null
         }
         if (this.pendingPieces) {
             this.applyPieces(this.pendingPieces)
@@ -94,6 +111,15 @@ export class BoardScene extends Phaser.Scene {
             return
         }
         this.applyPieces(pieces)
+    }
+
+    syncBarriers(barriers: Barrier[]) {
+        this.barriers = barriers
+        if (!this.isReady) {
+            this.pendingBarriers = barriers
+            return
+        }
+        this.applyBarriers(barriers)
     }
 
     syncItems(items: MotivationItem[]) {
@@ -185,7 +211,8 @@ export class BoardScene extends Phaser.Scene {
             if (cellChanged) {
                 // Anima passo-a-passo (uma célula por vez, contornando as paredes) para criar o efeito de caminhada
                 this.tweens.killTweensOf(sprite)
-                const path = findPath(last ?? piece.position, piece.position, this.maze)
+                const blocked = blockedCellsFor(piece.color, this.barriers)
+                const path = findPath(last ?? piece.position, piece.position, this.maze, blocked)
                 if (path.length === 0) {
                     sprite.setPosition(targetPx.x, targetPx.y)
                 } else {
@@ -304,6 +331,82 @@ export class BoardScene extends Phaser.Scene {
             this.tweens.killTweensOf(container.list)
             container.destroy()
         })
+    }
+
+    // Acende e apaga as barreiras conforme a lista muda
+    private applyBarriers(barriers: Barrier[]) {
+        const seen = new Set<string>()
+
+        for (const barrier of barriers) {
+            seen.add(barrier.id)
+            if (this.barrierSprites.has(barrier.id)) continue
+            this.barrierSprites.set(barrier.id, this.buildBarrier(barrier))
+        }
+
+        for (const [id, container] of this.barrierSprites) {
+            if (seen.has(id)) continue
+            this.barrierSprites.delete(id)
+            // Os laços do pulso precisam parar antes de o container sair de cena
+            this.tweens.killTweensOf(container.list)
+            this.tweens.killTweensOf(container)
+            this.tweens.add({
+                targets: container,
+                alpha: 0,
+                duration: BARRIER_PULSE_MS / 3,
+                onComplete: () => container.destroy(),
+            })
+        }
+    }
+
+    private buildBarrier(barrier: Barrier): Phaser.GameObjects.Container {
+        const cs = this.cellSize
+        const colors = BARRIER_PALETTE[barrier.color]
+        const { x, y } = this.cellToPixel(barrier.position)
+        // Chão aceso: abaixo das peças, dos itens, e de outros efeitos
+        const container = this.add.container(x, y).setDepth(-1)
+
+        // A casa acesa: o brilho por dentro, pulsando, e a borda marcando onde ela começa
+        const floor = this.add
+            .rectangle(0, 0, cs, cs, hex(colors.floor), BARRIER_FLOOR_ALPHA.dim)
+            .setStrokeStyle(BARRIER_EDGE_WIDTH, hex(colors.edge), 1)
+        container.add(floor)
+        this.tweens.add({
+            targets: floor,
+            alpha: { from: BARRIER_FLOOR_ALPHA.dim, to: BARRIER_FLOOR_ALPHA.bright },
+            duration: BARRIER_PULSE_MS,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut",
+        })
+
+        // A luz que a casa projeta para cima: poucas fatias finas, somando brilho e
+        // apagando conforme sobem. Elas ficam em um container próprio porque a opacidade
+        // dele multiplica a das fatias, e assim um tween só faz tudo pulsar junto sem
+        // desfazer o degradê.
+        const glow = this.add.container(0, 0)
+        const slice = (cs * BARRIER_GLOW.height) / BARRIER_GLOW.slices
+        for (let i = 0; i < BARRIER_GLOW.slices; i++) {
+            // A primeira fatia começa na beirada de cima da casa
+            const centerY = -cs / 2 - slice * (i + 0.5)
+            const fade = 1 - i / BARRIER_GLOW.slices
+            glow.add(
+                // Mistura aditiva: a fatia soma luz ao que está embaixo em vez de cobrir
+                this.add
+                    .rectangle(0, centerY, cs, slice, hex(colors.glow), fade)
+                    .setBlendMode(Phaser.BlendModes.ADD),
+            )
+        }
+        container.add(glow)
+        this.tweens.add({
+            targets: glow,
+            alpha: { from: BARRIER_GLOW_ALPHA.dim, to: BARRIER_GLOW_ALPHA.bright },
+            duration: BARRIER_PULSE_MS,
+            yoyo: true,
+            repeat: -1,
+            ease: "Sine.easeInOut",
+        })
+
+        return container
     }
 
     private dropItem(itemId: string) {

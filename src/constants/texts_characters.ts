@@ -16,16 +16,18 @@ export const texts_characters = {
 
     dB: {
         name: {
-            enUS: "Nyx, the Balanced",
-            ptBR: "Nyx, a Balanceada",
+            enUS: "Nyx, the Barrier",
+            ptBR: "Nyx, a Barreira",
         },
         description: {
             enUS:
-                "Nyx keeps the Dark line honest: no room is taken before it is held. The rest of the team calls this patience; the other two teams have another word for it.\n\n" +
-                "The balanced piece of the Dark team.",
+                "Nyx keeps the Dark line honest: no room is taken before it is held. Where Nyx decides a corridor ends, a violet light rises out of the floor and burns without heat, and the ones who do not belong to the Dark side simply do not get through.\n\n" +
+                "The rest of the team calls this patience; the other two teams have another word for it.\n\n" +
+                "The barrier piece of the Dark team.",
             ptBR:
-                "Nyx mantém a linha escura honesta: nenhuma sala é tomada antes de ser sustentada. O resto do time chama isso de paciência; os outros dois times têm outra palavra.\n\n" +
-                "É a peça equilibrada do time escuro.",
+                "Nyx mantém a linha escura honesta: nenhuma sala é tomada antes de ser sustentada. Onde Nyx decide que um corredor acaba, sobe do chão uma luz violeta que queima sem esquentar, e quem não é do lado escuro simplesmente não passa.\n\n" +
+                "O resto do time chama isso de paciência; os outros dois times têm outra palavra.\n\n" +
+                "É a peça de barreiras do time escuro.",
         },
     },
 
@@ -106,16 +108,18 @@ export const texts_characters = {
 
     gB: {
         name: {
-            enUS: "Limen, the Balanced",
-            ptBR: "Limen, a Balanceada",
+            enUS: "Limen, the Barrier",
+            ptBR: "Limen, a Barreira",
         },
         description: {
             enUS:
-                "Limen holds the doorways the other two sides insist on crossing. Belonging to neither of them is not a position Limen took by accident.\n\n" +
-                "The balanced piece of the Gray team.",
+                "Limen holds the doorways the other two sides insist on crossing, and closes them with a pale blue fog that looks like nothing at all until someone tries to walk into it.\n\n" +
+                "Belonging to neither of them is not a position Limen took by accident.\n\n" +
+                "The barrier piece of the Gray team.",
             ptBR:
-                "Limen ocupa as passagens que os outros dois lados insistem em atravessar. Não pertencer a nenhum deles não é uma posição que Limen tenha tomado por acaso.\n\n" +
-                "É a peça equilibrada do time cinza.",
+                "Limen ocupa as passagens que os outros dois lados insistem em atravessar, e as fecha com uma névoa azul pálida que não parece nada até alguém tentar entrar nela.\n\n" +
+                "Não pertencer a nenhum deles não é uma posição que Limen tenha tomado por acaso.\n\n" +
+                "É a peça de barreiras do time cinza.",
         },
     },
 
@@ -196,16 +200,16 @@ export const texts_characters = {
 
     lB: {
         name: {
-            enUS: "Aurora, the Balanced",
-            ptBR: "Aurora, a Balanceada",
+            enUS: "Aurora, the Barrier",
+            ptBR: "Aurora, a Barreira",
         },
         description: {
             enUS:
-                "Aurora took the first watch on the night the mansion closed itself, and has never handed it over. The habit is to wait at a threshold and let the corridor come, rather than chase what moves in it.\n\n" +
-                "The balanced piece of the Light team.",
+                "Aurora took the first watch on the night the mansion closed itself, and has never handed it over. The habit is to wait at a threshold and let the corridor come, rather than chase what moves in it — and to leave a white flame standing in the doorway, edged in a yellow so faint it reads as a trick of the eye.\n\n" +
+                "The barrier piece of the Light team.",
             ptBR:
-                "Aurora assumiu a primeira vigília na noite em que a mansão se fechou e nunca a passou adiante. Prefere esperar em uma soleira e deixar o corredor vir até ela, em vez de correr atrás do que se mexe lá dentro.\n\n" +
-                "É a peça equilibrada do time claro.",
+                "Aurora assumiu a primeira vigília na noite em que a mansão se fechou e nunca a passou adiante. Prefere esperar em uma soleira e deixar o corredor vir até ela, em vez de correr atrás do que se mexe lá dentro — e deixar na passagem uma chama branca, com uma borda amarela tão leve que parece engano da vista.\n\n" +
+                "É a peça de barreiras do time claro.",
         },
     },
 

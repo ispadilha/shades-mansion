@@ -36,6 +36,7 @@ interface HUDProps {
     hintVisible: boolean
     onDismissHint: () => void
     activeSkill: ActiveSkill | null
+    skillChargesLeft: number
     onCancelSkill: () => void
 }
 
@@ -59,6 +60,7 @@ export const HUD: React.FC<HUDProps> = ({
     hintVisible,
     onDismissHint,
     activeSkill,
+    skillChargesLeft,
     onCancelSkill,
 }) => {
     const palette = usePalette()
@@ -68,7 +70,7 @@ export const HUD: React.FC<HUDProps> = ({
             {/* Banners sempre montados: cada um "decide sozinho" quando entrar e sair,
                 e precisa continuar na árvore para conseguir deslizar de volta. */}
             <ManipulationBanner itemKey={manipulationKey} onCancel={onCancelManipulation} />
-            <SkillBanner active={activeSkill} onCancel={onCancelSkill} />
+            <SkillBanner active={activeSkill} chargesLeft={skillChargesLeft} onCancel={onCancelSkill} />
             <HintBanner open={hintVisible} onDismiss={onDismissHint} />
 
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}

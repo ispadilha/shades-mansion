@@ -2,7 +2,7 @@ import React, { type JSX } from "react"
 import { Box } from "@mui/material"
 import { Cell } from "./Cell"
 import { PhaserBoard } from "./PhaserBoard"
-import type { PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../logic/types"
+import type { Barrier, PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../logic/types"
 import type { FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { isWall } from "../../logic/maze"
@@ -15,6 +15,8 @@ interface BoardProps {
     items: MotivationItem[]
     highlighted: PiecePosition[]
     attackHighlighted: PiecePosition[]
+    skillHighlighted: PiecePosition[]
+    barriers: Barrier[]
     fireBursts: FireBurst[]
     auras: PieceAuras
     selectedPieceId: string | null
@@ -33,6 +35,8 @@ export const Board: React.FC<BoardProps> = ({
     items,
     highlighted,
     attackHighlighted,
+    skillHighlighted,
+    barriers,
     fireBursts,
     auras,
     selectedPieceId,
@@ -54,6 +58,7 @@ export const Board: React.FC<BoardProps> = ({
                     isWall={isWall(maze, x, y)}
                     isHighlighted={includesPosition(highlighted, position)}
                     isAttackHighlighted={includesPosition(attackHighlighted, position)}
+                    isSkillHighlighted={includesPosition(skillHighlighted, position)}
                     isSelected={piece?.id === selectedPieceId}
                     onCellClick={onCellClick}
                     onCellContextMenu={onCellContextMenu}
@@ -70,6 +75,7 @@ export const Board: React.FC<BoardProps> = ({
                 maze={maze}
                 pieces={pieces}
                 items={items}
+                barriers={barriers}
                 fireBursts={fireBursts}
                 auras={auras}
                 droppedItemId={droppedItemId}

@@ -10,22 +10,35 @@ interface CellProps {
     isWall: boolean
     isHighlighted: boolean
     isAttackHighlighted: boolean
+    isSkillHighlighted: boolean
     isSelected: boolean
     onCellClick: (pos: PiecePosition) => void
     onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
 }
 
-export const Cell: React.FC<CellProps> = ({ x, y, size, isWall, isHighlighted, isAttackHighlighted, isSelected, onCellClick, onCellContextMenu }) => {
+export const Cell: React.FC<CellProps> = ({
+    x,
+    y,
+    size,
+    isWall,
+    isHighlighted,
+    isAttackHighlighted,
+    isSkillHighlighted,
+    isSelected,
+    onCellClick,
+    onCellContextMenu,
+}) => {
     const palette = usePalette()
     const base = (x + y) % 2 === 0 ? palette.board.floorLight : palette.board.floorDark
-    const range =
-        isHighlighted && isAttackHighlighted
-            ? palette.range.both
-            : isAttackHighlighted
-              ? palette.range.attack
-              : isHighlighted
-                ? palette.range.move
-                : null
+    const range = isSkillHighlighted
+        ? palette.range.skill
+        : isHighlighted && isAttackHighlighted
+          ? palette.range.both
+          : isAttackHighlighted
+            ? palette.range.attack
+            : isHighlighted
+              ? palette.range.move
+              : null
     const bg = isWall ? palette.board.wall : (range ?? base)
     const border = isWall
         ? `1px solid ${palette.board.wall}`

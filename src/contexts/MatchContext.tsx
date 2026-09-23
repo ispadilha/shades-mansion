@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import type { MatchSetup } from "../logic/setup"
 import type { Maze } from "../logic/maze"
 import type {
+    Barrier,
     PieceAuras,
     PieceColor,
     PieceDefinition,
@@ -23,6 +24,7 @@ import { useEliminations } from "../hooks/useEliminations"
 import { useGame } from "../hooks/useGame"
 import { useGameLog } from "../hooks/useGameLog"
 import { useHighlightedCells } from "../hooks/useHighlightedCells"
+import { useBarriers } from "../hooks/useBarriers"
 import { useBoardInput } from "../hooks/useBoardInput"
 import { useIdleHint, type IdleHint } from "../hooks/useIdleHint"
 import { useItemActions, type Manipulation } from "../hooks/useItemActions"
@@ -45,6 +47,8 @@ export interface MatchContextValue {
         items: MotivationItem[]
         moveCells: PiecePosition[]
         attackCells: PiecePosition[]
+        skillCells: PiecePosition[]
+        barriers: Barrier[]
         fireBursts: FireBurst[]
         auras: PieceAuras
         selectedId: string | null
@@ -70,6 +74,12 @@ export interface MatchContextValue {
     }
 
     skill: SkillFlow
+
+    // As barreiras paranormais acesas, e quantas a peça da vez ainda pode acender
+    barriers: {
+        all: Barrier[]
+        chargesLeft: number
+    }
 
     // A tentativa de comandar uma peça de outro time
     manipulation: {
@@ -181,12 +191,21 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         focusActivePiece,
     })
 
+    const barriers = useBarriers({
+        pieces,
+        activePieceId: activePiece?.id ?? null,
+        activeColor,
+        skill,
+        log,
+    })
+
     // Casas destacadas pela seleção: até onde a peça anda e o que ela alcança.
     // Ter ou não a ação comum é o que decide se há destaque nenhum.
     const selectedPiece = pieces.find((p) => p.id === selectedId) ?? null
     const highlighted = useHighlightedCells(selectedId, pieces, maze, {
         skill: skill.reach,
         basicAvailable: selectedPiece !== null && (!selectedPiece.movedThisTurn || manipulation !== null),
+        barriers: barriers.all,
     })
 
     const input = useBoardInput({
@@ -201,6 +220,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         skill,
         moveCells: highlighted.move,
         attackCells: highlighted.attack,
+        skillCells: highlighted.skill,
         // Só dispensa a dica se o jogador de fato pôde agir: um menu só de informação
         // não conta, ali ele ainda não fez nada.
         onActionOffered: () => hint.dismiss(),
@@ -250,6 +270,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         moveActionFor,
         combat,
         log,
+        barriers: barriers.all,
+        placeSkill: barriers.lightAt,
     })
 
     const itemActions = useItemActions({
@@ -287,6 +309,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         inventories: items.inventories,
         setInventories: items.setInventories,
         maze,
+        barriers: barriers.all,
         resolving: rolls.resolving,
         endTurn,
         schedulePickup: items.schedulePickup,
@@ -370,6 +393,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             items: items.items,
             moveCells: highlighted.move,
             attackCells: highlighted.attack,
+            skillCells: highlighted.skill,
+            barriers: barriers.all,
             fireBursts,
             auras,
             selectedId,
@@ -389,6 +414,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             focusActivePiece,
         },
         skill,
+        barriers: { all: barriers.all, chargesLeft: barriers.chargesLeft },
         manipulation: {
             current: manipulation,
             cancel: () => itemActions.cancelManipulation(manipulation),
@@ -405,8 +431,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             state: input.menu,
             close: input.closeMenu,
             walk: actions.walk,
-            attack: () => actions.attack(false),
-            useSkill: () => actions.attack(true),
+            attack: actions.attack,
+            useSkill: actions.useSkill,
             showPieceInfo: () => {
                 setInfoPiece(input.menu?.targetPiece ?? null)
                 input.closeMenu()

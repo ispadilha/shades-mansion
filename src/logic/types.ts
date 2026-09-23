@@ -5,14 +5,6 @@ import type { texts_rules } from "../constants/texts_rules"
 export type PieceColor = "light" | "dark" | "gray"
 
 export type PieceType = "A" | "B" | "C" | "D" | "E" | "F"
-
-// Aura vale ao mesmo tempo para o tabuleiro e para o HUD.
-// `palette.ts` diz de que cor cada uma é desenhada.
-export type AuraKind = "active" | "manipulated" | "skill"
-
-// Quem está em destaque no tabuleiro agora: a peça (por id) e o tipo de aura dela
-export type PieceAuras = Record<string, AuraKind>
-
 export const ALL_PIECE_TYPES: PieceType[] = ["A", "B", "C", "D", "E", "F"]
 
 export interface PiecePosition {
@@ -32,13 +24,28 @@ export interface PieceDefinition {
     level: number
 }
 
-// A chave do item é o id da peça a que ele pertence: inicial do time + tipo ("lA", "dF"...),
-// então cada peça nova traz o seu item junto, sem lista para manter à parte.
-export type ItemPrefix = "d" | "g" | "l"
+// Quem está em destaque no tabuleiro agora: a peça (por id) e o tipo de aura dela
+export type PieceAuras = Record<string, AuraKind>
 
-export type MotivationItemKey = `${ItemPrefix}${PieceType}`
+// Aura vale ao mesmo tempo para o tabuleiro e para o HUD.
+// `palette.ts` diz de que cor cada uma é desenhada.
+export type AuraKind = "active" | "manipulated" | "skill"
 
-const ITEM_PREFIXES: ItemPrefix[] = ["d", "g", "l"]
+// As habilidades que existem. O id mora aqui, e não em `logic/skills.ts`, para a tabela de
+// níveis em `constants/rules.ts` poder falar dele sem que as regras dependam da lógica.
+export type SkillId = "extraMove" | "barrier" | "longShot" | "fire"
+
+export interface Barrier {
+    id: string
+    // Time que passa pela barreira paranormal
+    color: PieceColor
+    // Peça que a acendeu: é uma nova vez dela que marca a expiração da barreira
+    ownerId: string
+    position: PiecePosition
+}
+
+export type TeamInventory = MotivationItemKey[]
+export type Inventories = Record<PieceColor, TeamInventory>
 
 export interface MotivationItem {
     id: string
@@ -46,9 +53,12 @@ export interface MotivationItem {
     position: PiecePosition
 }
 
-export type TeamInventory = MotivationItemKey[]
-export type Inventories = Record<PieceColor, TeamInventory>
+// A chave do item é o id da peça a que ele pertence: inicial do time + tipo ("lA", "dF"...),
+// então cada peça nova traz o seu item junto, sem lista para manter à parte.
+export type ItemPrefix = "d" | "g" | "l"
+const ITEM_PREFIXES: ItemPrefix[] = ["d", "g", "l"]
 
+export type MotivationItemKey = `${ItemPrefix}${PieceType}`
 export const ALL_ITEM_KEYS: MotivationItemKey[] = ITEM_PREFIXES.flatMap((prefix) =>
     ALL_PIECE_TYPES.map((type): MotivationItemKey => `${prefix}${type}`),
 )

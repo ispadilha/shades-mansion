@@ -4,7 +4,7 @@ import { ModalCard } from "../../../components/ui"
 import type { PieceDefinition } from "../../../logic/types"
 import { diceLabel } from "../../../logic/rolls"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { skillFor } from "../../../logic/skills"
+import { skillChargesOf, skillFor, skillRangeOf } from "../../../logic/skills"
 import { DEFENSE_DIE, FIRE_AREA_SIDE, canDodge, statsFor } from "../../../constants/rules"
 
 // O número que o d20 da defesa precisa alcançar
@@ -15,6 +15,7 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
     const { t, tTeam } = useLanguage()
     const stats = statsFor(piece.type, piece.level)
     const skill = skillFor(piece.type)
+    const charges = skill ? skillChargesOf(skill, piece) : null
 
     return (
         <>
@@ -33,6 +34,16 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
             <Typography>
                 {t("skill")}: {skill ? t(skill.name) : t("skillNone")}
             </Typography>
+            {skill && !skill.roll && (
+                <Typography>
+                    {t("skillRange")}: {skillRangeOf(skill, piece)}
+                </Typography>
+            )}
+            {skill && charges !== null && (
+                <Typography>
+                    {t("skillCharges")}: {charges}
+                </Typography>
+            )}
             {skill?.area && (
                 <Typography>
                     {t("attackArea")}: {FIRE_AREA_SIDE} × {FIRE_AREA_SIDE}

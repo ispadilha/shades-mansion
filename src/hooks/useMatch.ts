@@ -10,6 +10,7 @@ export const useMatch = () => {
     const board = context.board
     const turn = context.turn
     const skill = context.skill
+    const barriers = context.barriers
     const manipulation = context.manipulation
     const inventory = context.inventory
     const menu = context.menu
@@ -17,5 +18,5 @@ export const useMatch = () => {
     const rolls = context.rolls
     const hint = context.hint
 
-    return { board, turn, skill, manipulation, inventory, menu, log, rolls, hint }
+    return { board, turn, skill, barriers, manipulation, inventory, menu, log, rolls, hint }
 }

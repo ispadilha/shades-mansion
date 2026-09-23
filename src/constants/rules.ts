@@ -1,11 +1,8 @@
-import type { PieceColor, PieceType } from "../logic/types"
+import type { PieceColor, PieceType, SkillId } from "../logic/types"
 import type { CoinFace, DiceSpec, DieSides } from "../logic/rolls"
 
-// Todas as regras e todos os tempos do jogo ficam neste arquivo.
-// Nenhum número de regra (alcance, dano, tamanho, ritmo) é escrito solto pelo resto do
-// projeto. É o mesmo que `palette.ts` faz com as cores.
-// A medida que não entra aqui é a de layout — a largura de um modal, a altura de uma
-// faixa do HUD: ela pertence ao componente que a desenha, e não ao jogo.
+// As definições de constantes do jogo ficam todas neste arquivo:
+// Regras, tempos, medidas da interface, etc.
 
 // ---------------------------------------------------------------------------
 // Tabuleiro
@@ -73,7 +70,7 @@ export const STRIKE_REACH_BONUS = 1
 export const PIECE_STATS: Record<PieceType, Omit<PieceStats, "attackRange">> = {
     // "Ágil"
     A: { moveRange: 9, maxVigor: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
-    // "Balanceada"
+    // "Barreira"
     B: { moveRange: 7, maxVigor: 12, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 12 },
     // "Campeã"
     C: { moveRange: 5, maxVigor: 16, damage: { count: 2, sides: 8 }, dodge: NO_DODGE, guard: 14 },
@@ -125,6 +122,24 @@ export const statsFor = (type: PieceType, level: number): PieceStats => {
         guard: base.guard + steps * LEVEL_BONUS.guard,
         damage: climbDamageLadder(base.damage, steps * LEVEL_BONUS.damageSteps),
     }
+}
+
+// ---------------------------------------------------------------------------
+// Habilidades
+// ---------------------------------------------------------------------------
+
+export interface SkillLevelTable {
+    // Ao não se declarar alcance, é usado o padrão de ataque comum mais `rangeBonus`
+    range?: readonly number[]
+    // Quantos usos a habilidade sustenta ao mesmo tempo, em um turno
+    charges?: readonly number[]
+}
+
+export const SKILL_LEVELS: Partial<Record<SkillId, SkillLevelTable>> = {
+    barrier: {
+        range: [5, 8, 11],
+        charges: [3, 5, 7],
+    },
 }
 
 // ---------------------------------------------------------------------------
@@ -229,6 +244,12 @@ export const DODGE_ROLL_TIMING = { spinMs: 380, holdMs: 700 }
 // ---------------------------------------------------------------------------
 // Animações do tabuleiro (Phaser)
 // ---------------------------------------------------------------------------
+
+export const BARRIER_PULSE_MS = 2600
+export const BARRIER_GLOW = { height: 0.22, slices: 4 }
+export const BARRIER_GLOW_ALPHA = { dim: 0.3, bright: 0.52 }
+export const BARRIER_FLOOR_ALPHA = { dim: 0.5, bright: 0.78 }
+export const BARRIER_EDGE_WIDTH = 3
 
 export const FIRE_BURST_MS = 900
 export const FLAMES_PER_CELL = 2

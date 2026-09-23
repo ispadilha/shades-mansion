@@ -1,9 +1,11 @@
 import type { Dispatch, SetStateAction } from "react"
 import type { MotivationItemKey, PieceColor, PieceDefinition, PiecePosition, TextKey } from "../logic/types"
+import type { Barrier } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { attackArea } from "../logic/combat"
 import { findApproachCell, pathLength, strikeWalkRange } from "../logic/movement"
+import { blockedCellsFor } from "../logic/grid"
 import { damageOf } from "../logic/skills"
 import type { SkillFlow } from "./useSkillFlow"
 import type { CombatResolution } from "./useCombatResolution"
@@ -32,13 +34,19 @@ interface BoardActionsOptions {
     moveActionFor: (position: PiecePosition) => { actionKey: TextKey; target?: string }
     combat: CombatResolution
     log: GameLog
+    // Barreiras acesas: elas fecham caminho para os times rivais
+    barriers: Barrier[]
+    // O que a habilidade em uso faz quando cria algo numa casa
+    placeSkill: (position: PiecePosition) => void
 }
 
 export interface BoardActions {
     // Andar até a casa escolhida. Se houver item nela, a peça o coleta ao chegar.
     walk: () => void
-    // Atacar a casa escolhida, com a habilidade em uso ou com o ataque comum
-    attack: (viaSkill: boolean) => void
+    // Atacar a casa escolhida com o ataque comum
+    attack: () => void
+    // Acionar a habilidade em uso na casa escolhida
+    useSkill: () => void
 }
 
 // O que o menu de contexto executa: os dois caminhos pelos quais uma peça age no tabuleiro.
@@ -61,10 +69,13 @@ export const useBoardActions = ({
     moveActionFor,
     combat,
     log,
+    barriers,
+    placeSkill,
 }: BoardActionsOptions): BoardActions => {
-    // Quanto a peça demora para chegar lá, andando casa a casa
-    const travelTime = (from: PiecePosition, to: PiecePosition) =>
-        pathLength(from, to, maze) * STEP_MS + ACTION_SETTLE_MS
+    // Quanto a peça demora para chegar lá,
+    // andando casa a casa e contornando o que estiver fechado para o time dela
+    const travelTime = (piece: PieceDefinition, to: PiecePosition) =>
+        pathLength(piece.position, to, maze, blockedCellsFor(piece.color, barriers)) * STEP_MS + ACTION_SETTLE_MS
 
     const finishAction = () => {
         setSelectedId(null)
@@ -80,7 +91,7 @@ export const useBoardActions = ({
 
         // Com uma habilidade de movimento extra em uso, o passo sai da habilidade
         const viaSkill = skill.reach !== null && skill.reach.move > 0
-        const delayMs = travelTime(piece.position, destination)
+        const delayMs = travelTime(piece, destination)
         const { actionKey, target } = moveActionFor(destination)
 
         // Ação forçada por manipulação não gasta a ação que a peça tem no próprio turno
@@ -110,7 +121,7 @@ export const useBoardActions = ({
         }
     }
 
-    const attack = (viaSkill: boolean) => {
+    const strike = (viaSkill: boolean) => {
         if (!selectedId || !menu || !activeColor) return
         const attacker = pieces.find((p) => p.id === selectedId)
         if (!attacker) return
@@ -130,8 +141,15 @@ export const useBoardActions = ({
         const newPos =
             ranged || !target
                 ? attacker.position
-                : (findApproachCell(attacker, target, pieces, maze, walkRange) ?? attacker.position)
-        const delayMs = travelTime(attacker.position, newPos)
+                : (findApproachCell(
+                      attacker,
+                      target,
+                      pieces,
+                      maze,
+                      walkRange,
+                      blockedCellsFor(attacker.color, barriers),
+                  ) ?? attacker.position)
+        const delayMs = travelTime(attacker, newPos)
 
         const forcedBy = manipulating ? activeColor : null
         setPieces((prev) =>
@@ -170,5 +188,18 @@ export const useBoardActions = ({
         })
     }
 
-    return { walk, attack }
+    const useSkill = () => {
+        if (!menu || !skill.active) return
+        if (skill.active.skill.effect === "place") {
+            placeSkill(menu.position)
+            // Ao usar habilidade em uma casa, a habilidade continua em uso
+            // e a peça, selecionada: só o menu se fecha, e pode
+            // voltar a abrir num próximo clique direito em outra casa.
+            closeMenu()
+            return
+        }
+        strike(true)
+    }
+
+    return { walk, attack: () => strike(false), useSkill }
 }

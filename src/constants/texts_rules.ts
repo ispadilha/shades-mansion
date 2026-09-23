@@ -36,11 +36,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Light, Gray and Dark each start with six pieces, one of each type: Agile (A), Balanced (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
+                "Light, Gray and Dark each start with six pieces, one of each type: Agile (A), Barrier (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
                 "The six types are the same for the three teams, and no two of them are alike: they differ in how far they walk, how far they reach, how much vigor they have, the dice their blow rolls and how well they defend themselves.\n\n" +
                 "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row.",
             ptBR:
-                "Claro, Cinza e Escuro começam com seis peças cada, uma de cada tipo: Ágil (A), Balanceada (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
+                "Claro, Cinza e Escuro começam com seis peças cada, uma de cada tipo: Ágil (A), a de Barreira (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
                 "Os seis tipos são os mesmos para os três times, e não há dois iguais: eles se diferenciam em quanto andam, quanto alcançam, quanto vigor têm, os dados que o golpe deles rola e o quanto conseguem se defender.\n\n" +
                 "As peças escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
         },
@@ -54,7 +54,7 @@ export const texts_rules = {
         description: {
             enUS:
                 "The Agile (A) runs the farthest and hits the softest: 9 vigor and a 1d4 blow. In exchange it is the only piece that slips out of a blow completely almost half of the time.\n\n" +
-                "The Balanced (B) is the middle of the table: 12 vigor and a 1d6 blow.\n\n" +
+                "The Barrier (B) is the middle of the table in a fight: 12 vigor and a 1d6 blow. It is the only piece that can close a corridor: it lights paranormal barriers at a distance, which let its own team through and no one else.\n\n" +
                 "The Champion (C) is the heaviest of all: 16 vigor and two d8 in a single blow, but has the most limited movement.\n\n" +
                 "The Distance shooter (D) rolls a 1d6 from where it stands, with 10 vigor, and still ducks a blow now and then.\n\n" +
                 "The Exotic (E) sits between the middle and the top: 13 vigor and a 1d8 blow.\n\n" +
@@ -62,7 +62,7 @@ export const texts_rules = {
                 "Right-click a piece and ask for its information to see all of it, including how much vigor it has left.",
             ptBR:
                 "A Ágil (A) é a que corre mais longe e a que bate mais fraco: 9 de vigor e um golpe de 1d4. Em troca, é a única peça que desvia de ataques em quase metade das vezes.\n\n" +
-                "A Balanceada (B) é o meio da tabela: 12 de vigor e golpe de 1d6.\n\n" +
+                "A de Barreira (B) é o meio da tabela em uma luta: 12 de vigor e golpe de 1d6. É a única peça que consegue fechar um corredor: ela acende barreiras paranormais à distância, que deixam passar só o time dela.\n\n" +
                 "O Campeão (C) é o mais pesado de todos: 16 de vigor e dois d8 em um golpe só, mas tem o movimento mais limitado.\n\n" +
                 "A que atira à Distância (D) rola um 1d6 de onde está, com 10 de vigor, e ainda desvia de um golpe de vez em quando.\n\n" +
                 "A Exótica (E) fica entre o meio e o topo: 13 de vigor e golpe de 1d8\n\n" +

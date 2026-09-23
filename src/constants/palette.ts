@@ -71,6 +71,12 @@ export const VIGOR_PALETTE = {
     low: "#e04a3c",
 }
 
+export const BARRIER_PALETTE: Record<PieceColor, { floor: string; glow: string; edge: string }> = {
+    dark: { floor: "#a855f7", glow: "#c79cff", edge: "#2b0a52" },
+    gray: { floor: "#6b90b4", glow: "#a8caea", edge: "#4a5563" },
+    light: { floor: "#fdf6dd", glow: "#fffdf0", edge: "#e8c94a" },
+}
+
 // O incêndio do dano em área: as chamas sorteiam uma das cores da lista.
 export const FIRE_PALETTE = {
     flames: ["#fff0a5", "#ffc043", "#ff8c1a", "#e63b1e"],
@@ -156,6 +162,7 @@ const dark = {
         move: "#d6b52b",
         attack: "#b3352c",
         both: "#dd7a1c",
+        skill: "#2f6aa8",
     },
 
     manipulation: {
@@ -265,6 +272,7 @@ const light: Palette = {
         move: "#cba32a",
         attack: "#9c3129",
         both: "#b86c18",
+        skill: "#2a5c8f",
     },
 
     manipulation: {
@@ -372,6 +380,7 @@ const gray: Palette = {
         move: "#d6b52b",
         attack: "#b3352c",
         both: "#dd7a1c",
+        skill: "#2f6aa8",
     },
 
     manipulation: {

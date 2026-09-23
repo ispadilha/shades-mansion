@@ -2,7 +2,7 @@ import React from "react"
 import type { RefObject } from "react"
 import { Box } from "@mui/material"
 import { Board } from "../../../components/board"
-import type { PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../../logic/types"
+import type { Barrier, PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../../logic/types"
 import type { FireBurst } from "../../../logic/combat"
 import type { Maze } from "../../../logic/maze"
 import { CELL_SIZE } from "../../../constants/rules"
@@ -15,6 +15,8 @@ interface BoardAreaProps {
     items: MotivationItem[]
     highlighted: PiecePosition[]
     attackHighlighted: PiecePosition[]
+    skillHighlighted: PiecePosition[]
+    barriers: Barrier[]
     fireBursts: FireBurst[]
     auras: PieceAuras
     selectedPieceId: string | null
@@ -32,6 +34,8 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
     items,
     highlighted,
     attackHighlighted,
+    skillHighlighted,
+    barriers,
     fireBursts,
     auras,
     selectedPieceId,
@@ -60,6 +64,8 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                     items={items}
                     highlighted={highlighted}
                     attackHighlighted={attackHighlighted}
+                    skillHighlighted={skillHighlighted}
+                    barriers={barriers}
                     fireBursts={fireBursts}
                     auras={auras}
                     onCellClick={onCellClick}

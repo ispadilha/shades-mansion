@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { Inventories, PieceColor, PieceDefinition, PiecePosition, MotivationItem, MotivationItemKey, TextKey } from "../logic/types"
+import type { Barrier, Inventories, MotivationItem, MotivationItemKey, PieceColor, PieceDefinition, PiecePosition, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { pathLength } from "../logic/movement"
+import { blockedCellsFor } from "../logic/grid"
 import { SimpleAI } from "../logic/ai"
 import type { CombatResolution } from "./useCombatResolution"
 import type { GameLog } from "./useGameLog"
@@ -19,6 +20,8 @@ interface AiTurnOptions {
     inventories: Inventories
     setInventories: Dispatch<SetStateAction<Inventories>>
     maze: Maze
+    // Barreiras acesas: fecham caminho para peças adversárias
+    barriers: Barrier[]
     // Uma rolagem em andamento trava a IA até o resultado sair
     resolving: boolean
     endTurn: () => void
@@ -45,6 +48,7 @@ export const useAiTurn = ({
     inventories,
     setInventories,
     maze,
+    barriers,
     resolving,
     endTurn,
     schedulePickup,
@@ -91,7 +95,7 @@ export const useAiTurn = ({
 
         const timer = setTimeout(() => {
             const previousPieces = pieces
-            const { updatedPieces, pendingAttack } = SimpleAI.makeMove(pieces, activePiece, maze, items, inventories)
+            const { updatedPieces, pendingAttack } = SimpleAI.makeMove(pieces, activePiece, maze, items, inventories, barriers)
 
             // Aplica a decisão da IA: posiciona as peças e agenda a coleta do item "pisado".
             // Devolve a peça que mudou de casa (no máximo uma por chamada de makeMove).
@@ -103,7 +107,15 @@ export const useAiTurn = ({
                 })
                 if (movedPiece) {
                     const old = previousPieces.find((q) => q.id === movedPiece.id)!
-                    const delayMs = pathLength(old.position, movedPiece.position, maze) * STEP_MS + ACTION_SETTLE_MS
+                    const delayMs =
+                        pathLength(
+                            old.position,
+                            movedPiece.position,
+                            maze,
+                            blockedCellsFor(movedPiece.color, barriers),
+                        ) *
+                            STEP_MS +
+                        ACTION_SETTLE_MS
                     schedulePickup(movedPiece.color, movedPiece.position, delayMs)
                 }
                 return movedPiece
@@ -147,5 +159,5 @@ export const useAiTurn = ({
         return () => clearTimeout(timer)
         // endTurn fecha sobre `turnIndex`/`pieces` (ambos nas deps), então a closure está sempre atualizada
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [turnIndex, round, pieces, isPlayerTurn, inventories, items, resolving])
+    }, [turnIndex, round, pieces, isPlayerTurn, inventories, items, resolving, barriers])
 }

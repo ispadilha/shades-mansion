@@ -1,7 +1,14 @@
 import type { PiecePosition, PieceDefinition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
-import { ORTHOGONAL_STEPS, SURROUNDING_STEPS, atPosition, positionKey } from "./grid"
+import {
+    NO_BLOCKED_CELLS,
+    ORTHOGONAL_STEPS,
+    SURROUNDING_STEPS,
+    atPosition,
+    positionKey,
+    type BlockedCells,
+} from "./grid"
 import { statsFor } from "../constants/rules"
 
 interface WalkNode {
@@ -13,7 +20,12 @@ interface WalkNode {
 // Busca em largura pelas casas livres do labirinto (as paredes bloqueiam, as peças não;
 // elas só impedem que uma casa seja destino). O resultado guarda a distância em passos
 // e a casa anterior, o que permite reconstruir o caminho andado.
-function walkFrom(origin: PiecePosition, maze: Maze, maxSteps = Infinity): Map<string, WalkNode> {
+function walkFrom(
+    origin: PiecePosition,
+    maze: Maze,
+    maxSteps = Infinity,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
+): Map<string, WalkNode> {
     const visited = new Map<string, WalkNode>()
     if (!isWalkable(maze, origin.x, origin.y)) return visited
 
@@ -29,7 +41,7 @@ function walkFrom(origin: PiecePosition, maze: Maze, maxSteps = Infinity): Map<s
             const next = { x: node.position.x + dx, y: node.position.y + dy }
             if (!isWalkable(maze, next.x, next.y)) continue
             const key = positionKey(next)
-            if (visited.has(key)) continue
+            if (visited.has(key) || blocked.has(key)) continue
 
             const child: WalkNode = { position: next, distance: node.distance + 1, previous: positionKey(node.position) }
             visited.set(key, child)
@@ -41,21 +53,35 @@ function walkFrom(origin: PiecePosition, maze: Maze, maxSteps = Infinity): Map<s
 }
 
 // Distância andando (contornando paredes) entre duas casas. Infinity se não houver caminho.
-export function pathLength(from: PiecePosition, to: PiecePosition, maze: Maze): number {
+export function pathLength(
+    from: PiecePosition,
+    to: PiecePosition,
+    maze: Maze,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
+): number {
     if (from.x === to.x && from.y === to.y) return 0
-    return walkFrom(from, maze).get(positionKey(to))?.distance ?? Infinity
+    return walkFrom(from, maze, Infinity, blocked).get(positionKey(to))?.distance ?? Infinity
 }
 
 // Distância andando de "origin" até cada casa livre alcançável, indexada por "positionKey".
-export function distanceMap(origin: PiecePosition, maze: Maze): Map<string, number> {
+export function distanceMap(
+    origin: PiecePosition,
+    maze: Maze,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
+): Map<string, number> {
     const distances = new Map<string, number>()
-    for (const [key, node] of walkFrom(origin, maze)) distances.set(key, node.distance)
+    for (const [key, node] of walkFrom(origin, maze, Infinity, blocked)) distances.set(key, node.distance)
     return distances
 }
 
 // Caminho casa-a-casa entre duas posições (sem incluir a origem). Vazio se não houver caminho.
-export function findPath(from: PiecePosition, to: PiecePosition, maze: Maze): PiecePosition[] {
-    const visited = walkFrom(from, maze)
+export function findPath(
+    from: PiecePosition,
+    to: PiecePosition,
+    maze: Maze,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
+): PiecePosition[] {
+    const visited = walkFrom(from, maze, Infinity, blocked)
     const destination = visited.get(positionKey(to))
     if (!destination) return []
 
@@ -70,11 +96,17 @@ export function findPath(from: PiecePosition, to: PiecePosition, maze: Maze): Pi
 
 // Casas em que a peça pode terminar o movimento: dentro do alcance andando pelo labirinto
 // e livres de outras peças.
-export function reachableCells(piece: PieceDefinition, pieces: PieceDefinition[], maze: Maze, range = 5) {
+export function reachableCells(
+    piece: PieceDefinition,
+    pieces: PieceDefinition[],
+    maze: Maze,
+    range = 5,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
+) {
     const occupied = new Set(pieces.filter((p) => p.id !== piece.id).map((p) => positionKey(p.position)))
     const res: PiecePosition[] = []
 
-    for (const [key, node] of walkFrom(piece.position, maze, range)) {
+    for (const [key, node] of walkFrom(piece.position, maze, range, blocked)) {
         if (node.distance === 0 || occupied.has(key)) continue
         res.push(node.position)
     }
@@ -91,6 +123,7 @@ export function findApproachCell(
     pieces: PieceDefinition[],
     maze: Maze,
     walkRange: number,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): PiecePosition | null {
     const dxAbs = Math.abs(attacker.position.x - target.position.x)
     const dyAbs = Math.abs(attacker.position.y - target.position.y)
@@ -103,7 +136,7 @@ export function findApproachCell(
         y: target.position.y + dy,
     }))
 
-    const visited = walkFrom(attacker.position, maze, walkRange)
+    const visited = walkFrom(attacker.position, maze, walkRange, blocked)
     let best: { cell: PiecePosition; distance: number } | null = null
 
     for (const candidate of candidates) {
@@ -124,6 +157,7 @@ export function meleeAttackCells(
     pieces: PieceDefinition[],
     maze: Maze,
     walkRange: number,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): PiecePosition[] {
     const cells = new Map<string, PiecePosition>()
     const add = (cell: PiecePosition) => {
@@ -131,7 +165,7 @@ export function meleeAttackCells(
         cells.set(positionKey(cell), cell)
     }
 
-    for (const [, node] of walkFrom(piece.position, maze, walkRange)) {
+    for (const [, node] of walkFrom(piece.position, maze, walkRange, blocked)) {
         add(node.position)
         for (const [dx, dy] of SURROUNDING_STEPS) add({ x: node.position.x + dx, y: node.position.y + dy })
     }
@@ -140,7 +174,11 @@ export function meleeAttackCells(
     // Casa ocupada só entra se sobrar onde encostar na peça que está nela
     return [...cells.values()].filter((cell) => {
         const occupant = atPosition(pieces, cell)
-        return !occupant || occupant.id === piece.id || findApproachCell(piece, occupant, pieces, maze, walkRange) !== null
+        return (
+            !occupant ||
+            occupant.id === piece.id ||
+            findApproachCell(piece, occupant, pieces, maze, walkRange, blocked) !== null
+        )
     })
 }
 
@@ -231,9 +269,10 @@ export function canHitTarget(
     pieces: PieceDefinition[],
     maze: Maze,
     reach: { ranged: boolean; range: number },
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): boolean {
     if (reach.ranged) {
         return lineOfFire(attacker, pieces, maze, reach.range).targets.some((t) => t.id === target.id)
     }
-    return findApproachCell(attacker, target, pieces, maze, reach.range) !== null
+    return findApproachCell(attacker, target, pieces, maze, reach.range, blocked) !== null
 }

@@ -7,7 +7,7 @@ interface MatchHudProps {}
 // A barra de comando da partida em curso: junta o que o HUD mostra (de quem é a vez, o
 // que está em curso, o que o jogador guardou) e entrega tudo já no formato dele.
 export const MatchHud: React.FC<MatchHudProps> = ({}) => {
-    const { board, turn, skill, manipulation, inventory, log, hint } = useMatch()
+    const { board, turn, skill, barriers, manipulation, inventory, log, hint } = useMatch()
 
     return (
         <HUD
@@ -23,6 +23,7 @@ export const MatchHud: React.FC<MatchHudProps> = ({}) => {
             onFocusActivePiece={turn.focusActivePiece}
             onOpenSkills={skill.openList}
             activeSkill={skill.active}
+            skillChargesLeft={barriers.chargesLeft}
             onCancelSkill={skill.cancel}
             manipulationKey={manipulation.current?.itemKey ?? null}
             onCancelManipulation={manipulation.cancel}

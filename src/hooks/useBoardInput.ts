@@ -21,6 +21,7 @@ interface BoardInputOptions {
     // As casas que o tabuleiro já está destacando
     moveCells: PiecePosition[]
     attackCells: PiecePosition[]
+    skillCells: PiecePosition[]
     // Chamado quando o menu ofereceu uma ação de verdade, e não só informação:
     // é o sinal de que o jogador não está parado e não precisa mais da dica.
     onActionOffered: () => void
@@ -50,6 +51,7 @@ export const useBoardInput = ({
     skill,
     moveCells,
     attackCells,
+    skillCells,
     onActionOffered,
 }: BoardInputOptions): BoardInput => {
     const [menu, setMenu] = useState<BoardMenuState | null>(null)
@@ -87,6 +89,7 @@ export const useBoardInput = ({
             skillReach: skill.reach,
             moveCells,
             attackCells,
+            skillCells,
         })
         if (actions.length === 0) return
 
