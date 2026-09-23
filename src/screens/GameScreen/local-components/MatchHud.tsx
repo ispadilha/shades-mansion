@@ -28,7 +28,6 @@ export const MatchHud: React.FC<MatchHudProps> = ({}) => {
             manipulationKey={manipulation.current?.itemKey ?? null}
             onCancelManipulation={manipulation.cancel}
             onOpenInventory={() => inventory.setOpen(true)}
-            inventoryCount={inventory.items.length}
             log={log}
             hintVisible={hint.visible}
             onDismissHint={hint.dismiss}

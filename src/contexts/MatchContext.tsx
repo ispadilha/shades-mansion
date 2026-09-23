@@ -147,9 +147,6 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const log = useGameLog()
     const rolls = useRolls()
 
-    // Inventário exibido no HUD: quem comanda um único time consulta o seu a qualquer
-    // momento (inclusive para revigorar ou promover durante o turno da IA).
-    // No multi-jogador local, é sempre o do time da vez.
     const inventoryColor = controlledColors.length === 1 ? controlledColors[0] : activeColor
     const playerInventory = inventoryColor ? items.inventories[inventoryColor] : []
 

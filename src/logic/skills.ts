@@ -130,6 +130,14 @@ export const cancelCostsSkill = (active: ActiveSkill | null) => active?.committe
 
 export const skillStaysActive = (skill: Skill) => skill.effect === "place"
 
+// Sair de uma habilidade é "encerrar" quando ela criou algo: dali em
+// diante não há como desfazer, e o jogador está fechando o que começou.
+// Antes disso ainda é "cancelar".
+// Habilidade que não cria algo é sempre "cancelar":
+// ali o jogador só está desistindo de mirar.
+export const skillExitIsFinish = (active: ActiveSkill | null) =>
+    active !== null && skillStaysActive(active.skill) && cancelCostsSkill(active)
+
 export interface SkillReach {
     move: number
     attack: number

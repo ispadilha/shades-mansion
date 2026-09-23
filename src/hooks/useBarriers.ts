@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { Barrier, PieceColor, PieceDefinition, PiecePosition } from "../logic/types"
-import { barriersOf, litBarrier } from "../logic/barriers"
+import { barriersOf, barriersStillStanding, litBarrier } from "../logic/barriers"
 import { skillChargesOf } from "../logic/skills"
 import type { SkillFlow } from "./useSkillFlow"
 import type { GameLog } from "./useGameLog"
@@ -49,15 +49,9 @@ export const useBarriers = ({ pieces, activePieceId, activeColor, skill, log }: 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activePieceId])
 
-    // Peça que saiu da mansão não sustenta mais nada.
-    // Não há o que registrar: o histórico já anunciou a saída dela.
+    // Peça que saiu da mansão leva as barreiras dela embora
     useEffect(() => {
-        const inPlay = new Set(pieces.map((p) => p.id))
-        setAll((prev) =>
-            prev.every((barrier) => inPlay.has(barrier.ownerId))
-                ? prev
-                : prev.filter((barrier) => inPlay.has(barrier.ownerId)),
-        )
+        setAll((prev) => barriersStillStanding(prev, pieces))
     }, [pieces])
 
     const lightAt = (position: PiecePosition) => {

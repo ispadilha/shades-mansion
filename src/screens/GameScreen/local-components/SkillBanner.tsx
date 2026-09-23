@@ -1,6 +1,6 @@
 import React from "react"
 import { HudBanner } from "./HudBanner"
-import { skillStaysActive, type ActiveSkill } from "../../../logic/skills"
+import { skillExitIsFinish, skillStaysActive, type ActiveSkill } from "../../../logic/skills"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
@@ -31,7 +31,7 @@ export const SkillBanner: React.FC<SkillBannerProps> = ({ active, chargesLeft, o
             outline={palette.skill.bandOutline}
             textColor={palette.skill.bandText}
             message={message}
-            actionLabel={active && skillStaysActive(active.skill) ? t("finishSkill") : t("cancelSkill")}
+            actionLabel={skillExitIsFinish(active) ? t("finishSkill") : t("cancelSkill")}
             onAction={onCancel}
         />
     )

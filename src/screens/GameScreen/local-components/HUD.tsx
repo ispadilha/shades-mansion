@@ -28,7 +28,6 @@ interface HUDProps {
     onQuit: () => void
     onOpenSkills: () => void
     onOpenInventory: () => void
-    inventoryCount: number
     log: string[]
     manipulationKey: MotivationItemKey | null
     onCancelManipulation: () => void
@@ -52,7 +51,6 @@ export const HUD: React.FC<HUDProps> = ({
     onQuit,
     onOpenSkills,
     onOpenInventory,
-    inventoryCount,
     log,
     manipulationKey,
     onCancelManipulation,
@@ -105,7 +103,6 @@ export const HUD: React.FC<HUDProps> = ({
                     isPlayerTurn={isPlayerTurn}
                     busy={busy}
                     spectating={spectating}
-                    inventoryCount={inventoryCount}
                     onOpenSkills={onOpenSkills}
                     onOpenInventory={onOpenInventory}
                     onEndTurn={onEndTurn}

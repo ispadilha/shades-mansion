@@ -30,6 +30,20 @@ export const barrierCells = (
     })
 }
 
+// Barreiras que continuam ativas: as de peças que ainda estão em jogo. Peça eliminada
+// leva as suas embora, e esse cuidado é necessário. A barreira se apaga quando a vez de
+// quem a acendeu volta, e a vez de uma peça que saiu da mansão nunca volta, então sem isso
+// elas ficariam acesas até o fim da partida.
+//
+// Devolve a mesma lista quando não há nada a apagar, para quem guarda o estado não
+// precisar de um render novo à toa.
+export const barriersStillStanding = (barriers: Barrier[], pieces: PieceDefinition[]): Barrier[] => {
+    const inPlay = new Set(pieces.map((piece) => piece.id))
+    return barriers.every((barrier) => inPlay.has(barrier.ownerId))
+        ? barriers
+        : barriers.filter((barrier) => inPlay.has(barrier.ownerId))
+}
+
 // A barreira acesa por uma peça em uma casa. O id carrega a casa para o desenho da cena
 // conseguir distinguir uma barreira nova de uma que só mudou de lugar na lista.
 export const litBarrier = (owner: PieceDefinition, position: PiecePosition): Barrier => ({

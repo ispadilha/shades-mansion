@@ -37,9 +37,9 @@ interface Hit {
 }
 
 const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }> = {
-    dodged: { label: "dodgeTotal", tone: "good" },
-    guarded: { label: "dodgeGuard", tone: "neutral" },
-    clean: { label: "dodgeNone", tone: "bad" },
+    dodged: { label: "defenseDodge", tone: "good" },
+    guarded: { label: "defenseGuard", tone: "neutral" },
+    clean: { label: "defenseNone", tone: "bad" },
 }
 
 interface CombatResolutionOptions {
@@ -178,7 +178,7 @@ export const useCombatResolution = ({
                 id: `defense-${defender.id}-${Date.now()}`,
                 kind: dieKind(DEFENSE_DIE),
                 value: [defense.die],
-                title: t("dodgeRoll"),
+                title: t("defenseRoll"),
                 subtitle: defender.id,
                 targets: defenseTargets(defender),
                 outcome: { label: t(reading.label), tone: reading.tone },

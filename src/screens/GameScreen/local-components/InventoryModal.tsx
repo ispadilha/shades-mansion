@@ -14,6 +14,9 @@ interface InventoryModalProps {
     inventory: TeamInventory
     pieces: PieceDefinition[]
     playerColor: PieceColor
+    // Gastar item é jogada: só na vez de quem comanda, e não no meio de uma rolagem.
+    // Fora disso o modal abre igual, mas só para consulta, com os botões desabilitados.
+    canUse: boolean
     onUseOwnItem: (key: MotivationItemKey) => void
     onUseManipulationItem: (key: MotivationItemKey) => void
 }
@@ -24,6 +27,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
     inventory,
     pieces,
     playerColor,
+    canUse,
     onUseOwnItem,
     onUseManipulationItem,
 }) => {
@@ -45,6 +49,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
     const actionFor = (key: MotivationItemKey) => itemUseFor(key, pieces.find((p) => p.id === key), playerColor)
 
     const handleUse = (key: MotivationItemKey) => {
+        if (!canUse) return
         const use = actionFor(key)
         if (use === "manipulate") onUseManipulationItem(key)
         else if (use) onUseOwnItem(key)
@@ -74,6 +79,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                             itemKey={key}
                             count={count}
                             use={actionFor(key)}
+                            disabled={!canUse}
                             onUse={() => handleUse(key)}
                             onExamine={(event) => setItemMenu({ mouseX: event.clientX, mouseY: event.clientY, key })}
                         />

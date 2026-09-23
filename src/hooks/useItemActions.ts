@@ -58,6 +58,9 @@ export const useItemActions = ({
     log,
 }: ItemActionsOptions): ItemActions => {
     const useOwnItem = (key: MotivationItemKey) => {
+        // Gastar item é jogada: só na vez de quem comanda, e não no meio de uma rolagem.
+        // O botão do HUD já fica desabilitado fora disso. Aqui é a regra em si.
+        if (!activeColor || rolls.resolving) return
         if (!inventoryColor || !inventories[inventoryColor].includes(key)) return
         const target = pieces.find((p) => p.id === key)
         const use = itemUseFor(key, target, inventoryColor)

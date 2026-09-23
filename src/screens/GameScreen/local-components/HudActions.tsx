@@ -8,7 +8,6 @@ interface HudActionsProps {
     // Uma rolagem em andamento trava os controles até o resultado sair
     busy: boolean
     spectating: boolean
-    inventoryCount: number
     onOpenSkills: () => void
     onOpenInventory: () => void
     onEndTurn: () => void
@@ -20,7 +19,6 @@ export const HudActions: React.FC<HudActionsProps> = ({
     isPlayerTurn,
     busy,
     spectating,
-    inventoryCount,
     onOpenSkills,
     onOpenInventory,
     onEndTurn,
@@ -52,7 +50,7 @@ export const HudActions: React.FC<HudActionsProps> = ({
                         variant="outlined"
                         sx={{ color: palette.hud.text, borderColor: palette.hud.outline }}
                     >
-                        {t("inventory")} ({inventoryCount})
+                        {t("inventory")}
                     </Button>
                     <Button
                         onClick={onEndTurn}

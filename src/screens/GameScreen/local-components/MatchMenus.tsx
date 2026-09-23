@@ -55,6 +55,7 @@ export const MatchMenus: React.FC<MatchMenusProps> = ({}) => {
                     inventory={inventory.items}
                     pieces={board.pieces}
                     playerColor={inventory.color}
+                    canUse={turn.isPlayerTurn && !turn.busy}
                     onUseOwnItem={inventory.useOwn}
                     onUseManipulationItem={inventory.useOnOther}
                 />

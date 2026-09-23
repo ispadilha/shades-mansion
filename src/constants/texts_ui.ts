@@ -569,22 +569,22 @@ export const texts_ui = {
         ptBR: "de dano",
     },
 
-    dodgeRoll: {
-        enUS: "Dodge roll",
-        ptBR: "Rolagem de esquiva",
+    defenseRoll: {
+        enUS: "Defense roll",
+        ptBR: "Rolagem de defesa",
     },
 
-    dodgeTotal: {
+    defenseDodge: {
         enUS: "Dodged it!",
         ptBR: "Esquiva total!",
     },
 
-    dodgeGuard: {
+    defenseGuard: {
         enUS: "Blocked half",
         ptBR: "Aparou metade",
     },
 
-    dodgeNone: {
+    defenseNone: {
         enUS: "Clean hit",
         ptBR: "Golpe cheio",
     },

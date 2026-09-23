@@ -11,6 +11,9 @@ interface InventoryItemRowProps {
     count: number
     // O que o item faz agora, ou null quando não serve para nada
     use: ItemUse | null
+    // Fora da vez de quem comanda, o botão continua dizendo o que o item faria, mas não
+    // deixa fazer: é assim que o inventário serve de consulta sem virar jogada.
+    disabled: boolean
     onUse: () => void
     // O menu de contexto da linha só oferece examinar o item
     onExamine: (event: React.MouseEvent) => void
@@ -18,7 +21,7 @@ interface InventoryItemRowProps {
 
 const USE_LABEL: Record<ItemUse, TextKey> = { reinvigorate: "reinvigorate", promote: "promote", manipulate: "use" }
 
-export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, count, use, onUse, onExamine }) => {
+export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, count, use, disabled, onUse, onExamine }) => {
     const { t } = useLanguage()
 
     return (
@@ -43,7 +46,7 @@ export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, cou
                 {count > 1 ? ` × ${count}` : ""}
             </Typography>
             {use && (
-                <Button size="small" variant="contained" onClick={onUse}>
+                <Button size="small" variant="contained" disabled={disabled} onClick={onUse}>
                     {t(USE_LABEL[use])}
                 </Button>
             )}
