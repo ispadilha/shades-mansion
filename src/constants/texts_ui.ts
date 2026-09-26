@@ -84,11 +84,6 @@ export const texts_ui = {
         ptBR: "Escuro",
     },
 
-    info: {
-        enUS: "Info",
-        ptBR: "Informações",
-    },
-
     move: {
         enUS: "Move",
         ptBR: "Mover",
@@ -307,6 +302,40 @@ export const texts_ui = {
     cancelSkill: {
         enUS: "Cancel skill",
         ptBR: "Cancelar habilidade",
+    },
+
+    pieceInfo: {
+        enUS: "Piece info",
+        ptBR: "Informações da peça",
+    },
+
+    itemInfo: {
+        enUS: "Item info",
+        ptBR: "Informações do item",
+    },
+
+    barrierInfo: {
+        enUS: "Barrier info",
+        ptBR: "Informações da barreira",
+    },
+
+    barrier: {
+        enUS: "Barrier",
+        ptBR: "Barreira",
+    },
+
+    litBy: {
+        enUS: "Lit by",
+        ptBR: "Acesa por",
+    },
+
+    barrierDescription: {
+        enUS:
+            "A paranormal barrier closes the cell to the other two teams and lets its own team walk through it. " +
+            "It goes out on its own when the turn of the piece that lit it comes around again.",
+        ptBR:
+            "Uma barreira paranormal fecha a casa para os outros dois times e deixa o próprio time passar por ela. " +
+            "Ela se apaga sozinha quando a vez da peça que a acendeu volta.",
     },
 
     barriersLeft: {

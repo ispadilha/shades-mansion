@@ -174,7 +174,7 @@ export class SimpleAI {
             for (const myPiece of myPieces) {
                 const d = distances.get(positionKey(myPiece.position))
                 if (d === undefined) continue
-                if (!bestPair || d < bestPair.distance) bestPair = { piece: myPiece, distances, distance: d }
+                if (bestPair === null || d < bestPair.distance) bestPair = { piece: myPiece, distances, distance: d }
             }
         }
         if (!bestPair || bestPair.distance === 0) return null

@@ -1,7 +1,7 @@
 import React, { useState } from "react"
-import type { MotivationItem, PieceColor, PieceDefinition, PiecePosition } from "../logic/types"
+import type { Barrier, MotivationItem, PieceColor, PieceDefinition, PiecePosition } from "../logic/types"
 import type { Maze } from "../logic/maze"
-import { boardActionsFor, type BoardMenuState } from "../logic/boardMenu"
+import { boardActionsFor, isInfoAction, type BoardMenuState } from "../logic/boardMenu"
 import { atPosition } from "../logic/grid"
 import { turnStageOf } from "../logic/turn"
 import type { SkillFlow } from "./useSkillFlow"
@@ -9,6 +9,7 @@ import type { SkillFlow } from "./useSkillFlow"
 interface BoardInputOptions {
     pieces: PieceDefinition[]
     items: MotivationItem[]
+    barriers: Barrier[]
     maze: Maze
     selectedId: string | null
     setSelectedId: (id: string | null) => void
@@ -42,6 +43,7 @@ export interface BoardInput {
 export const useBoardInput = ({
     pieces,
     items,
+    barriers,
     maze,
     selectedId,
     setSelectedId,
@@ -80,6 +82,7 @@ export const useBoardInput = ({
             position,
             pieces,
             items,
+            barriers,
             maze,
             selectedId,
             activePieceId: activePiece?.id ?? null,
@@ -93,7 +96,7 @@ export const useBoardInput = ({
         })
         if (actions.length === 0) return
 
-        if (actions.some((action) => action !== "info" && action !== "itemInfo")) onActionOffered()
+        if (actions.some((action) => !isInfoAction(action))) onActionOffered()
 
         setMenu({
             mouseX: event.clientX,
@@ -101,6 +104,7 @@ export const useBoardInput = ({
             position,
             targetPiece: atPosition(pieces, position),
             itemAtPos: atPosition(items, position),
+            barrierAtPos: atPosition(barriers, position),
             actions,
             ...(skill.active ? { skillAction: skill.active.skill.action } : {}),
         })

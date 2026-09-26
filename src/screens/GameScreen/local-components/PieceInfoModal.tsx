@@ -34,7 +34,7 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
             <Typography>
                 {t("skill")}: {skill ? t(skill.name) : t("skillNone")}
             </Typography>
-            {skill && !skill.roll && (
+            {skill && skill.roll === null && (
                 <Typography>
                     {t("skillRange")}: {skillRangeOf(skill, piece)}
                 </Typography>

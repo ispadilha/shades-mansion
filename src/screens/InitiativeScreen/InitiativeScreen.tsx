@@ -35,7 +35,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     const setupStartedRef = useRef(false)
 
     useEffect(() => {
-        if (!selection) navigate("/choose-side", { replace: true })
+        if (selection === null) navigate("/choose-side", { replace: true })
     }, [selection, navigate])
 
     // O labirinto é gerado "por trás" das rolagens: o setTimeout deixa a fila de peças

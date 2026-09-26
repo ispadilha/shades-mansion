@@ -20,7 +20,7 @@ export const SkillRow: React.FC<SkillRowProps> = ({ skill, disabled, onUse }) =>
             <Typography sx={{ flex: 1, fontSize: 14, color: skill ? palette.surface.text : palette.surface.textMuted }}>
                 {skill ? t(skill.name) : t("skillNone")}
             </Typography>
-            <Button size="small" variant="contained" disabled={!skill || disabled} onClick={onUse}>
+            <Button size="small" variant="contained" disabled={skill === null || disabled} onClick={onUse}>
                 {t("use")}
             </Button>
         </Box>

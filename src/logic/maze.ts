@@ -196,7 +196,7 @@ const ensureConnectivity = (walls: boolean[][], size: number) => {
         for (const from of other) {
             for (const to of main) {
                 const distance = manhattan(from, to)
-                if (!best || distance < best.distance) best = { from, to, distance }
+                if (best === null || distance < best.distance) best = { from, to, distance }
             }
         }
         if (!best) return

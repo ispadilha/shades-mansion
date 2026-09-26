@@ -1,11 +1,23 @@
-import type { MotivationItem, PieceColor, PieceDefinition, PiecePosition, TextKey } from "./types"
+import type { Barrier, MotivationItem, PieceColor, PieceDefinition, PiecePosition, TextKey } from "./types"
 import type { Maze } from "./maze"
 import type { ActiveSkill, SkillReach } from "./skills"
 import { atPosition, includesPosition } from "./grid"
 import { canHitTarget, strikeWalkRange } from "./movement"
 
 // As ações que uma casa oferece quando o jogador clica nela com o botão direito.
-export type BoardAction = "info" | "itemInfo" | "move" | "collect" | "attack" | "skill"
+export type BoardAction = "pieceInfo" | "itemInfo" | "barrierInfo" | "move" | "collect" | "attack" | "skill"
+
+const INFO_ACTIONS: Record<BoardAction, boolean> = {
+    pieceInfo: true,
+    itemInfo: true,
+    barrierInfo: true,
+    move: false,
+    collect: false,
+    attack: false,
+    skill: false,
+}
+
+export const isInfoAction = (action: BoardAction) => INFO_ACTIONS[action]
 
 // O menu aberto: onde o jogador clicou, o que havia lá e o que aquilo permite fazer
 export interface BoardMenuState {
@@ -14,6 +26,7 @@ export interface BoardMenuState {
     position: PiecePosition
     targetPiece?: PieceDefinition
     itemAtPos?: MotivationItem
+    barrierAtPos?: Barrier
     actions: BoardAction[]
     // Como a ação da habilidade se chama nesta casa ("atirar", "incendiar"):
     // cada habilidade traz o próprio rótulo
@@ -26,6 +39,7 @@ export interface BoardMenuContext {
     position: PiecePosition
     pieces: PieceDefinition[]
     items: MotivationItem[]
+    barriers: Barrier[]
     maze: Maze
     selectedId: string | null
     activePieceId: string | null
@@ -47,6 +61,7 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
         position,
         pieces,
         items,
+        barriers,
         maze,
         selectedId,
         activePieceId,
@@ -61,6 +76,7 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
 
     const targetPiece = atPosition(pieces, position)
     const itemHere = atPosition(items, position)
+    const barrierHere = atPosition(barriers, position)
     const selectedPiece = pieces.find((p) => p.id === selectedId) ?? null
 
     // Quem age é a peça da vez.
@@ -93,8 +109,9 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
 
     const actions: BoardAction[] = []
 
-    if (targetPiece && (!selectedId || usingSkill) && !manipulating) actions.push("info")
-    if (!selectedId && !targetPiece && itemHere && !manipulating) actions.push("itemInfo")
+    if (targetPiece && (selectedId === null || usingSkill) && !manipulating) actions.push("pieceInfo")
+    if (selectedId === null && !targetPiece && itemHere && !manipulating) actions.push("itemInfo")
+    if ((selectedId === null || usingSkill) && barrierHere && !manipulating) actions.push("barrierInfo")
     if (canWalk && !targetPiece && inMoveRange) actions.push(itemHere ? "collect" : "move")
 
     if (!usingSkill && hasBasicAction && hitsPiece) {

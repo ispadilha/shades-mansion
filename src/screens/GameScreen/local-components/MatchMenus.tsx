@@ -1,4 +1,5 @@
 import React from "react"
+import { BarrierInfoModal } from "./BarrierInfoModal"
 import { BoardContextMenu } from "./BoardContextMenu"
 import { InventoryModal } from "./InventoryModal"
 import { ItemInfoModal } from "./ItemInfoModal"
@@ -16,7 +17,7 @@ export const MatchMenus: React.FC<MatchMenusProps> = ({}) => {
     const { board, turn, skill, inventory, menu, rolls } = useMatch()
 
     // A lista abre sempre, mas só deixa usar quando a peça da vez ainda tem habilidade
-    const skillsDisabled = !turn.isPlayerTurn || turn.busy || !turn.activePiece || !hasSkillLeft(turn.activePiece)
+    const skillsDisabled = !turn.isPlayerTurn || turn.busy || turn.activePiece === null || !hasSkillLeft(turn.activePiece)
 
     return (
         <>
@@ -25,12 +26,15 @@ export const MatchMenus: React.FC<MatchMenusProps> = ({}) => {
                 onClose={menu.close}
                 onShowPieceInfo={menu.showPieceInfo}
                 onShowItemInfo={menu.showItemInfo}
+                onShowBarrierInfo={menu.showBarrierInfo}
                 onWalk={menu.walk}
                 onAttack={menu.attack}
                 onSkill={menu.useSkill}
             />
 
             <PieceInfoModal piece={menu.infoPiece} onClose={menu.closeInfoPiece} />
+
+            <BarrierInfoModal barrier={menu.infoBarrier} onClose={menu.closeInfoBarrier} />
 
             <SkillsModal
                 open={skill.listOpen}

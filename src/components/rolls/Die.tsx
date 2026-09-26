@@ -75,7 +75,7 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
             }}
         >
             <svg viewBox="0 0 64 64" width={size} height={size}>
-                {!shape.inner && (
+                {shape.inner === null && (
                     <defs>
                         <clipPath id={`die-face-${uid}`}>
                             <polygon points={shape.outer} />

@@ -107,10 +107,13 @@ export interface MatchContextValue {
         useSkill: () => void
         showPieceInfo: () => void
         showItemInfo: () => void
+        showBarrierInfo: () => void
         infoPiece: PieceDefinition | null
         closeInfoPiece: () => void
         infoItemKey: MotivationItemKey | null
         closeInfoItem: () => void
+        infoBarrier: Barrier | null
+        closeInfoBarrier: () => void
     }
 
     log: string[]
@@ -166,6 +169,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const [fireBursts, setFireBursts] = useState<FireBurst[]>([])
     const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
+    const [infoBarrier, setInfoBarrier] = useState<Barrier | null>(null)
     const [inventoryOpen, setInventoryOpen] = useState(false)
 
     // Traz a câmera até a peça da vez e, se ela ainda tiver ação, a seleciona. É o que o
@@ -208,6 +212,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const input = useBoardInput({
         pieces,
         items: items.items,
+        barriers: barriers.all,
         maze,
         selectedId,
         setSelectedId,
@@ -353,19 +358,28 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             // Quem já agiu não tem o que selecionar nem que ação escolher: só encerrar
             activePiece?.movedThisTurn !== true &&
             !rolls.resolving &&
-            !manipulation &&
-            !skill.active &&
             !inventoryOpen &&
             !skill.listOpen &&
+            manipulation === null &&
+            skill.active === null &&
             infoPiece === null &&
             itemInfoKey === null &&
+            infoBarrier === null &&
             // Menu aberto é o jogador ocupado: a contagem para, e recomeça quando ele fecha
             input.menu === null,
         phase: `${turn.turnIndex}:${selectedId ?? ""}`,
     })
 
     useEdgeScroll(focus.scrollRef, {
-        enabled: input.menu === null && !infoPiece && !inventoryOpen && !skill.listOpen && rolls.current === null,
+        // Nenhum modal aberto deixa o tabuleiro rolar por baixo dele
+        enabled:
+            input.menu === null &&
+            infoPiece === null &&
+            itemInfoKey === null &&
+            infoBarrier === null &&
+            !inventoryOpen &&
+            !skill.listOpen &&
+            rolls.current === null,
     })
 
     // Destaques das peças ("auras"), desenhados tanto pelo tabuleiro quanto pelo HUD
@@ -439,10 +453,17 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
                 setItemInfoKey(input.menu.itemAtPos.key)
                 input.closeMenu()
             },
+            showBarrierInfo: () => {
+                if (!input.menu?.barrierAtPos) return
+                setInfoBarrier(input.menu.barrierAtPos)
+                input.closeMenu()
+            },
             infoPiece,
             closeInfoPiece: () => setInfoPiece(null),
             infoItemKey: itemInfoKey,
             closeInfoItem: () => setItemInfoKey(null),
+            infoBarrier,
+            closeInfoBarrier: () => setInfoBarrier(null),
         },
         log: log.entries,
         rolls,

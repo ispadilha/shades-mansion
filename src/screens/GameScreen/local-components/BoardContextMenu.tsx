@@ -8,6 +8,7 @@ interface BoardContextMenuProps {
     onClose: () => void
     onShowPieceInfo: () => void
     onShowItemInfo: () => void
+    onShowBarrierInfo: () => void
     // Andar até a casa, coletando o item que estiver nela
     onWalk: () => void
     onAttack: () => void
@@ -19,6 +20,7 @@ export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
     onClose,
     onShowPieceInfo,
     onShowItemInfo,
+    onShowBarrierInfo,
     onWalk,
     onAttack,
     onSkill,
@@ -34,8 +36,9 @@ export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
             anchorReference="anchorPosition"
             anchorPosition={menu ? { top: menu.mouseY, left: menu.mouseX } : undefined}
         >
-            {has("info") && <MenuItem onClick={onShowPieceInfo}>{t("info")}</MenuItem>}
-            {has("itemInfo") && <MenuItem onClick={onShowItemInfo}>{t("info")}</MenuItem>}
+            {has("pieceInfo") && <MenuItem onClick={onShowPieceInfo}>{t("pieceInfo")}</MenuItem>}
+            {has("itemInfo") && <MenuItem onClick={onShowItemInfo}>{t("itemInfo")}</MenuItem>}
+            {has("barrierInfo") && <MenuItem onClick={onShowBarrierInfo}>{t("barrierInfo")}</MenuItem>}
             {has("move") && <MenuItem onClick={onWalk}>{t("move")}</MenuItem>}
             {has("collect") && <MenuItem onClick={onWalk}>{t("collect")}</MenuItem>}
             {has("attack") && <MenuItem onClick={onAttack}>{t("attack")}</MenuItem>}

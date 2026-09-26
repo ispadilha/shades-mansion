@@ -158,7 +158,7 @@ export const useBoardActions = ({
                     ? {
                           ...p,
                           position: newPos,
-                          movedThisTurn: p.movedThisTurn || (!forcedBy && !active),
+                          movedThisTurn: p.movedThisTurn || (forcedBy === null && active === null),
                           usedSkillThisTurn: p.usedSkillThisTurn || active !== null,
                       }
                     : p,

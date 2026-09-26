@@ -20,7 +20,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({}) => {
     const { match } = useGame()
 
     useEffect(() => {
-        if (!match) navigate("/choose-side", { replace: true })
+        if (match === null) navigate("/choose-side", { replace: true })
     }, [match, navigate])
 
     if (!match) return null

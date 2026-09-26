@@ -73,7 +73,7 @@ export const VIGOR_PALETTE = {
 
 export const BARRIER_PALETTE: Record<PieceColor, { floor: string; glow: string; edge: string }> = {
     dark: { floor: "#a855f7", glow: "#c79cff", edge: "#2b0a52" },
-    gray: { floor: "#6b90b4", glow: "#a8caea", edge: "#4a5563" },
+    gray: { floor: "#4fa9f5", glow: "#d0ebff", edge: "#2a3f52" },
     light: { floor: "#fdf6dd", glow: "#fffdf0", edge: "#e8c94a" },
 }
 

@@ -146,7 +146,7 @@ export function findApproachCell(
 
         const node = visited.get(positionKey(candidate))
         if (!node) continue
-        if (!best || node.distance < best.distance) best = { cell: candidate, distance: node.distance }
+        if (best === null || node.distance < best.distance) best = { cell: candidate, distance: node.distance }
     }
 
     return best?.cell ?? null
