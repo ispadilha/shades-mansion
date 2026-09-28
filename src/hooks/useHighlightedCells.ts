@@ -49,7 +49,7 @@ export const useHighlightedCells = (
         if (!piece) return
 
         const stats = statsFor(piece.type, piece.level)
-        const blocked = blockedCellsFor(piece.color, barriers)
+        const blocked = blockedCellsFor(piece.color, barriers, pieces)
 
         // Habilidade em uso: as casas destacadas são as dela
         if (skill) {

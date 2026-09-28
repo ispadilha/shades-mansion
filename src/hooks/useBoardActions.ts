@@ -75,7 +75,7 @@ export const useBoardActions = ({
     // Quanto a peça demora para chegar lá,
     // andando casa a casa e contornando o que estiver fechado para o time dela
     const travelTime = (piece: PieceDefinition, to: PiecePosition) =>
-        pathLength(piece.position, to, maze, blockedCellsFor(piece.color, barriers)) * STEP_MS + ACTION_SETTLE_MS
+        pathLength(piece.position, to, maze, blockedCellsFor(piece.color, barriers, pieces)) * STEP_MS + ACTION_SETTLE_MS
 
     const finishAction = () => {
         setSelectedId(null)
@@ -147,7 +147,7 @@ export const useBoardActions = ({
                       pieces,
                       maze,
                       walkRange,
-                      blockedCellsFor(attacker.color, barriers),
+                      blockedCellsFor(attacker.color, barriers, pieces),
                   ) ?? attacker.position)
         const delayMs = travelTime(attacker, newPos)
 

@@ -17,9 +17,10 @@ interface WalkNode {
     previous: string | null
 }
 
-// Busca em largura pelas casas livres do labirinto (as paredes bloqueiam, as peças não;
-// elas só impedem que uma casa seja destino). O resultado guarda a distância em passos
-// e a casa anterior, o que permite reconstruir o caminho andado.
+// Busca em largura pelas casas por onde se anda. As paredes bloqueiam sempre, o que
+// mais bloqueia vem em `blocked` e muda a cada time: peças e barreiras adversárias.
+// O resultado guarda a distância em passos e a casa anterior, o que
+// permite reconstruir o caminho andado.
 function walkFrom(
     origin: PiecePosition,
     maze: Maze,
@@ -94,8 +95,8 @@ export function findPath(
     return path
 }
 
-// Casas em que a peça pode terminar o movimento: dentro do alcance andando pelo labirinto
-// e livres de outras peças.
+// Casas em que a peça pode terminar o movimento:
+// Dentro do alcance andando pelo labirinto e livres de outras peças.
 export function reachableCells(
     piece: PieceDefinition,
     pieces: PieceDefinition[],
@@ -165,8 +166,14 @@ export function meleeAttackCells(
         cells.set(positionKey(cell), cell)
     }
 
-    for (const [, node] of walkFrom(piece.position, maze, walkRange, blocked)) {
+    // Casas ocupadas por outra peça: a própria fica de fora
+    const occupied = new Set(pieces.filter((p) => p.id !== piece.id).map((p) => positionKey(p.position)))
+
+    for (const [key, node] of walkFrom(piece.position, maze, walkRange, blocked)) {
         add(node.position)
+        // O ataque melee só parte de onde a peça consegue ficar parada.
+        // Casa de uma aliada se passa, mas não se ocupa.
+        if (occupied.has(key)) continue
         for (const [dx, dy] of SURROUNDING_STEPS) add({ x: node.position.x + dx, y: node.position.y + dy })
     }
     cells.delete(positionKey(piece.position))

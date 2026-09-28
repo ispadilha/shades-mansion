@@ -211,7 +211,7 @@ export class BoardScene extends Phaser.Scene {
             if (cellChanged) {
                 // Anima passo-a-passo (uma célula por vez, contornando as paredes) para criar o efeito de caminhada
                 this.tweens.killTweensOf(sprite)
-                const blocked = blockedCellsFor(piece.color, this.barriers)
+                const blocked = blockedCellsFor(piece.color, this.barriers, pieces)
                 const path = findPath(last ?? piece.position, piece.position, this.maze, blocked)
                 if (path.length === 0) {
                     sprite.setPosition(targetPx.x, targetPx.y)

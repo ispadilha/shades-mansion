@@ -66,7 +66,7 @@ export class SimpleAI {
     ): AIMoveResult {
         const color = activePiece.color
         // As barreiras dos outros times fecham caminho para as peças deste
-        const blocked = blockedCellsFor(color, barriers)
+        const blocked = blockedCellsFor(color, barriers, pieces)
         const enemyPieces = pieces.filter((p) => p.color !== color)
         const myInv: MotivationItemKey[] = inventories[color]
 
@@ -137,7 +137,7 @@ export class SimpleAI {
                 manipulated.position,
                 best.approach,
                 maze,
-                blockedCellsFor(manipulated.color, barriers),
+                blockedCellsFor(manipulated.color, barriers, pieces),
             )
             const area = attackArea(manipulated, best.target.position)
             // Ser manipulada é uma ação anormal: a peça se move e ataca sem gastar a ação
@@ -215,7 +215,7 @@ export class SimpleAI {
         maze: Maze,
         barriers: Barrier[],
     ): AIMoveResult {
-        const moveSteps = pathLength(attacker.position, approach, maze, blockedCellsFor(attacker.color, barriers))
+        const moveSteps = pathLength(attacker.position, approach, maze, blockedCellsFor(attacker.color, barriers, pieces))
         const area = attackArea(attacker, target.position)
         const updatedPieces = pieces.map((p) => (p.id === attacker.id ? { ...p, position: approach, movedThisTurn: true, usedSkillThisTurn: true } : p))
         return {
@@ -257,7 +257,7 @@ export class SimpleAI {
         const walkRange = statsFor(myPiece.type, myPiece.level).moveRange
         const result: Array<{ target: PieceDefinition; approach: PiecePosition }> = []
         for (const enemy of enemyPieces) {
-            const approach = findApproachCell(myPiece, enemy, pieces, maze, walkRange, blockedCellsFor(myPiece.color, barriers))
+            const approach = findApproachCell(myPiece, enemy, pieces, maze, walkRange, blockedCellsFor(myPiece.color, barriers, pieces))
             if (approach) result.push({ target: enemy, approach })
         }
         return result

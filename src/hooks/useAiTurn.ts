@@ -112,7 +112,7 @@ export const useAiTurn = ({
                             old.position,
                             movedPiece.position,
                             maze,
-                            blockedCellsFor(movedPiece.color, barriers),
+                            blockedCellsFor(movedPiece.color, barriers, previousPieces),
                         ) *
                             STEP_MS +
                         ACTION_SETTLE_MS

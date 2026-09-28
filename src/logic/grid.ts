@@ -1,4 +1,4 @@
-import type { Barrier, PieceColor, PiecePosition } from "./types"
+import type { Barrier, PieceColor, PieceDefinition, PiecePosition } from "./types"
 
 // Contas de grade que o labirinto, o movimento, o combate e a montagem da partida
 // compartilham. Ficam aqui para existirem uma vez só, e porque não dependem de nada:
@@ -44,14 +44,23 @@ export const atPosition = <T extends { position: PiecePosition }>(
 export const includesPosition = (cells: PiecePosition[], position: PiecePosition) =>
     cells.some((cell) => samePosition(cell, position))
 
-// As casas fechadas para quem está andando. Uma barreira paranormal só deixa passar as
-// peças do time que a acendeu, então cada time "vê um tabuleiro um pouco diferente".
-// Por isso o conjunto é calculado por cor, e não uma vez para todos.
+// As casas fechadas para quem está andando: as barreiras e as peças dos outros times.
+// Cada time vê um tabuleiro um pouco diferente, e é por isso que o conjunto é
+// calculado por cor, e não uma vez para todos.
+//
+// Peça aliada não fecha caminho mas ocupa a casa,
+// que continua não servindo de destino: disso cuida `reachableCells`.
 export type BlockedCells = ReadonlySet<string>
 
 export const NO_BLOCKED_CELLS: BlockedCells = new Set<string>()
 
-export const blockedCellsFor = (color: PieceColor, barriers: Barrier[]): BlockedCells =>
-    barriers.length === 0
-        ? NO_BLOCKED_CELLS
-        : new Set(barriers.filter((b) => b.color !== color).map((b) => positionKey(b.position)))
+export const blockedCellsFor = (
+    color: PieceColor,
+    barriers: Barrier[],
+    pieces: PieceDefinition[],
+): BlockedCells => {
+    const closed = new Set<string>()
+    for (const barrier of barriers) if (barrier.color !== color) closed.add(positionKey(barrier.position))
+    for (const piece of pieces) if (piece.color !== color) closed.add(positionKey(piece.position))
+    return closed
+}
