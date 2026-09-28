@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
 import type { Barrier, PieceColor, PieceDefinition, PiecePosition, MotivationItemKey, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
-import { blockedCellsFor } from "../logic/grid"
 import {
     areaCells,
     piecesInBlast,
@@ -120,10 +119,10 @@ export const useCombatResolution = ({
             // Quem segura o fogo é barreira adversária de quem o acendeu,
             // e o fogo é da peça que atira, não do time que a manipulou, se foi o caso.
             const firedBy = pieces.find((p) => p.id === attack.attackerId)
-            const closed = firedBy ? blockedCellsFor(firedBy.color, barriers, pieces) : undefined
+            const fire = firedBy ? { color: firedBy.color, barriers } : undefined
             // As casas que o golpe alcança saem antes das rolagens, porque é delas que vem
             // quem se defende. Nada é animado ainda: o tabuleiro só reage depois dos dados.
-            const reached = attack.area ? areaCells(maze, attack.area.center, attack.area.side, closed) : []
+            const reached = attack.area ? areaCells(maze, attack.area.center, attack.area.side, fire) : []
             const defenders = defendersOf(attack, reached)
 
             // Golpe no vazio (área sem ninguém, ou alvo que já saiu do tabuleiro): não há o

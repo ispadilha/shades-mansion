@@ -1,7 +1,7 @@
 import type { Barrier, PieceColor, PieceDefinition, PiecePosition, MotivationItemKey } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
-import { NO_BLOCKED_CELLS, blockedCellsFor, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
+import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
 import { hasAreaSkill } from "./skills"
 import { DEFENSE_DIE, FIRE_AREA_SIDE, SUCCESS_FACE, statsFor } from "../constants/rules"
@@ -53,16 +53,20 @@ export function rollDefense(piece: PieceDefinition, damage: number): DefenseRoll
 // Ele nasce na casa mirada e se espalha de casa em casa. Paredes seguram o fogo.
 // O lado é ímpar para a casa mirada ficar bem no centro. Um lado par é arredondado para cima.
 //
-// `blocked` é o mesmo conjunto que fecha o caminho de quem anda, calculado para a cor de
-// quem atira: uma barreira adversária segura o fogo igual a uma parede, então ela não
-// queima e nada atrás dela queima. A barreira do próprio time não entra no conjunto e o
-// fogo passa por ela.
+// `fire` diz de quem é o fogo e quais barreiras estão acesas:
+// as dos outros times seguram o fogo, e a do próprio time ele atravessa.
+// O que não segura fogo é peça. É por isso que aqui entram as barreiras,
+// e não o conjunto inteiro de casas fechadas pra quem anda.
 export function areaCells(
     maze: Maze,
     center: PiecePosition,
     side: number,
-    blocked: BlockedCells = NO_BLOCKED_CELLS,
+    fire?: { color: PieceColor; barriers: Barrier[] },
 ): PiecePosition[] {
+    const blocked: BlockedCells = fire
+        ? new Set(fire.barriers.filter((b) => b.color !== fire.color).map((b) => positionKey(b.position)))
+        : NO_BLOCKED_CELLS
+
     if (!isWalkable(maze, center.x, center.y) || blocked.has(positionKey(center))) return []
 
     const radius = Math.floor(side / 2)
@@ -170,6 +174,6 @@ export function alliesInBlast(
     const area = attackArea(attacker, target.position)
     if (!area) return []
     // A conta da IA precisa ver o mesmo fogo que vai acontecer, barreiras recortadas
-    const burning = areaCells(maze, area.center, area.side, blockedCellsFor(attacker.color, barriers, pieces))
+    const burning = areaCells(maze, area.center, area.side, { color: attacker.color, barriers })
     return piecesInCells(pieces, burning).filter((p) => p.color === color && p.id !== target.id)
 }
