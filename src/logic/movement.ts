@@ -231,6 +231,10 @@ function hasClearShot(from: PiecePosition, to: PiecePosition, blocked: (cell: Pi
 // linha reta, na diagonal inclusive) cuja linha de tiro chegue inteira até lá — não
 // precisa ser pela linha, pela coluna ou pela diagonal. Paredes e outras peças
 // interrompem a linha, então quem está atrás delas fica coberto.
+//
+// `blocked` é o mesmo conjunto que fecha o caminho de quem anda: as barreiras dos outros
+// times também tapam tiros deles. O que atravessa uma barreira é só o time que a acendeu.
+//
 // `cells` são as casas visadas (para destacar no tabuleiro) e `targets`, as peças que
 // estão nelas.
 export function lineOfFire(
@@ -238,11 +242,16 @@ export function lineOfFire(
     pieces: PieceDefinition[],
     maze: Maze,
     range: number,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): { cells: PiecePosition[]; targets: PieceDefinition[] } {
     const others = pieces.filter((p) => p.id !== piece.id)
     const occupants = new Map(others.map((p) => [positionKey(p.position), p]))
-    const blocked = (cell: PiecePosition) =>
-        !isWalkable(maze, cell.x, cell.y) || occupants.has(positionKey(cell))
+    // Peça no caminho tapa o tiro de qualquer time, e é por isso que ela é consultada
+    // à parte: `blocked` só traz o que é adversário de quem está atirando.
+    const stopsShot = (cell: PiecePosition) => {
+        const key = positionKey(cell)
+        return !isWalkable(maze, cell.x, cell.y) || occupants.has(key) || blocked.has(key)
+    }
 
     const cells: PiecePosition[] = []
     const targets: PieceDefinition[] = []
@@ -251,9 +260,11 @@ export function lineOfFire(
         for (let dx = -range; dx <= range; dx++) {
             if (dx === 0 && dy === 0) continue
 
+            // A casa visada não passa por `stopsShot`:
+            // Ali está o alvo. O que fecha o tiro são as casas no caminho.
             const cell = { x: piece.position.x + dx, y: piece.position.y + dy }
             if (!isWalkable(maze, cell.x, cell.y)) continue
-            if (!hasClearShot(piece.position, cell, blocked)) continue
+            if (!hasClearShot(piece.position, cell, stopsShot)) continue
 
             cells.push(cell)
             const occupant = occupants.get(positionKey(cell))
@@ -279,7 +290,7 @@ export function canHitTarget(
     blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): boolean {
     if (reach.ranged) {
-        return lineOfFire(attacker, pieces, maze, reach.range).targets.some((t) => t.id === target.id)
+        return lineOfFire(attacker, pieces, maze, reach.range, blocked).targets.some((t) => t.id === target.id)
     }
     return findApproachCell(attacker, target, pieces, maze, reach.range, blocked) !== null
 }

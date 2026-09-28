@@ -244,10 +244,11 @@ export class SimpleAI {
     ): Array<{ target: PieceDefinition; approach: PiecePosition }> {
         const skill = this.rangedSkillOf(myPiece)
         const sparesAllies = (target: PieceDefinition) =>
-            alliesInBlast(myPiece, target, pieces, maze, friendlyColor).length === 0
+            alliesInBlast(myPiece, target, pieces, maze, friendlyColor, barriers).length === 0
 
         if (skill) {
-            const { targets } = lineOfFire(myPiece, pieces, maze, baseRangeOf(skill, myPiece))
+            const blocked = blockedCellsFor(myPiece.color, barriers, pieces)
+            const { targets } = lineOfFire(myPiece, pieces, maze, baseRangeOf(skill, myPiece), blocked)
             return targets
                 .filter((target) => enemyPieces.some((e) => e.id === target.id))
                 .filter(sparesAllies)

@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { PieceColor, PieceDefinition, PiecePosition, MotivationItemKey, TextKey } from "../logic/types"
+import type { Barrier, PieceColor, PieceDefinition, PiecePosition, MotivationItemKey, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
+import { blockedCellsFor } from "../logic/grid"
 import {
     areaCells,
     piecesInBlast,
@@ -45,6 +46,8 @@ const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }
 interface CombatResolutionOptions {
     pieces: PieceDefinition[]
     maze: Maze
+    // Barreiras acesas: as adversárias de quem atira seguram o fogo do incêndio
+    barriers: Barrier[]
     setPieces: Dispatch<SetStateAction<PieceDefinition[]>>
     setFireBursts: Dispatch<SetStateAction<FireBurst[]>>
     // Peça sob manipulação: é ela que a câmera segue enquanto a moeda está no ar
@@ -70,6 +73,7 @@ export interface CombatResolution {
 export const useCombatResolution = ({
     pieces,
     maze,
+    barriers,
     setPieces,
     setFireBursts,
     setManipulatedId,
@@ -105,9 +109,13 @@ export const useCombatResolution = ({
         damageTimerRef.current = window.setTimeout(() => {
             damageTimerRef.current = null
 
+            // Quem segura o fogo é barreira adversária de quem o acendeu,
+            // e o fogo é da peça que atira, não do time que a manipulou, se foi o caso.
+            const firedBy = pieces.find((p) => p.id === attack.attackerId)
+            const closed = firedBy ? blockedCellsFor(firedBy.color, barriers, pieces) : undefined
             // As casas que o golpe alcança saem antes das rolagens, porque é delas que vem
             // quem se defende. Nada é animado ainda: o tabuleiro só reage depois dos dados.
-            const reached = attack.area ? areaCells(maze, attack.area.center, attack.area.side) : []
+            const reached = attack.area ? areaCells(maze, attack.area.center, attack.area.side, closed) : []
             const defenders = defendersOf(attack, reached)
 
             // Golpe no vazio (área sem ninguém, ou alvo que já saiu do tabuleiro): não há o

@@ -60,7 +60,7 @@ export const useHighlightedCells = (
             setCells({
                 move: skill.move > 0 ? reachableCells(piece, pieces, maze, skill.move, blocked) : [],
                 attack: skill.ranged
-                    ? lineOfFire(piece, pieces, maze, skill.attack).cells
+                    ? lineOfFire(piece, pieces, maze, skill.attack, blocked).cells
                     : meleeAttackCells(piece, pieces, maze, skill.attack, blocked),
                 skill: [],
             })

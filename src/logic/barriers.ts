@@ -1,6 +1,6 @@
 import type { Barrier, PieceDefinition, PiecePosition } from "./types"
 import type { Maze } from "./maze"
-import { atPosition, positionKey } from "./grid"
+import { atPosition, blockedCellsFor, positionKey } from "./grid"
 import { lineOfFire } from "./movement"
 
 // As barreiras que uma peça mantém acesas
@@ -20,8 +20,11 @@ export const barrierCells = (
     range: number,
 ): PiecePosition[] => {
     const lit = new Set(barriers.map((barrier) => positionKey(barrier.position)))
+    // Acender é como atirar, então uma barreira adversária no caminho também tapa:
+    // não se acende do outro lado dela.
+    const blocked = blockedCellsFor(piece.color, barriers, pieces)
     // A própria casa não sai na linha de tiro, mas é válida para acender uma barreira
-    const candidates = [piece.position, ...lineOfFire(piece, pieces, maze, range).cells]
+    const candidates = [piece.position, ...lineOfFire(piece, pieces, maze, range, blocked).cells]
 
     return candidates.filter((cell) => {
         if (lit.has(positionKey(cell))) return false

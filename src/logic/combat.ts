@@ -1,7 +1,7 @@
-import type { PieceColor, PieceDefinition, PiecePosition, MotivationItemKey } from "./types"
+import type { Barrier, PieceColor, PieceDefinition, PiecePosition, MotivationItemKey } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
-import { manhattan, neighbors, positionKey } from "./grid"
+import { NO_BLOCKED_CELLS, blockedCellsFor, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
 import { hasAreaSkill } from "./skills"
 import { DEFENSE_DIE, FIRE_AREA_SIDE, SUCCESS_FACE, statsFor } from "../constants/rules"
@@ -52,8 +52,18 @@ export function rollDefense(piece: PieceDefinition, damage: number): DefenseRoll
 // As casas que o fogo alcança.
 // Ele nasce na casa mirada e se espalha de casa em casa. Paredes seguram o fogo.
 // O lado é ímpar para a casa mirada ficar bem no centro. Um lado par é arredondado para cima.
-export function areaCells(maze: Maze, center: PiecePosition, side: number): PiecePosition[] {
-    if (!isWalkable(maze, center.x, center.y)) return []
+//
+// `blocked` é o mesmo conjunto que fecha o caminho de quem anda, calculado para a cor de
+// quem atira: uma barreira adversária segura o fogo igual a uma parede, então ela não
+// queima e nada atrás dela queima. A barreira do próprio time não entra no conjunto e o
+// fogo passa por ela.
+export function areaCells(
+    maze: Maze,
+    center: PiecePosition,
+    side: number,
+    blocked: BlockedCells = NO_BLOCKED_CELLS,
+): PiecePosition[] {
+    if (!isWalkable(maze, center.x, center.y) || blocked.has(positionKey(center))) return []
 
     const radius = Math.floor(side / 2)
     const inSquare = (cell: PiecePosition) =>
@@ -70,7 +80,7 @@ export function areaCells(maze: Maze, center: PiecePosition, side: number): Piec
         for (const next of neighbors(cell)) {
             if (!inSquare(next) || !isWalkable(maze, next.x, next.y)) continue
             const key = positionKey(next)
-            if (seen.has(key)) continue
+            if (seen.has(key) || blocked.has(key)) continue
             seen.add(key)
             queue.push(next)
         }
@@ -146,9 +156,11 @@ export function alliesInBlast(
     pieces: PieceDefinition[],
     maze: Maze,
     color: PieceColor,
+    barriers: Barrier[] = [],
 ): PieceDefinition[] {
     const area = attackArea(attacker, target.position)
     if (!area) return []
-    const burning = areaCells(maze, area.center, area.side)
+    // A conta da IA precisa ver o mesmo fogo que vai acontecer, barreiras recortadas
+    const burning = areaCells(maze, area.center, area.side, blockedCellsFor(attacker.color, barriers, pieces))
     return piecesInCells(pieces, burning).filter((p) => p.color === color && p.id !== target.id)
 }

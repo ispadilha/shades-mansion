@@ -246,6 +246,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const combat = useCombatResolution({
         pieces,
         maze,
+        barriers: barriers.all,
         setPieces,
         setFireBursts,
         setManipulatedId: focus.setManipulatedId,
