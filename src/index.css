@@ -40,6 +40,10 @@ html, body, #root {
     height: 100%;
 }
 
+html, body {
+    overscroll-behavior-x: none;
+}
+
 body {
     background: var(--screen-bg);
     font-family: Inter, Arial, sans-serif;

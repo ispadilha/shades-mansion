@@ -44,7 +44,15 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
     onCellContextMenu,
 }) => {
     return (
-        <Box ref={scrollRef} sx={{ flex: 1, overflow: "auto", position: "relative" }}>
+        <Box
+            ref={scrollRef}
+            sx={{
+                flex: 1,
+                overflow: "auto",
+                position: "relative",
+                overscrollBehavior: "none",
+            }}
+        >
             <Box
                 sx={{
                     width: "fit-content",
