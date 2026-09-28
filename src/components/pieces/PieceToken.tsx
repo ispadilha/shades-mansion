@@ -1,20 +1,44 @@
 import React from "react"
 import { Box } from "@mui/material"
 import type { AuraKind, PieceColor, PieceType } from "../../logic/types"
-import { AURA_PALETTE, PIECE_DETAIL_PALETTE, PIECE_PALETTE, rgba } from "../../constants/palette"
+import { AURA_PALETTE, PIECE_DETAIL_PALETTE, PIECE_PALETTE, levelStarColors, rgba } from "../../constants/palette"
+import { LEVEL_STAR, TOKEN_LEVEL_STAR } from "../../constants/rules"
+
+// O desenho vive num `viewBox` de 64, o mesmo espaço da casa do tabuleiro: as medidas em
+// frações da casa valem aqui multiplicadas por 64, com o centro em 32.
+const VIEW = 64
+const CENTER = VIEW / 2
+
+// Os pontos de uma estrela de N pontas, na mesma forma da que o tabuleiro desenha
+const starPoints = (cx: number, cy: number, outer: number, inner: number, points: number) =>
+    Array.from({ length: points * 2 }, (_, i) => {
+        const radius = i % 2 === 0 ? outer : inner
+        const angle = -Math.PI / 2 + (i * Math.PI) / points
+        return `${(cx + radius * Math.cos(angle)).toFixed(2)},${(cy + radius * Math.sin(angle)).toFixed(2)}`
+    }).join(" ")
 
 interface PieceTokenProps {
     color: PieceColor
     type: PieceType
+    // Do nível 2 em diante a peça ganha a estrela de promoção no canto
+    level?: number
     size?: number
     aura?: AuraKind | null
     // Peça que já agiu na rodada: fica apagada
     dimmed?: boolean
 }
 
-export const PieceToken: React.FC<PieceTokenProps> = ({ color, type, size = 56, aura = null, dimmed = false }) => {
+export const PieceToken: React.FC<PieceTokenProps> = ({
+    color,
+    type,
+    level = 1,
+    size = 56,
+    aura = null,
+    dimmed = false,
+}) => {
     const palette = PIECE_PALETTE[color]
     const highlight = aura ? AURA_PALETTE[aura] : null
+    const star = level >= 2 ? levelStarColors(level) : null
 
     return (
         <Box
@@ -64,6 +88,22 @@ export const PieceToken: React.FC<PieceTokenProps> = ({ color, type, size = 56, 
                 >
                     {type}
                 </text>
+
+                {/* A estrela de promoção, no canto de cima à direita */}
+                {star && (
+                    <polygon
+                        points={starPoints(
+                            CENTER + TOKEN_LEVEL_STAR.x * VIEW,
+                            CENTER - TOKEN_LEVEL_STAR.y * VIEW,
+                            LEVEL_STAR.outer * VIEW,
+                            LEVEL_STAR.inner * VIEW,
+                            LEVEL_STAR.points,
+                        )}
+                        fill={star.fill}
+                        stroke={star.outline}
+                        strokeWidth="1"
+                    />
+                )}
             </svg>
         </Box>
     )

@@ -13,7 +13,7 @@ import type {
     TextKey,
 } from "../logic/types"
 import { controlledColorsFor } from "../logic/types"
-import type { FireBurst } from "../logic/combat"
+import type { DamagePopup, FireBurst } from "../logic/combat"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { turnStageOf } from "../logic/turn"
 import { useAiTurn } from "../hooks/useAiTurn"
@@ -50,6 +50,7 @@ export interface MatchContextValue {
         skillCells: PiecePosition[]
         barriers: Barrier[]
         fireBursts: FireBurst[]
+        damagePopups: DamagePopup[]
         auras: PieceAuras
         selectedId: string | null
         droppedItemId: string | null
@@ -167,6 +168,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
 
     // Explosões de fogo já resolvidas, para a cena animar (o tabuleiro ignora as repetidas)
     const [fireBursts, setFireBursts] = useState<FireBurst[]>([])
+    // Números de dano já resolvidos, para a cena mostrá-los subindo (ela ignora os repetidos)
+    const [damagePopups, setDamagePopups] = useState<DamagePopup[]>([])
     const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [infoBarrier, setInfoBarrier] = useState<Barrier | null>(null)
@@ -249,6 +252,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         barriers: barriers.all,
         setPieces,
         setFireBursts,
+        setDamagePopups,
         setManipulatedId: focus.setManipulatedId,
         rolls,
         log,
@@ -408,6 +412,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             skillCells: highlighted.skill,
             barriers: barriers.all,
             fireBursts,
+            damagePopups,
             auras,
             selectedId,
             droppedItemId: focus.droppedItem?.id ?? null,

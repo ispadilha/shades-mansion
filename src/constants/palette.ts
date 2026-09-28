@@ -77,6 +77,17 @@ export const BARRIER_PALETTE: Record<PieceColor, { floor: string; glow: string; 
     light: { floor: "#fdf6dd", glow: "#fffdf0", edge: "#e8c94a" },
 }
 
+const LEVEL_STAR_PALETTE = {
+    silver: { fill: "#e6eaef", outline: "#6f7784" },
+    gold: { fill: "#ffd24a", outline: "#9a6b06" },
+}
+
+export const levelStarColors = (level: number) =>
+    level >= 3 ? LEVEL_STAR_PALETTE.gold : LEVEL_STAR_PALETTE.silver
+
+// O número de dano que sobe acima da peça atingida
+export const DAMAGE_POPUP_PALETTE = { fill: "#ffffff", stroke: "#1a1a1a" }
+
 // O incêndio do dano em área: as chamas sorteiam uma das cores da lista.
 export const FIRE_PALETTE = {
     flames: ["#fff0a5", "#ffc043", "#ff8c1a", "#e63b1e"],

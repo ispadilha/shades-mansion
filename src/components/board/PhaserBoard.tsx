@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
 import type { Barrier, PieceAuras, PieceDefinition, MotivationItem } from "../../logic/types"
-import type { FireBurst } from "../../logic/combat"
+import type { DamagePopup, FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { BoardScene } from "../../game/BoardScene"
 
@@ -12,6 +12,7 @@ interface PhaserBoardProps {
     items: MotivationItem[]
     barriers: Barrier[]
     fireBursts: FireBurst[]
+    damagePopups: DamagePopup[]
     auras: PieceAuras
     droppedItemId: string | null
 }
@@ -23,12 +24,14 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     items,
     barriers,
     fireBursts,
+    damagePopups,
     auras,
     droppedItemId,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<BoardScene | null>(null)
     const playedBurstsRef = useRef(new Set<string>())
+    const playedDamageRef = useRef(new Set<string>())
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -81,6 +84,16 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
             sceneRef.current?.playFireBurst(burst)
         }
     }, [fireBursts])
+
+    // Mesmo cuidado das explosões: a lista é estado da partida e volta a cada render,
+    // então os ids já mostrados ficam guardados.
+    useEffect(() => {
+        for (const popup of damagePopups) {
+            if (playedDamageRef.current.has(popup.id)) continue
+            playedDamageRef.current.add(popup.id)
+            sceneRef.current?.playDamage(popup)
+        }
+    }, [damagePopups])
 
     return (
         <div

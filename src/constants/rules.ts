@@ -296,3 +296,16 @@ export const DIE_GLOW = { x: 32, y: 35, radius: 26 }
 
 // A barra de vigor sob a peça, em frações da casa
 export const VIGOR_BAR = { width: 0.56, height: 0.1, offsetY: 0.42, inset: 1 }
+
+// A estrela que marca a promoção da peça
+export const LEVEL_STAR = { x: 0.37, y: 0.26, outer: 0.075, inner: 0.032, points: 5 }
+
+// A mesma estrela no token do HUD. A posição é outra porque ali a peça é um círculo:
+// a estrela desce pela diagonal para caber dentro do anel da aura.
+export const TOKEN_LEVEL_STAR = { x: 0.27, y: 0.27 }
+
+// O número de dano que sobe acima da peça atingida
+export const DAMAGE_POPUP_MS = 1000
+export const DAMAGE_POPUP_RISE = 0.5
+export const DAMAGE_POPUP_FONT = 0.22
+export const MAX_DAMAGE_POPUPS = 12

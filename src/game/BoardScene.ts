@@ -2,7 +2,7 @@ import Phaser from "phaser"
 import type { AuraKind, Barrier, PieceAuras, PiecePosition, PieceDefinition, MotivationItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
-import type { FireBurst } from "../logic/combat"
+import type { DamagePopup, FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
 import { blockedCellsFor } from "../logic/grid"
 import { isSpent } from "../logic/turn"
@@ -10,9 +10,11 @@ import { pickRandom, randomInt } from "../logic/random"
 import {
     AURA_PALETTE,
     BARRIER_PALETTE,
+    DAMAGE_POPUP_PALETTE,
     FIRE_COLORS,
     FIRE_PALETTE,
     VIGOR_PALETTE,
+    levelStarColors,
     ITEM_PALETTE,
     PIECE_DETAIL_PALETTE,
     PIECE_PALETTE,
@@ -26,6 +28,10 @@ import {
     BARRIER_GLOW_ALPHA,
     BARRIER_FLOOR_ALPHA,
     BARRIER_PULSE_MS,
+    DAMAGE_POPUP_FONT,
+    DAMAGE_POPUP_MS,
+    DAMAGE_POPUP_RISE,
+    LEVEL_STAR,
     ITEM_DROP_HEIGHT,
     ITEM_DROP_MS,
     AURA_TEXTURE_SIZE,
@@ -60,6 +66,9 @@ export class BoardScene extends Phaser.Scene {
     // a caminhada dela sem precisar de sincronia nenhuma.
     private auras: Map<string, { kind: AuraKind; sprite: Phaser.GameObjects.Image }> = new Map()
     private vigorBars: Map<string, VigorBar> = new Map()
+    // A estrela de promoção de cada peça. Ela mora dentro do container da peça, então
+    // acompanha a caminhada sozinha. O que muda com o nível é a cor e se ela aparece.
+    private levelStars: Map<string, Phaser.GameObjects.Star> = new Map()
     private barrierSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     // A última lista recebida: o caminho de uma peça contorna as barreiras dos oponentes,
     // e é aqui que o passo-a-passo da caminhada consulta quais são.
@@ -69,6 +78,7 @@ export class BoardScene extends Phaser.Scene {
     private pendingItems: MotivationItem[] | null = null
     private pendingBarriers: Barrier[] | null = null
     private pendingBursts: FireBurst[] = []
+    private pendingDamage: DamagePopup[] = []
     private pendingDrops: string[] = []
     private pendingAuras: PieceAuras | null = null
     private isReady = false
@@ -101,6 +111,8 @@ export class BoardScene extends Phaser.Scene {
         }
         for (const burst of this.pendingBursts) this.spawnFireBurst(burst)
         this.pendingBursts = []
+        for (const popup of this.pendingDamage) this.spawnDamage(popup)
+        this.pendingDamage = []
         for (const itemId of this.pendingDrops) this.dropItem(itemId)
         this.pendingDrops = []
     }
@@ -139,6 +151,16 @@ export class BoardScene extends Phaser.Scene {
             return
         }
         this.spawnFireBurst(burst)
+    }
+
+    // O número de dano que sobe acima da peça atingida. Como cada explosão, ele é tocado
+    // uma vez só, e é quem chama que controla isso.
+    playDamage(popup: DamagePopup) {
+        if (!this.isReady) {
+            this.pendingDamage.push(popup)
+            return
+        }
+        this.spawnDamage(popup)
     }
 
     // A queda de um item que voltou ao tabuleiro.
@@ -203,6 +225,7 @@ export class BoardScene extends Phaser.Scene {
                 this.sprites.set(piece.id, sprite)
                 this.lastCells.set(piece.id, { ...piece.position })
                 this.syncVigorBar(piece)
+                this.syncLevelStar(piece)
                 continue
             }
 
@@ -230,6 +253,7 @@ export class BoardScene extends Phaser.Scene {
             }
 
             this.syncVigorBar(piece)
+            this.syncLevelStar(piece)
         }
 
         // Peças removidas (eliminadas) somem com fade
@@ -241,6 +265,7 @@ export class BoardScene extends Phaser.Scene {
             // sem tween próprio
             this.auras.delete(id)
             this.vigorBars.delete(id)
+            this.levelStars.delete(id)
             this.tweens.killTweensOf(sprite)
             this.tweens.add({
                 targets: sprite,
@@ -409,6 +434,32 @@ export class BoardScene extends Phaser.Scene {
         return container
     }
 
+    // O número branco que sobe da casa e desaparece.
+    private spawnDamage(popup: DamagePopup) {
+        const cs = this.cellSize
+        const { x, y } = this.cellToPixel(popup.position)
+
+        const label = this.add
+            .text(x, y - cs * 0.12, String(popup.amount), {
+                fontFamily: "Arial Black",
+                fontSize: `${Math.max(11, Math.floor(cs * DAMAGE_POPUP_FONT))}px`,
+                color: DAMAGE_POPUP_PALETTE.fill,
+                stroke: DAMAGE_POPUP_PALETTE.stroke,
+                strokeThickness: 3,
+            })
+            .setOrigin(0.5, 1)
+            .setDepth(20)
+
+        this.tweens.add({
+            targets: label,
+            y: label.y - cs * DAMAGE_POPUP_RISE,
+            alpha: { from: 1, to: 0 },
+            duration: DAMAGE_POPUP_MS,
+            ease: "Quad.easeOut",
+            onComplete: () => label.destroy(),
+        })
+    }
+
     private dropItem(itemId: string) {
         const sprite = this.itemSprites.get(itemId)
         if (!sprite) return
@@ -542,6 +593,7 @@ export class BoardScene extends Phaser.Scene {
 
         container.add([shadow, leftLeg, rightLeg, leftArm, rightArm, body, head, leftEye, rightEye, letter])
         container.add(this.buildVigorBar(piece.id))
+        container.add(this.buildLevelStar(piece.id))
         return container
     }
 
@@ -563,6 +615,39 @@ export class BoardScene extends Phaser.Scene {
         const root = this.add.container(0, -cs * VIGOR_BAR.offsetY, [track, fill]).setAlpha(0)
         this.vigorBars.set(pieceId, { root, fill, width: width - VIGOR_BAR.inset * 2 })
         return root
+    }
+
+    // A estrela nasce invisível: no nível 1 não há promoção para marcar, e é
+    // `syncLevelStar` que a acende quando a peça sobe.
+    private buildLevelStar(pieceId: string): Phaser.GameObjects.Star {
+        const cs = this.cellSize
+        const star = this.add
+            .star(
+                cs * LEVEL_STAR.x,
+                -cs * LEVEL_STAR.y,
+                LEVEL_STAR.points,
+                cs * LEVEL_STAR.inner,
+                cs * LEVEL_STAR.outer,
+            )
+            .setVisible(false)
+        this.levelStars.set(pieceId, star)
+        return star
+    }
+
+    // Prata no nível 2, dourada no 3, nenhuma no 1. A peça pode ser promovida no meio da
+    // partida, então isto roda a cada sincronia, e não só na criação.
+    private syncLevelStar(piece: PieceDefinition) {
+        const star = this.levelStars.get(piece.id)
+        if (!star) return
+
+        if (piece.level < 2) {
+            star.setVisible(false)
+            return
+        }
+        const colors = levelStarColors(piece.level)
+        star.setFillStyle(hex(colors.fill))
+        star.setStrokeStyle(1.5, hex(colors.outline))
+        star.setVisible(true)
     }
 
     // Comprimento e cor acompanham o vigor que restou.

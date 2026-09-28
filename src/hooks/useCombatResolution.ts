@@ -11,6 +11,7 @@ import {
     rollManipulation,
     type DamageRoll,
     type DefenseOutcome,
+    type DamagePopup,
     type FireBurst,
     type PendingAttack,
 } from "../logic/combat"
@@ -25,6 +26,7 @@ import {
     DEFENSE_DIE,
     DODGE_ROLL_TIMING,
     ITEM_DROP_HOLD_MS,
+    MAX_DAMAGE_POPUPS,
     MAX_FIRE_BURSTS,
     statsFor,
     SUCCESS_FACE,
@@ -50,6 +52,8 @@ interface CombatResolutionOptions {
     barriers: Barrier[]
     setPieces: Dispatch<SetStateAction<PieceDefinition[]>>
     setFireBursts: Dispatch<SetStateAction<FireBurst[]>>
+    // Os números de dano que sobem acima das peças atingidas
+    setDamagePopups: Dispatch<SetStateAction<DamagePopup[]>>
     // Peça sob manipulação: é ela que a câmera segue enquanto a moeda está no ar
     setManipulatedId: (pieceId: string | null) => void
     rolls: RollQueue
@@ -76,6 +80,7 @@ export const useCombatResolution = ({
     barriers,
     setPieces,
     setFireBursts,
+    setDamagePopups,
     setManipulatedId,
     rolls,
     log,
@@ -83,6 +88,9 @@ export const useCombatResolution = ({
     onManipulationFailed,
 }: CombatResolutionOptions): CombatResolution => {
     const { t } = useLanguage()
+    // Quem está rolando, com o nível ao lado. O nível pertence à ficha da rolagem porque é
+    // ele que decide o dado de dano do atacante e os números de defesa de quem se defende.
+    const withLevel = (piece: PieceDefinition) => `${piece.id} (${t("level")} ${piece.level})`
     // Os dados do golpe só são jogados quando o atacante termina de se aproximar: o timer
     // fica guardado para ser cancelado quando a tela sair.
     const damageTimerRef = useRef<number | null>(null)
@@ -125,6 +133,7 @@ export const useCombatResolution = ({
                 return
             }
 
+            const attackerLabel = firedBy ? withLevel(firedBy) : attack.attackerId
             const damage = rollDamage(attack.damageDice)
 
             rolls.show(
@@ -133,7 +142,9 @@ export const useCombatResolution = ({
                     kind: dieKind(attack.damageDice.sides),
                     value: damage.dice,
                     title: t("damageRoll"),
-                    subtitle: attack.targetId ? `${attack.attackerId} → ${attack.targetId}` : attack.attackerId,
+                    subtitle: attack.targetId
+                    ? `${attackerLabel} → ${attack.targetId}`
+                    : attackerLabel,
                     outcome: { label: t("damagePoints"), tone: "neutral" },
                     manual: attackerColor !== null && isManualRoll(attackerColor),
                     ...ATTACK_ROLL_TIMING,
@@ -187,7 +198,7 @@ export const useCombatResolution = ({
                 kind: dieKind(DEFENSE_DIE),
                 value: [defense.die],
                 title: t("defenseRoll"),
-                subtitle: defender.id,
+                subtitle: withLevel(defender),
                 targets: defenseTargets(defender),
                 outcome: { label: t(reading.label), tone: reading.tone },
                 manual: isManualRoll(defender.color),
@@ -237,6 +248,17 @@ export const useCombatResolution = ({
 
     // Quem chega a zero sai do tabuleiro
     const applyDamage = (hits: Hit[]) => {
+        // O número sobe da casa em que a peça estava: ele precisa aparecer mesmo para
+        // quem foi eliminada por este golpe.
+        const popups = hits.flatMap((hit) => {
+            const piece = pieces.find((p) => p.id === hit.pieceId)
+            if (!piece) return []
+            return [{ id: `dmg-${hit.pieceId}-${Date.now()}`, position: { ...piece.position }, amount: hit.damage }]
+        })
+        if (popups.length > 0) {
+            setDamagePopups((prev) => [...prev.slice(-MAX_DAMAGE_POPUPS + popups.length), ...popups])
+        }
+
         setPieces((prev) =>
             prev
                 .map((piece) => {

@@ -34,7 +34,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ open, onClose, piece, 
 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                            <PieceToken color={piece.color} type={piece.type} size={72} />
+                            <PieceToken color={piece.color} type={piece.type} level={piece.level} size={72} />
                             <Typography sx={{ fontSize: 12, color: palette.surface.textMuted, mt: 0.5 }}>
                                 {piece.id}
                             </Typography>

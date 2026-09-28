@@ -57,6 +57,7 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, active
                             <PieceToken
                                 color={piece.color}
                                 type={piece.type}
+                                level={piece.level}
                                 size={34}
                                 aura={aura}
                                 dimmed={isSpent(piece) && !aura}

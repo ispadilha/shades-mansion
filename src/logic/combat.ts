@@ -148,6 +148,15 @@ export interface FireBurst {
     cells: PiecePosition[]
 }
 
+// Um número de dano para a cena mostrar subindo acima da peça atingida. Ele carrega a
+// casa, e não o id da peça: quem chega a zero sai do tabuleiro no mesmo instante, e o
+// número ainda tem que aparecer.
+export interface DamagePopup {
+    id: string
+    position: PiecePosition
+    amount: number
+}
+
 // Peças que a incendiária pegaria de tabela ao mirar em "target": todas as do time
 // indicado que estão na área, tirando o próprio alvo. A IA usa isso para não se queimar.
 export function alliesInBlast(
