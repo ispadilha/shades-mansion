@@ -118,7 +118,7 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
     if (canWalk && !targetPiece && inMoveRange) actions.push(itemHere ? "collect" : "move")
 
     if (!usingSkill && hasBasicAction && hitsPiece) {
-        const strike: Strike = { ranged: false, range: strikeWalkRange(selectedPiece!), blocked }
+        const strike: Strike = { ranged: false, range: strikeWalkRange(selectedPiece!), blocked, items }
         if (canHitTarget(selectedPiece!, targetPiece!, pieces, maze, strike)) actions.push("attack")
     }
 
@@ -129,7 +129,7 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
         } else {
             const strike: Strike = skillReach!.ranged
                 ? { ranged: true, range: skillReach!.attack, sight: { barriers, blockedBy: skillReach!.blockedBy } }
-                : { ranged: false, range: skillReach!.attack, blocked }
+                : { ranged: false, range: skillReach!.attack, blocked, items }
             const reachesPiece = hitsPiece && canHitTarget(selectedPiece!, targetPiece!, pieces, maze, strike)
             // Só habilidade de área pode mirar no chão (mas não em barreira adversária)
             const burnsGround =

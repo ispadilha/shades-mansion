@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import type { Barrier, PieceDefinition, PiecePosition } from "../logic/types"
+import type { Barrier, MotivationItem, PieceDefinition, PiecePosition } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { lineOfFire, meleeAttackCells, reachableCells } from "../logic/movement"
 import { barrierCells } from "../logic/barriers"
@@ -30,13 +30,15 @@ interface HighlightOptions {
     // Barreiras acesas: fecham caminho para os times rivais,
     // e a casa de uma existente não pode receber outra.
     barriers: Barrier[]
+    // Itens no chão: a casa de um não serve para parar e golpear a partir dela
+    items: MotivationItem[]
 }
 
 export const useHighlightedCells = (
     selectedId: string | null,
     pieces: PieceDefinition[],
     maze: Maze,
-    { skill, basicAvailable, barriers }: HighlightOptions,
+    { skill, basicAvailable, barriers, items }: HighlightOptions,
 ): HighlightedCells => {
     const [cells, setCells] = useState<HighlightedCells>(NOTHING)
 
@@ -62,7 +64,7 @@ export const useHighlightedCells = (
                 move: skill.move > 0 ? reachableCells(piece, pieces, maze, skill.move, blocked) : [],
                 attack: skill.ranged
                     ? lineOfFire(piece, pieces, maze, skill.attack, { barriers, blockedBy: skill.blockedBy }).cells
-                    : meleeAttackCells(piece, pieces, maze, skill.attack, blocked),
+                    : meleeAttackCells(piece, pieces, items, maze, skill.attack, blocked),
                 skill: [],
             })
             return
@@ -76,7 +78,7 @@ export const useHighlightedCells = (
         setCells({
             move: reachableCells(piece, pieces, maze, stats.moveRange, blocked),
             // Corpo-a-corpo: uma casa a mais que o movimento, contornando as paredes.
-            attack: meleeAttackCells(piece, pieces, maze, stats.moveRange, blocked),
+            attack: meleeAttackCells(piece, pieces, items, maze, stats.moveRange, blocked),
             skill: [],
         })
         // As dependências são os números do alcance, e não o objeto: ele é remontado a
@@ -87,6 +89,7 @@ export const useHighlightedCells = (
         pieces,
         maze,
         barriers,
+        items,
         skill?.move,
         skill?.attack,
         skill?.ranged,

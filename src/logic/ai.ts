@@ -71,11 +71,11 @@ export class SimpleAI {
         const myInv: MotivationItemKey[] = inventories[color]
 
         // Prioridade 1: usar item de manipulação para forçar um ataque vantajoso
-        const manipulation = this.tryManipulationAttack(pieces, color, myInv, maze, barriers)
+        const manipulation = this.tryManipulationAttack(pieces, color, myInv, maze, barriers, items)
         if (manipulation) return manipulation
 
         // Prioridade 2: atacar qualquer inimigo no alcance
-        const reach = this.findInRangeTargets(activePiece, enemyPieces, pieces, maze, color, barriers)
+        const reach = this.findInRangeTargets(activePiece, enemyPieces, pieces, maze, color, barriers, items)
         if (reach.length > 0) {
             return this.buildAttack(activePiece, reach[0].target, reach[0].approach, pieces, maze, barriers)
         }
@@ -117,6 +117,7 @@ export class SimpleAI {
         myInv: MotivationItemKey[],
         maze: Maze,
         barriers: Barrier[],
+        items: MotivationItem[],
     ): AIMoveResult | null {
         for (const itemKey of myInv) {
             if (itemKeyColor(itemKey) === color) continue
@@ -125,7 +126,7 @@ export class SimpleAI {
 
             // Alvos possíveis: qualquer peça que não seja da IA nem a própria peça manipulada
             const candidates = pieces.filter((p) => p.id !== manipulated.id && p.color !== color)
-            const reach = this.findInRangeTargets(manipulated, candidates, pieces, maze, color, barriers)
+            const reach = this.findInRangeTargets(manipulated, candidates, pieces, maze, color, barriers, items)
             if (reach.length === 0) continue
 
             // Escolhe o alvo de menor vigor (mais chance de tirá-lo da mansão)
@@ -241,6 +242,7 @@ export class SimpleAI {
         maze: Maze,
         friendlyColor: PieceColor,
         barriers: Barrier[],
+        items: MotivationItem[],
     ): Array<{ target: PieceDefinition; approach: PiecePosition }> {
         const skill = this.rangedSkillOf(myPiece)
         const sparesAllies = (target: PieceDefinition) =>
@@ -258,7 +260,15 @@ export class SimpleAI {
         const walkRange = statsFor(myPiece.type, myPiece.level).moveRange
         const result: Array<{ target: PieceDefinition; approach: PiecePosition }> = []
         for (const enemy of enemyPieces) {
-            const approach = findApproachCell(myPiece, enemy, pieces, maze, walkRange, blockedCellsFor(myPiece.color, barriers, pieces))
+            const approach = findApproachCell(
+                myPiece,
+                enemy,
+                pieces,
+                items,
+                maze,
+                walkRange,
+                blockedCellsFor(myPiece.color, barriers, pieces),
+            )
             if (approach) result.push({ target: enemy, approach })
         }
         return result

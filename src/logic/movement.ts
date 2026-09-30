@@ -1,4 +1,4 @@
-import type { Barrier, LineBlockers, PiecePosition, PieceDefinition } from "./types"
+import type { Barrier, LineBlockers, MotivationItem, PiecePosition, PieceDefinition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import {
@@ -118,10 +118,14 @@ export function reachableCells(
 // Encontra a casa adjacente ao alvo (8 vizinhas, com diagonais) livre e mais barata de
 // alcançar andando. Se o atacante já está adjacente, retorna sua própria posição.
 // Retorna null se nenhuma casa em volta do alvo estiver ao alcance.
+//
+// Casa com item não está livre para quem vai golpear: parar nela é coletar, e coletar é
+// outra ação. O item precisa sair antes para a casa ficar vaga.
 export function findApproachCell(
     attacker: PieceDefinition,
     target: PieceDefinition,
     pieces: PieceDefinition[],
+    items: MotivationItem[],
     maze: Maze,
     walkRange: number,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
@@ -144,6 +148,7 @@ export function findApproachCell(
         if (!isWalkable(maze, candidate.x, candidate.y)) continue
         const occupant = atPosition(pieces, candidate)
         if (occupant && occupant.id !== attacker.id) continue
+        if (atPosition(items, candidate)) continue
 
         const node = visited.get(positionKey(candidate))
         if (!node) continue
@@ -156,6 +161,7 @@ export function findApproachCell(
 export function meleeAttackCells(
     piece: PieceDefinition,
     pieces: PieceDefinition[],
+    items: MotivationItem[],
     maze: Maze,
     walkRange: number,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
@@ -166,8 +172,12 @@ export function meleeAttackCells(
         cells.set(positionKey(cell), cell)
     }
 
-    // Casas ocupadas por outra peça: a própria fica de fora
-    const occupied = new Set(pieces.filter((p) => p.id !== piece.id).map((p) => positionKey(p.position)))
+    // Casas de onde ela não golpeia: as de outras peças (a própria fica de fora)
+    // e as que têm item, que para quem vai golpear não estão vagas
+    const occupied = new Set([
+        ...pieces.filter((p) => p.id !== piece.id).map((p) => positionKey(p.position)),
+        ...items.map((item) => positionKey(item.position)),
+    ])
 
     for (const [key, node] of walkFrom(piece.position, maze, walkRange, blocked)) {
         add(node.position)
@@ -184,7 +194,7 @@ export function meleeAttackCells(
         return (
             !occupant ||
             occupant.id === piece.id ||
-            findApproachCell(piece, occupant, pieces, maze, walkRange, blocked) !== null
+            findApproachCell(piece, occupant, pieces, items, maze, walkRange, blocked) !== null
         )
     })
 }
@@ -295,7 +305,7 @@ export const strikeWalkRange = (piece: PieceDefinition) => statsFor(piece.type, 
 // precisa de uma coisa diferente: quem anda, das casas fechadas para ele; quem atira, do
 // que interrompe a linha da habilidade.
 export type Strike =
-    | { ranged: false; range: number; blocked: BlockedCells }
+    | { ranged: false; range: number; blocked: BlockedCells; items: MotivationItem[] }
     | { ranged: true; range: number; sight: LineSight }
 
 // A peça consegue acertar o alvo daqui? É a mesma pergunta que o destaque do tabuleiro
@@ -310,5 +320,5 @@ export function canHitTarget(
     if (strike.ranged) {
         return lineOfFire(attacker, pieces, maze, strike.range, strike.sight).targets.some((t) => t.id === target.id)
     }
-    return findApproachCell(attacker, target, pieces, maze, strike.range, strike.blocked) !== null
+    return findApproachCell(attacker, target, pieces, strike.items, maze, strike.range, strike.blocked) !== null
 }

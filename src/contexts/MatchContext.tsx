@@ -210,6 +210,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         skill: skill.reach,
         basicAvailable: selectedPiece !== null && (!selectedPiece.movedThisTurn || manipulation !== null),
         barriers: barriers.all,
+        items: items.items,
     })
 
     const input = useBoardInput({
@@ -278,6 +279,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         combat,
         log,
         barriers: barriers.all,
+        items: items.items,
         placeSkill: barriers.lightAt,
     })
 

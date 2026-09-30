@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react"
 import type { MotivationItemKey, PieceColor, PieceDefinition, PiecePosition, TextKey } from "../logic/types"
-import type { Barrier } from "../logic/types"
+import type { Barrier, MotivationItem } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { attackArea } from "../logic/combat"
@@ -36,6 +36,9 @@ interface BoardActionsOptions {
     log: GameLog
     // Barreiras acesas: elas fecham caminho para os times rivais
     barriers: Barrier[]
+    // Itens no chão: a casa de um não serve para parar e golpear a partir dela
+    items: MotivationItem[]
+
     // O que a habilidade em uso faz quando cria algo numa casa
     placeSkill: (position: PiecePosition) => void
 }
@@ -70,6 +73,7 @@ export const useBoardActions = ({
     combat,
     log,
     barriers,
+    items,
     placeSkill,
 }: BoardActionsOptions): BoardActions => {
     // Quanto a peça demora para chegar lá,
@@ -145,6 +149,7 @@ export const useBoardActions = ({
                       attacker,
                       target,
                       pieces,
+                      items,
                       maze,
                       walkRange,
                       blockedCellsFor(attacker.color, barriers, pieces),
