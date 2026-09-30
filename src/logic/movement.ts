@@ -1,4 +1,4 @@
-import type { PiecePosition, PieceDefinition } from "./types"
+import type { Barrier, LineBlockers, PiecePosition, PieceDefinition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import {
@@ -227,13 +227,17 @@ function hasClearShot(from: PiecePosition, to: PiecePosition, blocked: (cell: Pi
     return shotSteps(from, to).every((group) => group.some((cell) => !blocked(cell)))
 }
 
+// O que a linha de tiro precisa saber para decidir onde para:
+// as barreiras acesas e o que interrompe a linha, dependendo da habilidade.
+export interface LineSight {
+    barriers: Barrier[]
+    blockedBy: LineBlockers
+}
+
 // Ataque à distância: a peça acerta qualquer casa a até "range" passos (contados em
 // linha reta, na diagonal inclusive) cuja linha de tiro chegue inteira até lá — não
-// precisa ser pela linha, pela coluna ou pela diagonal. Paredes e outras peças
-// interrompem a linha, então quem está atrás delas fica coberto.
-//
-// `blocked` é o mesmo conjunto que fecha o caminho de quem anda: as barreiras dos outros
-// times também tapam tiros deles. O que atravessa uma barreira é só o time que a acendeu.
+// precisa ser pela linha, pela coluna ou pela diagonal. Paredes sempre interrompem a
+// linha. Peças e barreiras podem interromper conforme a habilidade que dispara.
 //
 // `cells` são as casas visadas (para destacar no tabuleiro) e `targets`, as peças que
 // estão nelas.
@@ -242,15 +246,23 @@ export function lineOfFire(
     pieces: PieceDefinition[],
     maze: Maze,
     range: number,
-    blocked: BlockedCells = NO_BLOCKED_CELLS,
+    sight: LineSight,
 ): { cells: PiecePosition[]; targets: PieceDefinition[] } {
     const others = pieces.filter((p) => p.id !== piece.id)
     const occupants = new Map(others.map((p) => [positionKey(p.position), p]))
-    // Peça no caminho tapa o tiro de qualquer time, e é por isso que ela é consultada
-    // à parte: `blocked` só traz o que é adversário de quem está atirando.
+    // Barreira só interrompe a linha de quem é de outro time
+    const opponentBarriers = new Set(
+        sight.blockedBy.barriers
+            ? sight.barriers.filter((b) => b.color !== piece.color).map((b) => positionKey(b.position))
+            : [],
+    )
     const stopsShot = (cell: PiecePosition) => {
         const key = positionKey(cell)
-        return !isWalkable(maze, cell.x, cell.y) || occupants.has(key) || blocked.has(key)
+        return (
+            !isWalkable(maze, cell.x, cell.y) ||
+            (sight.blockedBy.pieces && occupants.has(key)) ||
+            opponentBarriers.has(key)
+        )
     }
 
     const cells: PiecePosition[] = []
@@ -279,18 +291,24 @@ export function lineOfFire(
 // alcança a casa seguinte, e isso já está em `meleeAttackCells` e `findApproachCell`.
 export const strikeWalkRange = (piece: PieceDefinition) => statsFor(piece.type, piece.level).moveRange
 
-// A peça consegue acertar o alvo daqui? De longe vale a linha de tiro, de perto vale ter
-// onde encostar. É a mesma pergunta que o destaque do tabuleiro responde em cores.
+// Como o golpe chega ao alvo: andando até encostar, ou por uma linha de tiro. Cada jeito
+// precisa de uma coisa diferente: quem anda, das casas fechadas para ele; quem atira, do
+// que interrompe a linha da habilidade.
+export type Strike =
+    | { ranged: false; range: number; blocked: BlockedCells }
+    | { ranged: true; range: number; sight: LineSight }
+
+// A peça consegue acertar o alvo daqui? É a mesma pergunta que o destaque do tabuleiro
+// responde em cores.
 export function canHitTarget(
     attacker: PieceDefinition,
     target: PieceDefinition,
     pieces: PieceDefinition[],
     maze: Maze,
-    reach: { ranged: boolean; range: number },
-    blocked: BlockedCells = NO_BLOCKED_CELLS,
+    strike: Strike,
 ): boolean {
-    if (reach.ranged) {
-        return lineOfFire(attacker, pieces, maze, reach.range, blocked).targets.some((t) => t.id === target.id)
+    if (strike.ranged) {
+        return lineOfFire(attacker, pieces, maze, strike.range, strike.sight).targets.some((t) => t.id === target.id)
     }
-    return findApproachCell(attacker, target, pieces, maze, reach.range, blocked) !== null
+    return findApproachCell(attacker, target, pieces, maze, strike.range, strike.blocked) !== null
 }

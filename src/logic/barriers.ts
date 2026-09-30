@@ -1,30 +1,26 @@
 import type { Barrier, PieceDefinition, PiecePosition } from "./types"
 import type { Maze } from "./maze"
-import { atPosition, blockedCellsFor, positionKey } from "./grid"
-import { lineOfFire } from "./movement"
+import { atPosition, positionKey } from "./grid"
+import { lineOfFire, type LineSight } from "./movement"
 
 // As barreiras que uma peça mantém acesas
 export const barriersOf = (barriers: Barrier[], pieceId: string) =>
     barriers.filter((barrier) => barrier.ownerId === pieceId)
 
-// Onde a peça consegue acender uma barreira: dentro do alcance da habilidade e em linha
-// desimpedida. É a mesma geometria do tiro, porque a barreira também é acesa à distância
-// e não atravessa paredes.
+// Onde a peça consegue acender uma barreira: dentro do alcance da habilidade e pela linha
+// de tiro, sendo interrompida por paredes e outras barreiras, mas não por peças.
 //
 // A casa vale se não contiver outra barreira existente, nem peça adversária
 export const barrierCells = (
     piece: PieceDefinition,
     pieces: PieceDefinition[],
-    barriers: Barrier[],
     maze: Maze,
     range: number,
+    sight: LineSight,
 ): PiecePosition[] => {
-    const lit = new Set(barriers.map((barrier) => positionKey(barrier.position)))
-    // Acender é como atirar, então uma barreira adversária no caminho também tapa:
-    // não se acende do outro lado dela.
-    const blocked = blockedCellsFor(piece.color, barriers, pieces)
+    const lit = new Set(sight.barriers.map((barrier) => positionKey(barrier.position)))
     // A própria casa não sai na linha de tiro, mas é válida para acender uma barreira
-    const candidates = [piece.position, ...lineOfFire(piece, pieces, maze, range, blocked).cells]
+    const candidates = [piece.position, ...lineOfFire(piece, pieces, maze, range, sight).cells]
 
     return candidates.filter((cell) => {
         if (lit.has(positionKey(cell))) return false

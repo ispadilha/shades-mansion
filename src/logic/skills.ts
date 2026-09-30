@@ -1,4 +1,4 @@
-import type { PieceDefinition, PieceType, SkillId, TextKey } from "./types"
+import type { LineBlockers, PieceDefinition, PieceType, SkillId, TextKey } from "./types"
 import type { DiceSpec } from "./rolls"
 import { SKILL_LEVELS, statsFor, climbDamageLadder } from "../constants/rules"
 
@@ -22,6 +22,7 @@ export interface Skill {
     rangeBonus: number
     moves: boolean
     ranged: boolean
+    blockedBy: LineBlockers
     area: boolean
     // Degraus que o dado de dano sobe na escada das promoções
     damageSteps: number
@@ -37,6 +38,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         rangeBonus: 0,
         moves: true,
         ranged: false,
+        blockedBy: { pieces: true, barriers: true },
         area: false,
         damageSteps: 0,
     },
@@ -49,8 +51,8 @@ export const SKILLS: Record<SkillId, Skill> = {
         // O alcance e o número de barreiras crescem com o nível: estão em `SKILL_LEVELS`
         rangeBonus: 0,
         moves: false,
-        // Acende à distância, pela mesma geometria do tiro: em linha desimpedida
         ranged: true,
+        blockedBy: { pieces: false, barriers: true },
         area: false,
         damageSteps: 0,
     },
@@ -63,6 +65,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         rangeBonus: 3,
         moves: false,
         ranged: true,
+        blockedBy: { pieces: true, barriers: true },
         area: false,
         damageSteps: 2,
     },
@@ -75,6 +78,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         rangeBonus: 1,
         moves: false,
         ranged: true,
+        blockedBy: { pieces: false, barriers: true },
         area: true,
         damageSteps: 1,
     },
@@ -142,16 +146,18 @@ export interface SkillReach {
     move: number
     attack: number
     ranged: boolean
+    blockedBy: LineBlockers
     // Casas em que a habilidade cria algo, quando é desse tipo
     places: boolean
 }
 
 export const reachOf = (active: ActiveSkill): SkillReach => {
     const places = active.skill.effect === "place"
-    if (places) return { move: 0, attack: active.range, ranged: true, places }
+    const blockedBy = active.skill.blockedBy
+    if (places) return { move: 0, attack: active.range, ranged: true, blockedBy, places }
     return active.skill.moves
-        ? { move: active.range, attack: active.range, ranged: false, places }
-        : { move: 0, attack: active.range, ranged: active.skill.ranged, places }
+        ? { move: active.range, attack: active.range, ranged: false, blockedBy, places }
+        : { move: 0, attack: active.range, ranged: active.skill.ranged, blockedBy, places }
 }
 
 // O alcance com que uma habilidade sem dado entra em uso.

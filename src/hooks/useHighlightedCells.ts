@@ -54,13 +54,14 @@ export const useHighlightedCells = (
         // Habilidade em uso: as casas destacadas são as dela
         if (skill) {
             if (skill.places) {
-                setCells({ move: [], attack: [], skill: barrierCells(piece, pieces, barriers, maze, skill.attack) })
+                const sight = { barriers, blockedBy: skill.blockedBy }
+                setCells({ move: [], attack: [], skill: barrierCells(piece, pieces, maze, skill.attack, sight) })
                 return
             }
             setCells({
                 move: skill.move > 0 ? reachableCells(piece, pieces, maze, skill.move, blocked) : [],
                 attack: skill.ranged
-                    ? lineOfFire(piece, pieces, maze, skill.attack, blocked).cells
+                    ? lineOfFire(piece, pieces, maze, skill.attack, { barriers, blockedBy: skill.blockedBy }).cells
                     : meleeAttackCells(piece, pieces, maze, skill.attack, blocked),
                 skill: [],
             })
@@ -81,7 +82,19 @@ export const useHighlightedCells = (
         // As dependências são os números do alcance, e não o objeto: ele é remontado a
         // cada render de quem chama, e o efeito rodaria sem parar.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedId, pieces, maze, barriers, skill?.move, skill?.attack, skill?.ranged, skill?.places, basicAvailable])
+    }, [
+        selectedId,
+        pieces,
+        maze,
+        barriers,
+        skill?.move,
+        skill?.attack,
+        skill?.ranged,
+        skill?.places,
+        skill?.blockedBy.pieces,
+        skill?.blockedBy.barriers,
+        basicAvailable,
+    ])
 
     return cells
 }

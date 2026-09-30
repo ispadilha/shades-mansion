@@ -247,8 +247,8 @@ export class SimpleAI {
             alliesInBlast(myPiece, target, pieces, maze, friendlyColor, barriers).length === 0
 
         if (skill) {
-            const blocked = blockedCellsFor(myPiece.color, barriers, pieces)
-            const { targets } = lineOfFire(myPiece, pieces, maze, baseRangeOf(skill, myPiece), blocked)
+            const sight = { barriers, blockedBy: skill.blockedBy }
+            const { targets } = lineOfFire(myPiece, pieces, maze, baseRangeOf(skill, myPiece), sight)
             return targets
                 .filter((target) => enemyPieces.some((e) => e.id === target.id))
                 .filter(sparesAllies)

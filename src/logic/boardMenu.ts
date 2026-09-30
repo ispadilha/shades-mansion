@@ -2,7 +2,7 @@ import type { Barrier, MotivationItem, PieceColor, PieceDefinition, PiecePositio
 import type { Maze } from "./maze"
 import type { ActiveSkill, SkillReach } from "./skills"
 import { NO_BLOCKED_CELLS, atPosition, blockedCellsFor, includesPosition, positionKey } from "./grid"
-import { canHitTarget, strikeWalkRange } from "./movement"
+import { canHitTarget, strikeWalkRange, type Strike } from "./movement"
 
 // As ações que uma casa oferece quando o jogador clica nela com o botão direito.
 export type BoardAction = "pieceInfo" | "itemInfo" | "barrierInfo" | "move" | "collect" | "attack" | "skill"
@@ -118,8 +118,8 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
     if (canWalk && !targetPiece && inMoveRange) actions.push(itemHere ? "collect" : "move")
 
     if (!usingSkill && hasBasicAction && hitsPiece) {
-        const reach = { ranged: false, range: strikeWalkRange(selectedPiece!) }
-        if (canHitTarget(selectedPiece!, targetPiece!, pieces, maze, reach, blocked)) actions.push("attack")
+        const strike: Strike = { ranged: false, range: strikeWalkRange(selectedPiece!), blocked }
+        if (canHitTarget(selectedPiece!, targetPiece!, pieces, maze, strike)) actions.push("attack")
     }
 
     if (usingSkill && ownSelection) {
@@ -127,9 +127,10 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
             // Habilidade que cria algo: vale onde ela alcança, e lá já é casa livre
             if (includesPosition(skillCells, position)) actions.push("skill")
         } else {
-            const reach = { ranged: skillReach!.ranged, range: skillReach!.attack }
-            const reachesPiece =
-                hitsPiece && canHitTarget(selectedPiece!, targetPiece!, pieces, maze, reach, blocked)
+            const strike: Strike = skillReach!.ranged
+                ? { ranged: true, range: skillReach!.attack, sight: { barriers, blockedBy: skillReach!.blockedBy } }
+                : { ranged: false, range: skillReach!.attack, blocked }
+            const reachesPiece = hitsPiece && canHitTarget(selectedPiece!, targetPiece!, pieces, maze, strike)
             // Só habilidade de área pode mirar no chão (mas não em barreira adversária)
             const burnsGround =
                 !targetPiece &&

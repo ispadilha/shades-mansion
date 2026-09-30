@@ -35,6 +35,12 @@ export type AuraKind = "active" | "manipulated" | "skill"
 // níveis em `constants/rules.ts` poder falar dele sem que as regras dependam da lógica.
 export type SkillId = "extraMove" | "barrier" | "longShot" | "fire"
 
+// O que interrompe a linha de uma habilidade que vai à distância
+export interface LineBlockers {
+    pieces: boolean
+    barriers: boolean
+}
+
 export interface Barrier {
     id: string
     // Time que passa pela barreira paranormal
