@@ -9,12 +9,12 @@ import type {
 } from "./types"
 import { reinvigorated, itemUseFor, promoted, type ItemUse } from "./items"
 import { itemKeyColor } from "./types"
-import { reachableCells, findApproachCell, lineOfFire, pathLength, distanceMap } from "./movement"
-import { blockedCellsFor, type BlockedCells } from "./grid"
+import { reachableCells, findApproachCell, canHitTarget, pathLength, distanceMap, type Strike } from "./movement"
+import { blockedCellsFor, includesPosition, type BlockedCells } from "./grid"
 import { positionKey } from "./grid"
 import { pickRandom } from "./random"
 import type { Maze } from "./maze"
-import { alliesInBlast, attackArea, type PendingAttack } from "./combat"
+import { attackArea, friendlyFire, mayAttack, type PendingAttack } from "./combat"
 import { baseRangeOf, damageOf, hasRangedAttackSkill, skillFor } from "./skills"
 import { ACTION_SETTLE_MS, STEP_MS, statsFor } from "../constants/rules"
 
@@ -22,6 +22,8 @@ export interface AIMoveResult {
     updatedPieces: PieceDefinition[]
     // Ataque decidido: quem chamou é que rola o dano, as defesas, e aplica o resultado
     pendingAttack?: PendingAttack
+    // Item gasto em uma manipulação: quem age é a peça dele, se a moeda deixar
+    manipulationItem?: MotivationItemKey
 }
 
 // O que o time fez com os próprios itens no começo do turno
@@ -29,6 +31,12 @@ export interface ItemPhaseResult {
     pieces: PieceDefinition[]
     inventories: Inventories
     uses: Array<{ pieceId: string; use: ItemUse; level: number }>
+}
+
+// Um item de manipulação do time, e a peça de outro time que ele comanda
+interface Manipulable {
+    itemKey: MotivationItemKey
+    piece: PieceDefinition
 }
 
 export class SimpleAI {
@@ -67,26 +75,27 @@ export class SimpleAI {
         const color = activePiece.color
         // As barreiras dos outros times fecham caminho para as peças deste
         const blocked = blockedCellsFor(color, barriers, pieces)
-        const enemyPieces = pieces.filter((p) => p.color !== color)
-        const myInv: MotivationItemKey[] = inventories[color]
+        const manipulable = this.manipulableWith(inventories[color], color, pieces)
 
-        // Prioridade 1: usar item de manipulação para forçar um ataque vantajoso
-        const manipulation = this.tryManipulationAttack(pieces, color, myInv, maze, barriers, items)
-        if (manipulation) return manipulation
+        // Prioridade 1: manipular uma peça de outro time contra o terceiro
+        const againstThird = this.manipulateAgainstThirdTeam(manipulable, color, pieces, maze, barriers, items)
+        if (againstThird) return againstThird
 
         // Prioridade 2: atacar qualquer inimigo no alcance
-        const reach = this.findInRangeTargets(activePiece, enemyPieces, pieces, maze, color, barriers, items)
+        const reach = this.findInRangeTargets(activePiece, color, pieces, maze, barriers, items)
         if (reach.length > 0) {
-            return this.buildAttack(activePiece, reach[0].target, reach[0].approach, pieces, maze, barriers)
+            return this.buildAttack(activePiece, reach[0].target, reach[0].approach, pieces, maze, barriers, null)
         }
 
-        // Prioridade 3: aproximar-se do item mais próximo (qualquer time)
-        if (items.length > 0) {
-            const result = this.moveTowardItem([activePiece], items, pieces, maze, blocked)
-            if (result) return result
-        }
+        // Prioridade 3: sem alvo, trazer uma peça manipulada até onde a peça da vez a ataca
+        const lure = this.lureIntoReach(activePiece, manipulable, pieces, maze, barriers, items)
+        if (lure) return lure
 
-        // Prioridade 4: movimento aleatório
+        // Prioridade 4: aproximar-se do item mais próximo (qualquer time)
+        const towardItem = this.stepToward(activePiece, items.map((item) => item.position), pieces, maze, blocked)
+        if (towardItem) return { updatedPieces: this.moved(pieces, activePiece.id, towardItem, true) }
+
+        // Prioridade 5: movimento aleatório
         const possibleMoves = reachableCells(
             activePiece,
             pieces,
@@ -95,11 +104,7 @@ export class SimpleAI {
             blocked,
         )
         if (possibleMoves.length > 0) {
-            const randomMove = pickRandom(possibleMoves)
-            const updatedPieces = pieces.map((p) =>
-                p.id === activePiece.id ? { ...p, position: randomMove, movedThisTurn: true, usedSkillThisTurn: true } : p,
-            )
-            return { updatedPieces }
+            return { updatedPieces: this.moved(pieces, activePiece.id, pickRandom(possibleMoves), true) }
         }
 
         // Sem ataque nem movimento possível: a peça está presa entre paredes e outras peças.
@@ -108,96 +113,119 @@ export class SimpleAI {
         return { updatedPieces: pieces.map((p) => (p.id === activePiece.id ? { ...p, movedThisTurn: true, usedSkillThisTurn: true } : p)) }
     }
 
-    // Para cada item de manipulação no inventário, verifica se a peça correspondente
-    // pode atacar alguém que NÃO seja do time da IA. Escolhe o alvo de menor vigor
-    // (mais chance de eliminar). Se nenhum item rende um ataque útil, retorna null.
-    private static tryManipulationAttack(
-        pieces: PieceDefinition[],
+    // Os itens de manipulação do time, cada um com a peça que ele comanda
+    private static manipulableWith(
+        inventory: MotivationItemKey[],
         color: PieceColor,
-        myInv: MotivationItemKey[],
+        pieces: PieceDefinition[],
+    ): Manipulable[] {
+        return inventory.flatMap((itemKey) => {
+            const piece = itemKeyColor(itemKey) === color ? undefined : pieces.find((p) => p.id === itemKey)
+            return piece ? [{ itemKey, piece }] : []
+        })
+    }
+
+    // Manipular é jogar os dois times adversários um contra o outro.
+    // A peça manipulada ataca o terceiro time, no alvo de menor vigor (mais chance de
+    // tirá-lo da mansão). Se nenhum item deixa atacar, uma delas anda na direção do
+    // terceiro time, como isca. Null quando nenhum item serve para nada disso.
+    private static manipulateAgainstThirdTeam(
+        manipulable: Manipulable[],
+        color: PieceColor,
+        pieces: PieceDefinition[],
         maze: Maze,
         barriers: Barrier[],
         items: MotivationItem[],
     ): AIMoveResult | null {
-        for (const itemKey of myInv) {
-            if (itemKeyColor(itemKey) === color) continue
-            const manipulated = pieces.find((p) => p.id === itemKey)
-            if (!manipulated) continue
-
-            // Alvos possíveis: qualquer peça que não seja da IA nem a própria peça manipulada
-            const candidates = pieces.filter((p) => p.id !== manipulated.id && p.color !== color)
-            const reach = this.findInRangeTargets(manipulated, candidates, pieces, maze, color, barriers, items)
+        for (const { itemKey, piece } of manipulable) {
+            const reach = this.findInRangeTargets(piece, color, pieces, maze, barriers, items)
             if (reach.length === 0) continue
-
-            // Escolhe o alvo de menor vigor (mais chance de tirá-lo da mansão)
             const best = reach.reduce((acc, r) => (r.target.vigor < acc.target.vigor ? r : acc))
-
-            // Quem anda é a peça manipulada:
-            // as barreiras que a barram são as dos outros times.
-            const moveSteps = pathLength(
-                manipulated.position,
-                best.approach,
-                maze,
-                blockedCellsFor(manipulated.color, barriers, pieces),
-            )
-            const area = attackArea(manipulated, best.target.position)
-            // Ser manipulada é uma ação anormal: a peça se move e ataca sem gastar a ação
-            // que ela ainda tem no próprio turno (movedThisTurn fica como está).
-            const updatedPieces = pieces.map((p) =>
-                p.id === manipulated.id ? { ...p, position: best.approach } : p,
-            )
             return {
-                updatedPieces,
-                pendingAttack: {
-                    attackerId: manipulated.id,
-                    damageDice: damageOf(manipulated, this.rangedSkillOf(manipulated)),
-                    targetId: best.target.id,
-                    delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
-                    ...(area ? { area } : {}),
-                    consumedItemKey: itemKey,
-                    consumerColor: color,
-                },
+                ...this.buildAttack(piece, best.target, best.approach, pieces, maze, barriers, color),
+                manipulationItem: itemKey,
             }
         }
+
+        // A isca não para em casa com item: pisar nela daria o item ao time da peça
+        const itemCells = items.map((item) => item.position)
+        for (const { itemKey, piece } of manipulable) {
+            const thirdTeam = pieces.filter((p) => mayAttack(piece, p, color)).map((p) => p.position)
+            const blocked = blockedCellsFor(piece.color, barriers, pieces)
+            const step = this.stepToward(piece, thirdTeam, pieces, maze, blocked, itemCells)
+            if (step) return { updatedPieces: this.moved(pieces, piece.id, step, false), manipulationItem: itemKey }
+        }
+
         return null
     }
 
-    private static moveTowardItem(
-        myPieces: PieceDefinition[],
+    // A isca para o próprio time: a peça manipulada anda até onde a peça da vez consegue
+    // atacá-la, e o ataque vem logo em seguida, na mesma vez. Vai a de menor vigor entre as
+    // que dá para atrair, pelo caminho mais curto. Null quando nenhuma chega ao alcance.
+    private static lureIntoReach(
+        activePiece: PieceDefinition,
+        manipulable: Manipulable[],
+        pieces: PieceDefinition[],
+        maze: Maze,
+        barriers: Barrier[],
         items: MotivationItem[],
+    ): AIMoveResult | null {
+        const itemCells = items.map((item) => item.position)
+        const weakestFirst = [...manipulable].sort((a, b) => a.piece.vigor - b.piece.vigor)
+
+        for (const { itemKey, piece } of weakestFirst) {
+            const blocked = blockedCellsFor(piece.color, barriers, pieces)
+            const range = statsFor(piece.type, piece.level).moveRange
+            for (const cell of reachableCells(piece, pieces, maze, range, blocked)) {
+                if (includesPosition(itemCells, cell)) continue
+                // O tabuleiro como fica com ela ali: a peça da vez consegue atacá-la?
+                const board = this.moved(pieces, piece.id, cell, false)
+                const lured = { ...piece, position: cell }
+                if (this.strikeFrom(activePiece, lured, activePiece.color, board, maze, barriers, items) === null) continue
+                return { updatedPieces: board, manipulationItem: itemKey }
+            }
+        }
+
+        return null
+    }
+
+    // A casa, entre as que a peça alcança andando nesta vez, que mais a aproxima de algum
+    // dos destinos. As casas de `avoid` ficam de fora. Null se nenhuma a deixa mais perto.
+    private static stepToward(
+        piece: PieceDefinition,
+        goals: PiecePosition[],
         pieces: PieceDefinition[],
         maze: Maze,
         blocked: BlockedCells,
-    ): AIMoveResult | null {
-        let bestPair: { piece: PieceDefinition; distances: Map<string, number>; distance: number } | null = null
-        for (const item of items) {
-            const distances = distanceMap(item.position, maze, blocked)
-            for (const myPiece of myPieces) {
-                const d = distances.get(positionKey(myPiece.position))
-                if (d === undefined) continue
-                if (bestPair === null || d < bestPair.distance) bestPair = { piece: myPiece, distances, distance: d }
-            }
+        avoid: PiecePosition[] = [],
+    ): PiecePosition | null {
+        const maps = goals.map((goal) => distanceMap(goal, maze, blocked))
+        const distanceTo = (cell: PiecePosition) =>
+            Math.min(...maps.map((distances) => distances.get(positionKey(cell)) ?? Infinity))
+
+        let best: { cell: PiecePosition | null; distance: number } = { cell: null, distance: distanceTo(piece.position) }
+        const range = statsFor(piece.type, piece.level).moveRange
+        for (const cell of reachableCells(piece, pieces, maze, range, blocked)) {
+            if (includesPosition(avoid, cell)) continue
+            const distance = distanceTo(cell)
+            if (distance < best.distance) best = { cell, distance }
         }
-        if (!bestPair || bestPair.distance === 0) return null
+        return best.cell
+    }
 
-        const { piece, distances, distance } = bestPair
-        const reachable = reachableCells(piece, pieces, maze, statsFor(piece.type, piece.level).moveRange)
-        if (reachable.length === 0) return null
-
-        let bestCell = reachable[0]
-        let bestDist = distances.get(positionKey(bestCell)) ?? Infinity
-        for (const cell of reachable.slice(1)) {
-            const d = distances.get(positionKey(cell)) ?? Infinity
-            if (d < bestDist) {
-                bestCell = cell
-                bestDist = d
-            }
-        }
-
-        if (bestDist >= distance) return null
-
-        const updatedPieces = pieces.map((p) => (p.id === piece.id ? { ...p, position: bestCell, movedThisTurn: true, usedSkillThisTurn: true } : p))
-        return { updatedPieces }
+    // As peças depois que uma delas vai para outra casa. Na própria vez, isso gasta o turno dela.
+    // Manipulada, não gasta nada: ser manipulada é uma ação anormal, e a peça continua com a
+    // ação dela quando chegar a vez.
+    private static moved(
+        pieces: PieceDefinition[],
+        pieceId: string,
+        position: PiecePosition,
+        spendsTurn: boolean,
+    ): PieceDefinition[] {
+        return pieces.map((p) => {
+            if (p.id !== pieceId) return p
+            return spendsTurn ? { ...p, position, movedThisTurn: true, usedSkillThisTurn: true } : { ...p, position }
+        })
     }
 
     // A habilidade de alcance da peça, quando ela tem uma.
@@ -208,6 +236,7 @@ export class SimpleAI {
         return hasRangedAttackSkill(piece.type) ? skillFor(piece.type) : null
     }
 
+    // `manipulatedBy` é o time que manipula o atacante, quando é o caso
     private static buildAttack(
         attacker: PieceDefinition,
         target: PieceDefinition,
@@ -215,62 +244,62 @@ export class SimpleAI {
         pieces: PieceDefinition[],
         maze: Maze,
         barriers: Barrier[],
+        manipulatedBy: PieceColor | null,
     ): AIMoveResult {
         const moveSteps = pathLength(attacker.position, approach, maze, blockedCellsFor(attacker.color, barriers, pieces))
         const area = attackArea(attacker, target.position)
-        const updatedPieces = pieces.map((p) => (p.id === attacker.id ? { ...p, position: approach, movedThisTurn: true, usedSkillThisTurn: true } : p))
         return {
-            updatedPieces,
+            updatedPieces: this.moved(pieces, attacker.id, approach, manipulatedBy === null),
             pendingAttack: {
                 attackerId: attacker.id,
                 damageDice: damageOf(attacker, this.rangedSkillOf(attacker)),
                 targetId: target.id,
                 delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
                 ...(area ? { area } : {}),
+                ...(manipulatedBy ? { manipulatedBy } : {}),
             },
         }
     }
 
-    // Alvos que "myPiece" consegue atingir agora, com a casa de onde o golpe sai.
-    // `friendlyColor` é o time que a jogada não pode prejudicar: um ataque em área que
-    // pegaria peças dessa cor é descartado, então a IA não queima as próprias peças —
-    // nem ao manipular a incendiária de outro time.
-    private static findInRangeTargets(
+    // De onde "myPiece" golpeia "target" agora: a casa a que ela chega andando, ou a própria
+    // casa quando atira. Null quando não dá.
+    // `commander` é quem manda no golpe: o time da peça, ou quem a manipula. Só vale alvo que
+    // ela pode atacar, e um incêndio que pegaria alguém que ela não pode atacar é descartado.
+    private static strikeFrom(
         myPiece: PieceDefinition,
-        enemyPieces: PieceDefinition[],
+        target: PieceDefinition,
+        commander: PieceColor,
         pieces: PieceDefinition[],
         maze: Maze,
-        friendlyColor: PieceColor,
+        barriers: Barrier[],
+        items: MotivationItem[],
+    ): PiecePosition | null {
+        if (!mayAttack(myPiece, target, commander)) return null
+        if (friendlyFire(myPiece, target, pieces, maze, commander, barriers).length > 0) return null
+
+        const skill = this.rangedSkillOf(myPiece)
+        if (skill) {
+            const sight = { barriers, blockedBy: skill.blockedBy }
+            const shot: Strike = { ranged: true, range: baseRangeOf(skill, myPiece), sight }
+            return canHitTarget(myPiece, target, pieces, maze, shot) ? myPiece.position : null
+        }
+        const walkRange = statsFor(myPiece.type, myPiece.level).moveRange
+        const blocked = blockedCellsFor(myPiece.color, barriers, pieces)
+        return findApproachCell(myPiece, target, pieces, items, maze, walkRange, blocked)
+    }
+
+    // Alvos que "myPiece" consegue atingir agora, com a casa de onde o golpe sai
+    private static findInRangeTargets(
+        myPiece: PieceDefinition,
+        commander: PieceColor,
+        pieces: PieceDefinition[],
+        maze: Maze,
         barriers: Barrier[],
         items: MotivationItem[],
     ): Array<{ target: PieceDefinition; approach: PiecePosition }> {
-        const skill = this.rangedSkillOf(myPiece)
-        const sparesAllies = (target: PieceDefinition) =>
-            alliesInBlast(myPiece, target, pieces, maze, friendlyColor, barriers).length === 0
-
-        if (skill) {
-            const sight = { barriers, blockedBy: skill.blockedBy }
-            const { targets } = lineOfFire(myPiece, pieces, maze, baseRangeOf(skill, myPiece), sight)
-            return targets
-                .filter((target) => enemyPieces.some((e) => e.id === target.id))
-                .filter(sparesAllies)
-                .map((target) => ({ target, approach: myPiece.position }))
-        }
-
-        const walkRange = statsFor(myPiece.type, myPiece.level).moveRange
-        const result: Array<{ target: PieceDefinition; approach: PiecePosition }> = []
-        for (const enemy of enemyPieces) {
-            const approach = findApproachCell(
-                myPiece,
-                enemy,
-                pieces,
-                items,
-                maze,
-                walkRange,
-                blockedCellsFor(myPiece.color, barriers, pieces),
-            )
-            if (approach) result.push({ target: enemy, approach })
-        }
-        return result
+        return pieces.flatMap((target) => {
+            const approach = this.strikeFrom(myPiece, target, commander, pieces, maze, barriers, items)
+            return approach ? [{ target, approach }] : []
+        })
     }
 }

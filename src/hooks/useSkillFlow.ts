@@ -21,11 +21,15 @@ interface SkillFlowOptions {
     isManualRoll: (color: PieceColor) => boolean
     // Traz a vista até a peça da vez e a seleciona, depois abre a lista de habilidades
     focusActivePiece: () => boolean
+    // Há manipulação em curso? Por enquanto, a peça manipulada não usa habilidades.
+    manipulating: boolean
 }
 
 export interface SkillFlow {
     // A lista de habilidades está aberta?
     listOpen: boolean
+    // A lista não abre agora: habilidade ou manipulação em curso
+    listLocked: boolean
     openList: () => void
     closeList: () => void
     // Habilidade em uso:
@@ -53,6 +57,7 @@ export const useSkillFlow = ({
     rolls,
     isManualRoll,
     focusActivePiece,
+    manipulating,
 }: SkillFlowOptions): SkillFlow => {
     const [listOpen, setListOpen] = useState(false)
     const [active, setActive] = useState<ActiveSkill | null>(null)
@@ -68,6 +73,8 @@ export const useSkillFlow = ({
 
     const reach = useMemo(() => (active ? reachOf(active) : null), [active])
 
+    const listLocked = active !== null || manipulating
+
     // Marca a habilidade da peça como gasta no turno
     const spend = (pieceId: string) => {
         setPieces((prev) => prev.map((p) => (p.id === pieceId ? { ...p, usedSkillThisTurn: true } : p)))
@@ -75,8 +82,7 @@ export const useSkillFlow = ({
 
     // Botão "habilidades": traz a vista para a peça, espera um instante e abre a lista
     const openList = () => {
-        // Com uma habilidade já em uso, a lista não abre
-        if (active) return
+        if (listLocked) return
         if (!focusActivePiece()) return
 
         if (timerRef.current !== null) clearTimeout(timerRef.current)
@@ -119,6 +125,7 @@ export const useSkillFlow = ({
 
     return {
         listOpen,
+        listLocked,
         openList,
         closeList: () => setListOpen(false),
         active,

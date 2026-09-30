@@ -22,12 +22,14 @@ export const MatchHud: React.FC<MatchHudProps> = ({}) => {
             onQuit={turn.quit}
             onFocusActivePiece={turn.focusActivePiece}
             onOpenSkills={skill.openList}
+            skillsLocked={skill.listLocked}
             activeSkill={skill.active}
             skillChargesLeft={barriers.chargesLeft}
             onCancelSkill={skill.cancel}
             manipulationKey={manipulation.current?.itemKey ?? null}
             onCancelManipulation={manipulation.cancel}
             onOpenInventory={() => inventory.setOpen(true)}
+            inventoryLocked={inventory.locked}
             log={log}
             hintVisible={hint.visible}
             onDismissHint={hint.dismiss}

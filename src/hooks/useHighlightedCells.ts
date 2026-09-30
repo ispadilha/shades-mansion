@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react"
-import type { Barrier, MotivationItem, PieceDefinition, PiecePosition } from "../logic/types"
+import type { Barrier, MotivationItem, PieceColor, PieceDefinition, PiecePosition } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { lineOfFire, meleeAttackCells, reachableCells } from "../logic/movement"
 import { barrierCells } from "../logic/barriers"
-import { blockedCellsFor } from "../logic/grid"
+import { mayAttack } from "../logic/combat"
+import { atPosition, blockedCellsFor } from "../logic/grid"
 import type { SkillReach } from "../logic/skills"
 import { statsFor } from "../constants/rules"
 
@@ -32,13 +33,15 @@ interface HighlightOptions {
     barriers: Barrier[]
     // Itens no chão: a casa de um não serve para parar e golpear a partir dela
     items: MotivationItem[]
+    // Quem manipula a peça selecionada, quando é o caso: o golpe dela não vai para esse time
+    manipulatedBy: PieceColor | null
 }
 
 export const useHighlightedCells = (
     selectedId: string | null,
     pieces: PieceDefinition[],
     maze: Maze,
-    { skill, basicAvailable, barriers, items }: HighlightOptions,
+    { skill, basicAvailable, barriers, items, manipulatedBy }: HighlightOptions,
 ): HighlightedCells => {
     const [cells, setCells] = useState<HighlightedCells>(NOTHING)
 
@@ -52,6 +55,12 @@ export const useHighlightedCells = (
 
         const stats = statsFor(piece.type, piece.level)
         const blocked = blockedCellsFor(piece.color, barriers, pieces)
+        // Casa ocupada só fica vermelha se a peça que está nela pode ser atacada
+        const attackable = (cells: PiecePosition[]) =>
+            cells.filter((cell) => {
+                const occupant = atPosition(pieces, cell)
+                return !occupant || mayAttack(piece, occupant, manipulatedBy ?? piece.color)
+            })
 
         // Habilidade em uso: as casas destacadas são as dela
         if (skill) {
@@ -62,9 +71,11 @@ export const useHighlightedCells = (
             }
             setCells({
                 move: skill.move > 0 ? reachableCells(piece, pieces, maze, skill.move, blocked) : [],
-                attack: skill.ranged
-                    ? lineOfFire(piece, pieces, maze, skill.attack, { barriers, blockedBy: skill.blockedBy }).cells
-                    : meleeAttackCells(piece, pieces, items, maze, skill.attack, blocked),
+                attack: attackable(
+                    skill.ranged
+                        ? lineOfFire(piece, pieces, maze, skill.attack, { barriers, blockedBy: skill.blockedBy }).cells
+                        : meleeAttackCells(piece, pieces, items, maze, skill.attack, blocked),
+                ),
                 skill: [],
             })
             return
@@ -78,7 +89,7 @@ export const useHighlightedCells = (
         setCells({
             move: reachableCells(piece, pieces, maze, stats.moveRange, blocked),
             // Corpo-a-corpo: uma casa a mais que o movimento, contornando as paredes.
-            attack: meleeAttackCells(piece, pieces, items, maze, stats.moveRange, blocked),
+            attack: attackable(meleeAttackCells(piece, pieces, items, maze, stats.moveRange, blocked)),
             skill: [],
         })
         // As dependências são os números do alcance, e não o objeto: ele é remontado a
@@ -90,6 +101,7 @@ export const useHighlightedCells = (
         maze,
         barriers,
         items,
+        manipulatedBy,
         skill?.move,
         skill?.attack,
         skill?.ranged,

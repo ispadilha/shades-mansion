@@ -110,7 +110,7 @@ export const useCombatResolution = ({
     // Só quando não sobra rolagem é que o golpe aparece no tabuleiro.
     const resolveAttack = (attack: PendingAttack) => {
         // Quem joga os dados do golpe: o time da peça, ou quem a está manipulando
-        const attackerColor = attack.consumerColor ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
+        const attackerColor = attack.manipulatedBy ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
         rolls.setResolving(true)
 
         damageTimerRef.current = window.setTimeout(() => {

@@ -27,6 +27,8 @@ interface ItemActionsOptions {
     setSelectedId: (id: string | null) => void
     closeInventory: () => void
     setManipulation: (manipulation: Manipulation | null) => void
+    // Há uma jogada em curso (manipulação ou habilidade)? Os itens esperam.
+    locked: boolean
     rolls: RollQueue
     combat: CombatResolution
     log: GameLog
@@ -53,14 +55,15 @@ export const useItemActions = ({
     setSelectedId,
     closeInventory,
     setManipulation,
+    locked,
     rolls,
     combat,
     log,
 }: ItemActionsOptions): ItemActions => {
     const useOwnItem = (key: MotivationItemKey) => {
-        // Gastar item é jogada: só na vez de quem comanda, e não no meio de uma rolagem.
-        // O botão do HUD já fica desabilitado fora disso. Aqui é a regra em si.
-        if (!activeColor || rolls.resolving) return
+        // Gastar item é jogada: só na vez de quem comanda, e não no meio de uma rolagem
+        // nem de outra jogada. O HUD já fica desabilitado fora disso. Aqui é a regra em si.
+        if (!activeColor || rolls.resolving || locked) return
         if (!inventoryColor || !inventories[inventoryColor].includes(key)) return
         const target = pieces.find((p) => p.id === key)
         const use = itemUseFor(key, target, inventoryColor)
@@ -74,7 +77,7 @@ export const useItemActions = ({
     }
 
     const useManipulationItem = (key: MotivationItemKey) => {
-        if (!activeColor || rolls.resolving) return
+        if (!activeColor || rolls.resolving || locked) return
         if (itemKeyColor(key) === activeColor) return
         if (!inventories[activeColor].includes(key)) return
         if (!pieces.some((p) => p.id === key)) return

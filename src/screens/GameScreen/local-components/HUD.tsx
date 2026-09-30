@@ -27,7 +27,11 @@ interface HUDProps {
     onEndTurn: () => void
     onQuit: () => void
     onOpenSkills: () => void
+    // Com habilidade ou manipulação em curso, a lista de habilidades não abre
+    skillsLocked: boolean
     onOpenInventory: () => void
+    // Com habilidade ou manipulação em curso, o inventário não abre
+    inventoryLocked: boolean
     log: string[]
     manipulationKey: MotivationItemKey | null
     onCancelManipulation: () => void
@@ -50,7 +54,9 @@ export const HUD: React.FC<HUDProps> = ({
     onEndTurn,
     onQuit,
     onOpenSkills,
+    skillsLocked,
     onOpenInventory,
+    inventoryLocked,
     log,
     manipulationKey,
     onCancelManipulation,
@@ -104,7 +110,9 @@ export const HUD: React.FC<HUDProps> = ({
                     busy={busy}
                     spectating={spectating}
                     onOpenSkills={onOpenSkills}
+                    skillsLocked={skillsLocked}
                     onOpenInventory={onOpenInventory}
+                    inventoryLocked={inventoryLocked}
                     onEndTurn={onEndTurn}
                     onQuit={onQuit}
                 />

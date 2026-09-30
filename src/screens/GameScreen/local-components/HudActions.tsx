@@ -9,7 +9,11 @@ interface HudActionsProps {
     busy: boolean
     spectating: boolean
     onOpenSkills: () => void
+    // Com habilidade ou manipulação em curso, a lista de habilidades não abre
+    skillsLocked: boolean
     onOpenInventory: () => void
+    // Com habilidade ou manipulação em curso, o inventário não abre
+    inventoryLocked: boolean
     onEndTurn: () => void
     onQuit: () => void
 }
@@ -20,7 +24,9 @@ export const HudActions: React.FC<HudActionsProps> = ({
     busy,
     spectating,
     onOpenSkills,
+    skillsLocked,
     onOpenInventory,
+    inventoryLocked,
     onEndTurn,
     onQuit,
 }) => {
@@ -36,7 +42,7 @@ export const HudActions: React.FC<HudActionsProps> = ({
                     <Button
                         onClick={onOpenSkills}
                         variant="outlined"
-                        disabled={!isPlayerTurn || busy}
+                        disabled={!isPlayerTurn || busy || skillsLocked}
                         sx={{
                             color: palette.hud.text,
                             borderColor: palette.hud.outline,
@@ -48,7 +54,12 @@ export const HudActions: React.FC<HudActionsProps> = ({
                     <Button
                         onClick={onOpenInventory}
                         variant="outlined"
-                        sx={{ color: palette.hud.text, borderColor: palette.hud.outline }}
+                        disabled={inventoryLocked}
+                        sx={{
+                            color: palette.hud.text,
+                            borderColor: palette.hud.outline,
+                            "&:disabled": { color: palette.hud.endTurnDisabledText },
+                        }}
                     >
                         {t("inventory")}
                     </Button>

@@ -30,6 +30,8 @@ interface AiTurnOptions {
     // Diz se o destino tem item: é o que separa "mover" de "coletar" no log
     moveActionFor: (position: PiecePosition) => { actionKey: TextKey; target?: string }
     removeFromInventory: (color: PieceColor, key: MotivationItemKey) => void
+    // Segura a câmera na peça manipulada enquanto ela ainda caminha até o destino
+    holdFocus: (delayMs: number) => void
     combat: CombatResolution
     log: GameLog
 }
@@ -54,11 +56,15 @@ export const useAiTurn = ({
     schedulePickup,
     moveActionFor,
     removeFromInventory,
+    holdFocus,
     combat,
     log,
 }: AiTurnOptions) => {
     // Turno em que a fase dos itens já foi resolvida (ela acontece uma vez por turno)
     const itemPhaseDoneRef = useRef<string | null>(null)
+    // Até quando a peça manipulada ainda caminha. A próxima ação da IA espera ela chegar:
+    // a "isca" termina de andar antes do ataque que vem nela.
+    const walkEndsAtRef = useRef(0)
 
     useEffect(() => {
         if (!activePiece) return
@@ -95,7 +101,14 @@ export const useAiTurn = ({
 
         const timer = setTimeout(() => {
             const previousPieces = pieces
-            const { updatedPieces, pendingAttack } = SimpleAI.makeMove(pieces, activePiece, maze, items, inventories, barriers)
+            const { updatedPieces, pendingAttack, manipulationItem } = SimpleAI.makeMove(
+                pieces,
+                activePiece,
+                maze,
+                items,
+                inventories,
+                barriers,
+            )
 
             // Aplica a decisão da IA: posiciona as peças e agenda a coleta do item "pisado".
             // Devolve a peça que mudou de casa (no máximo uma por chamada de makeMove).
@@ -117,44 +130,42 @@ export const useAiTurn = ({
                             STEP_MS +
                         ACTION_SETTLE_MS
                     schedulePickup(movedPiece.color, movedPiece.position, delayMs)
+                    // A peça manipulada ainda vai caminhar até o destino: a câmera vai com ela
+                    if (manipulationItem) {
+                        holdFocus(delayMs)
+                        walkEndsAtRef.current = Date.now() + delayMs
+                    }
                 }
                 return movedPiece
             }
 
-            if (pendingAttack) {
-                const forced =
-                    pendingAttack.consumedItemKey && pendingAttack.consumerColor
-                        ? { itemKey: pendingAttack.consumedItemKey, color: pendingAttack.consumerColor }
-                        : null
-
-                // Ataque por manipulação: primeiro a moeda decide se a peça obedece. O item
-                // sai do inventário na tentativa (falhando, cai de volta no tabuleiro) e a peça
-                // só sai do lugar se a manipulação pegar.
-                if (forced) {
-                    removeFromInventory(forced.color, forced.itemKey)
-                    log.usedTo(forced.color, forced.itemKey, "toManipulate")
-                    combat.resolveManipulation(forced.color, forced.itemKey, (success) => {
-                        if (!success) return
-                        applyMove()
-                        log.manipulatedTo(forced.color, pendingAttack.attackerId, "toAttack", pendingAttack.targetId)
-                        combat.resolveAttack(pendingAttack)
-                    })
+            // A jogada decidida: o ataque, ou o movimento puro
+            const play = (record: (piece: string, actionKey: TextKey, target?: string) => void) => {
+                const movedPiece = applyMove()
+                if (pendingAttack) {
+                    record(pendingAttack.attackerId, "toAttack", pendingAttack.targetId)
+                    combat.resolveAttack(pendingAttack)
                     return
                 }
+                if (!movedPiece) return
+                const { actionKey, target } = moveActionFor(movedPiece.position)
+                record(movedPiece.id, actionKey, target)
+            }
 
-                applyMove()
-                log.usedTo(color, pendingAttack.attackerId, "toAttack", pendingAttack.targetId)
-                combat.resolveAttack(pendingAttack)
+            // Manipulação: primeiro a moeda decide se a peça obedece. O item sai do inventário
+            // na tentativa (falhando, cai de volta no tabuleiro) e a peça só age se a
+            // manipulação pegar.
+            if (manipulationItem) {
+                removeFromInventory(color, manipulationItem)
+                log.usedTo(color, manipulationItem, "toManipulate")
+                combat.resolveManipulation(color, manipulationItem, (success) => {
+                    if (success) play((piece, actionKey, target) => log.manipulatedTo(color, piece, actionKey, target))
+                })
                 return
             }
 
-            // Movimento puro (sem ataque pendente): loga mover ou coletar baseado no destino
-            const movedPiece = applyMove()
-            if (movedPiece) {
-                const { actionKey, target } = moveActionFor(movedPiece.position)
-                log.usedTo(movedPiece.color, movedPiece.id, actionKey, target)
-            }
-        }, AI_STEP_MS)
+            play((piece, actionKey, target) => log.usedTo(color, piece, actionKey, target))
+        }, Math.max(AI_STEP_MS, walkEndsAtRef.current - Date.now()))
 
         return () => clearTimeout(timer)
         // endTurn fecha sobre `turnIndex`/`pieces` (ambos nas deps), então a closure está sempre atualizada

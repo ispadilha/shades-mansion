@@ -1,4 +1,4 @@
-import type { Barrier, PieceColor, PieceDefinition, PiecePosition, MotivationItemKey } from "./types"
+import type { Barrier, PieceColor, PieceDefinition, PiecePosition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
@@ -15,6 +15,12 @@ export const rollManipulation = (): CoinCheck => {
     const face = flipCoin()
     return { face, success: face === SUCCESS_FACE }
 }
+
+// Nenhuma peça ataca as aliadas, nem sob manipulação.
+// `commander` é quem manda no golpe: o time da peça, ou quem a manipula. A manipulada
+// também não ataca esse time, então o golpe dela só pode ir para o terceiro.
+export const mayAttack = (attacker: PieceDefinition, target: PieceDefinition, commander: PieceColor) =>
+    target.color !== attacker.color && target.color !== commander
 
 // Cada tipo de peça rola seus dados de dano.
 export interface DamageRoll {
@@ -137,10 +143,9 @@ export interface PendingAttack {
     // Ataque em área (incendiário): o quadrado que pega fogo. Todas as peças dentro dele
     // se defendem, do time que forem.
     area?: AttackArea
-    // Preenchidos quando o ataque vem de um item de manipulação (o item já saiu do
-    // inventário na tentativa): identificam quem fez a manipulação, para o log.
-    consumedItemKey?: MotivationItemKey
-    consumerColor?: PieceColor
+    // Time que manipulou o atacante, quando o ataque vem de uma manipulação:
+    // é ele quem joga os dados do golpe.
+    manipulatedBy?: PieceColor
 }
 
 // Um clarão de fogo para a cena desenhar. O id garante que cada explosão seja animada
@@ -161,19 +166,20 @@ export interface DamagePopup {
     amount: number
 }
 
-// Peças que a incendiária pegaria de tabela ao mirar em "target": todas as do time
-// indicado que estão na área, tirando o próprio alvo. A IA usa isso para não se queimar.
-export function alliesInBlast(
+// Fogo amigo: quem a incendiária pegaria de tabela ao mirar em "target" sem poder atacar.
+// São as aliadas dela, ela mesma inclusive, e, sob manipulação, as peças de quem a manipula.
+// A IA usa isso para não queimar quem não deve.
+export function friendlyFire(
     attacker: PieceDefinition,
     target: PieceDefinition,
     pieces: PieceDefinition[],
     maze: Maze,
-    color: PieceColor,
-    barriers: Barrier[] = [],
+    commander: PieceColor,
+    barriers: Barrier[],
 ): PieceDefinition[] {
     const area = attackArea(attacker, target.position)
     if (!area) return []
     // A conta da IA precisa ver o mesmo fogo que vai acontecer, barreiras recortadas
     const burning = areaCells(maze, area.center, area.side, { color: attacker.color, barriers })
-    return piecesInCells(pieces, burning).filter((p) => p.color === color && p.id !== target.id)
+    return piecesInCells(pieces, burning).filter((p) => !mayAttack(attacker, p, commander))
 }

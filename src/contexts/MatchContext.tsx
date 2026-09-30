@@ -93,6 +93,8 @@ export interface MatchContextValue {
         // Time cujo inventário o HUD mostra. Null quando não há nenhum para mostrar.
         color: PieceColor | null
         items: MotivationItemKey[]
+        // Com uma jogada em curso o inventário não abre
+        locked: boolean
         open: boolean
         setOpen: (open: boolean) => void
         useOwn: (key: MotivationItemKey) => void
@@ -193,6 +195,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         rolls,
         isManualRoll,
         focusActivePiece,
+        manipulating: manipulation !== null,
     })
 
     const barriers = useBarriers({
@@ -211,6 +214,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         basicAvailable: selectedPiece !== null && (!selectedPiece.movedThisTurn || manipulation !== null),
         barriers: barriers.all,
         items: items.items,
+        manipulatedBy: manipulation?.color ?? null,
     })
 
     const input = useBoardInput({
@@ -283,6 +287,11 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         placeSkill: barriers.lightAt,
     })
 
+    // Um item usado no meio de uma manipulação ou de uma habilidade se misturaria com ela:
+    // a peça manipulada herdaria a habilidade em uso, e uma segunda manipulação tomaria o
+    // lugar da primeira. Enquanto uma delas durar, o inventário fica fechado.
+    const inventoryLocked = manipulation !== null || skill.active !== null
+
     const itemActions = useItemActions({
         pieces,
         setPieces,
@@ -294,6 +303,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         setSelectedId,
         closeInventory: () => setInventoryOpen(false),
         setManipulation,
+        locked: inventoryLocked,
         rolls,
         combat,
         log,
@@ -324,6 +334,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         schedulePickup: items.schedulePickup,
         moveActionFor,
         removeFromInventory: items.removeFromInventory,
+        holdFocus: focus.holdFocus,
         combat,
         log,
     })
@@ -441,6 +452,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         inventory: {
             color: inventoryColor,
             items: playerInventory,
+            locked: inventoryLocked,
             open: inventoryOpen,
             setOpen: setInventoryOpen,
             useOwn: itemActions.useOwnItem,

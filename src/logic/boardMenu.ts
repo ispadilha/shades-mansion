@@ -3,6 +3,7 @@ import type { Maze } from "./maze"
 import type { ActiveSkill, SkillReach } from "./skills"
 import { NO_BLOCKED_CELLS, atPosition, blockedCellsFor, includesPosition, positionKey } from "./grid"
 import { canHitTarget, strikeWalkRange, type Strike } from "./movement"
+import { mayAttack } from "./combat"
 
 // As ações que uma casa oferece quando o jogador clica nela com o botão direito.
 export type BoardAction = "pieceInfo" | "itemInfo" | "barrierInfo" | "move" | "collect" | "attack" | "skill"
@@ -100,12 +101,12 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
     const canWalk = usingSkill ? ownSelection && skillReach!.move > 0 : hasBasicAction
     const inMoveRange = includesPosition(moveCells, position)
 
-    // Alvo legítimo: peça inimiga, ou qualquer uma durante manipulação
+    // Alvo legítimo: peça que a selecionada pode atacar sob o comando de quem joga
     const hitsPiece =
         targetPiece !== undefined &&
         selectedPiece !== null &&
-        targetPiece.id !== selectedPiece.id &&
-        (manipulating || targetPiece.color !== selectedPiece.color)
+        activeColor !== null &&
+        mayAttack(selectedPiece, targetPiece, activeColor)
 
     const blocked =
         selectedPiece === null ? NO_BLOCKED_CELLS : blockedCellsFor(selectedPiece.color, barriers, pieces)

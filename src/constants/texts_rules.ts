@@ -124,10 +124,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "Pieces walk one cell at a time, up, down, left or right.\n\n" +
-                "Other pieces do not block a corridor: a piece walks through the cells they occupy, but cannot finish its move on top of one.",
+                "Allied pieces do not block a corridor: a piece walks through the cells they occupy, but cannot finish its move on top of one. Opponent pieces close the way, and so do the paranormal barriers of other teams.",
             ptBR:
                 "As peças andam uma casa por vez, para cima, para baixo, para a esquerda ou para a direita.\n\n" +
-                "Outras peças não bloqueiam o corredor: a peça atravessa as casas ocupadas por elas, mas não pode terminar o movimento em cima de nenhuma.",
+                "Peças aliadas não bloqueiam o corredor: a peça atravessa as casas ocupadas por elas, mas não pode terminar o movimento em cima de nenhuma. Peças adversárias fecham a passagem, assim como as barreiras paranormais de outros times.",
         },
     },
 
@@ -260,10 +260,12 @@ export const texts_rules = {
         description: {
             enUS:
                 "An item that motivates an opponent's piece is a temptation over it. Using it on your turn flips a coin: on heads that enemy piece falls under your command for a single action. On tails, it resists.\n\n" +
+                "A manipulated piece does not attack its allies, but it may be led to attack the third team, or lured into a vulnerable position.\n\n" +
                 "Being manipulated is an abnormal action and the piece still has its own action when its turn comes, and a piece that has already acted can be manipulated all the same.\n\n" +
                 "On tails, the item slips out of the manipulator's hands and falls back on the floor, on a random free cell, for whoever reaches it first.",
             ptBR:
                 "Um item que motiva a peça de um oponente é uma tentação sobre ela. Usá-lo no seu turno joga uma moeda: dando cara, aquela peça inimiga cai sob o seu comando por uma única ação. Se der coroa, ela resiste.\n\n" +
+                "Uma peça manipulada não ataca as próprias aliadas, mas pode ser levada a atacar o terceiro time, ou induzida a uma posição vulnerável.\n\n" +
                 "Ser manipulada é uma ação anormal e a peça continua com sua ação quando chegar a vez dela, e uma peça que já agiu pode ser manipulada do mesmo jeito.\n\n" +
                 "Dando coroa, o item escapa das mãos de quem tentou uma manipulação e cai de volta no chão, em uma casa livre sorteada, para quem chegar primeiro.",
         },

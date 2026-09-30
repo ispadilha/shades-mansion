@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react"
-import type { MotivationItemKey, PieceColor, PieceDefinition, PiecePosition, TextKey } from "../logic/types"
+import type { PieceColor, PieceDefinition, PiecePosition, TextKey } from "../logic/types"
 import type { Barrier, MotivationItem } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { BoardMenuState } from "../logic/boardMenu"
@@ -189,7 +189,7 @@ export const useBoardActions = ({
             delayMs,
             ...(target ? { targetId: target.id } : {}),
             ...(area ? { area } : {}),
-            ...(forcedBy ? { consumedItemKey: attacker.id as MotivationItemKey, consumerColor: forcedBy } : {}),
+            ...(forcedBy ? { manipulatedBy: forcedBy } : {}),
         })
     }
 
