@@ -186,6 +186,25 @@ export const texts_rules = {
         },
     },
 
+    barriers: {
+        name: {
+            enUS: "Paranormal barriers",
+            ptBR: "Barreiras paranormais",
+        },
+        description: {
+            enUS:
+                "The Barrier piece lights paranormal barriers at a distance. A barrier closes its cell to the other teams: their pieces cannot walk through it, and it stops their shots and their fire. Its own team walks through it as usual, and it goes out on its own when the turn of the piece that lit it comes around again.\n\n" +
+                "A piece standing on a barrier of its own team is protected: no opponent can attack it there, up close or from afar. To attack it, the barrier has to be dispelled first.\n\n" +
+                "An opponent can try to dispel a barrier the way it attacks in melee: it walks to a cell next to the barrier and rolls 1d20. On 16 or more, that barrier is dispelled, and only that one. The attempt spends the piece's action whether it works or not.\n\n" +
+                "Skills are no use for attacking the barriers, with one exception: the Agile piece's extra move gives the piece its usual options back, and a new attempt comes with them.",
+            ptBR:
+                "A peça de Barreira acende barreiras paranormais à distância. Uma barreira fecha a casa para os outros times: as peças deles não passam por ela, e ela segura os tiros e o fogo deles. O time dela passa normalmente, e ela se apaga sozinha quando a vez da peça que a acendeu volta.\n\n" +
+                "Uma peça em cima de uma barreira do próprio time fica protegida: nenhuma peça adversária consegue atacá-la ali, nem de perto nem à distância. Para atacá-la, é preciso antes dissipar a barreira.\n\n" +
+                "Uma peça adversária pode tentar dissipar uma barreira como quem ataca corpo a corpo: ela anda até uma casa ao lado da barreira e rola 1d20. Tirando 16 ou mais, aquela barreira se dissipa, e só ela. A tentativa gasta a ação da peça, dando certo ou não.\n\n" +
+                "Habilidades não servem para atacar barreiras, com uma exceção: o movimento extra da peça Ágil devolve à peça as opções de sempre, e com elas vem uma nova tentativa.",
+        },
+    },
+
     highlights: {
         name: {
             enUS: "Highlighted cells",
@@ -194,10 +213,12 @@ export const texts_rules = {
         description: {
             enUS:
                 "Selecting a piece paints the cells around it in three colors: yellow for the ones it can walk to, red for the ones its attack reaches, and orange for the ones that are both: where it can end its move and also strike.\n\n" +
-                "Yellow is ground the piece can take but not threaten. Red is a target it can hit without standing there: an occupied cell, or a spot further than its legs but still within its reach. Orange is where the two overlap.\n\n",
+                "Yellow is ground the piece can take but not threaten. Red is a target it can hit without standing there: an occupied cell, or a spot further than its legs but still within its reach. Orange is where the two overlap.\n\n" +
+                "An opponent's barrier turns red when the piece can try to dispel it. On a cell where a piece is protected by its own team's barrier, the red belongs to the barrier: the piece cannot be attacked, but the barrier can be dispelled.\n\n",
             ptBR:
                 "Selecionar uma peça pinta as casas em volta dela em três cores: amarelo nas que ela consegue alcançar andando, vermelho nas que o ataque dela alcança, e laranja nas que são as duas coisas: onde ela pode terminar o movimento e também atacar.\n\n" +
-                "O amarelo é terreno que a peça toma, mas não ameaça. O vermelho é alvo que ela atinge sem pisar ali: uma casa ocupada, ou um ponto além das pernas dela mas ainda ao alcance. O laranja é onde os dois se sobrepõem.\n\n",
+                "O amarelo é terreno que a peça toma, mas não ameaça. O vermelho é alvo que ela atinge sem pisar ali: uma casa ocupada, ou um ponto além das pernas dela mas ainda ao alcance. O laranja é onde os dois se sobrepõem.\n\n" +
+                "A barreira de outro time fica vermelha quando a peça pode tentar dissipá-la. Numa casa em que uma peça está protegida pela barreira do próprio time, o vermelho é da barreira: a peça não pode ser atacada, mas a barreira pode ser dissipada.\n\n",
         },
     },
 

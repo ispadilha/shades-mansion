@@ -1,11 +1,16 @@
 import type { Barrier, PieceDefinition, PiecePosition } from "./types"
 import type { Maze } from "./maze"
-import { atPosition, positionKey } from "./grid"
+import { atPosition, positionKey, samePosition } from "./grid"
 import { lineOfFire, type LineSight } from "./movement"
 
 // As barreiras que uma peça mantém acesas
 export const barriersOf = (barriers: Barrier[], pieceId: string) =>
     barriers.filter((barrier) => barrier.ownerId === pieceId)
+
+// Peça em cima de uma barreira do próprio time está protegida: nenhuma peça adversária
+// consegue atacá-la ali. Para isso, antes é preciso dissipar a barreira.
+export const isProtected = (piece: PieceDefinition, barriers: Barrier[]) =>
+    barriers.some((barrier) => barrier.color === piece.color && samePosition(barrier.position, piece.position))
 
 // Onde a peça consegue acender uma barreira: dentro do alcance da habilidade e pela linha
 // de tiro, sendo interrompida por paredes e outras barreiras, mas não por peças.

@@ -4,7 +4,7 @@ import { isWalkable } from "./maze"
 import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
 import { hasAreaSkill } from "./skills"
-import { DEFENSE_DIE, FIRE_AREA_SIDE, SUCCESS_FACE, statsFor } from "../constants/rules"
+import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, FIRE_AREA_SIDE, SUCCESS_FACE, statsFor } from "../constants/rules"
 
 export interface CoinCheck {
     face: CoinFace
@@ -19,7 +19,8 @@ export const rollManipulation = (): CoinCheck => {
 // Nenhuma peça ataca as aliadas, nem sob manipulação.
 // `commander` é quem manda no golpe: o time da peça, ou quem a manipula. A manipulada
 // também não ataca esse time, então o golpe dela só pode ir para o terceiro.
-export const mayAttack = (attacker: PieceDefinition, target: PieceDefinition, commander: PieceColor) =>
+// O alvo pode ser uma barreira: dissipá-la é atacá-la.
+export const mayAttack = (attacker: PieceDefinition, target: { color: PieceColor }, commander: PieceColor) =>
     target.color !== attacker.color && target.color !== commander
 
 // Cada tipo de peça rola seus dados de dano.
@@ -53,6 +54,17 @@ export function rollDefense(piece: PieceDefinition, damage: number): DefenseRoll
     if (die >= dodge) return { die, outcome: "dodged", damage: 0 }
     if (die >= guard) return { die, outcome: "guarded", damage: Math.ceil(damage / 2) }
     return { die, outcome: "clean", damage }
+}
+
+export interface DispelRoll {
+    die: number
+    success: boolean
+}
+
+// A tentativa de dissipar uma barreira: o mesmo dado e o mesmo mínimo para qualquer peça
+export const rollDispel = (): DispelRoll => {
+    const die = rollDie(DISPEL_DIE)
+    return { die, success: die >= DISPEL_MIN_ROLL }
 }
 
 // As casas que o fogo alcança.
@@ -145,6 +157,16 @@ export interface PendingAttack {
     area?: AttackArea
     // Time que manipulou o atacante, quando o ataque vem de uma manipulação:
     // é ele quem joga os dados do golpe.
+    manipulatedBy?: PieceColor
+}
+
+// Uma tentativa de dissipar barreira já decidida, com a peça a caminho da casa ao lado dela.
+// Como no golpe, o dado só é jogado depois de `delayMs`, quando a peça chega.
+export interface PendingDispel {
+    pieceId: string
+    barrier: Barrier
+    delayMs: number
+    // Time que manipulou a peça, quando é o caso: é ele quem joga o dado
     manipulatedBy?: PieceColor
 }
 

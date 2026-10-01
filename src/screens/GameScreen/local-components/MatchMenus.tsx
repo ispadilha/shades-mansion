@@ -29,6 +29,7 @@ export const MatchMenus: React.FC<MatchMenusProps> = ({}) => {
                 onShowBarrierInfo={menu.showBarrierInfo}
                 onWalk={menu.walk}
                 onAttack={menu.attack}
+                onDispel={menu.dispel}
                 onSkill={menu.useSkill}
             />
 

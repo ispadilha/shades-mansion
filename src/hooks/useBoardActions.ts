@@ -48,12 +48,14 @@ export interface BoardActions {
     walk: () => void
     // Atacar a casa escolhida com o ataque comum
     attack: () => void
+    // Tentar dissipar a barreira da casa escolhida, de uma casa ao lado dela
+    dispel: () => void
     // Acionar a habilidade em uso na casa escolhida
     useSkill: () => void
 }
 
-// O que o menu de contexto executa: os dois caminhos pelos quais uma peça age no tabuleiro.
-// Os dois terminam igual: a peça sai de seleção, a habilidade sai de uso,
+// O que o menu de contexto executa: os caminhos pelos quais uma peça age no tabuleiro.
+// Terminam da mesma forma: a peça sai de seleção, a habilidade sai de uso,
 // o menu fecha, e o histórico registra quem fez o quê.
 export const useBoardActions = ({
     pieces,
@@ -87,6 +89,17 @@ export const useBoardActions = ({
         closeMenu()
     }
 
+    // Ação forçada por uma manipulação sai no histórico em nome de quem manipulou,
+    // e encerra a manipulação
+    const record = (color: PieceColor, pieceId: string, actionKey: TextKey, target?: string) => {
+        if (!manipulating) {
+            log.usedTo(color, pieceId, actionKey, target)
+            return
+        }
+        log.manipulatedTo(color, pieceId, actionKey, target)
+        endManipulation()
+    }
+
     const walk = () => {
         const destination = menu?.position
         if (!destination || !selectedId || !activeColor) return
@@ -114,15 +127,9 @@ export const useBoardActions = ({
         )
         schedulePickup(piece.color, destination, delayMs)
         finishAction()
-
-        if (manipulating) {
-            log.manipulatedTo(activeColor, piece.id, actionKey, target)
-            endManipulation()
-            // A peça manipulada ainda vai caminhar até o destino: a câmera vai com ela
-            holdFocus(delayMs)
-        } else {
-            log.usedTo(activeColor, piece.id, actionKey, target)
-        }
+        record(activeColor, piece.id, actionKey, target)
+        // A peça manipulada ainda vai caminhar até o destino: a câmera vai com ela
+        if (manipulating) holdFocus(delayMs)
     }
 
     const strike = (viaSkill: boolean) => {
@@ -173,13 +180,7 @@ export const useBoardActions = ({
         finishAction()
 
         // Sem peça mirada não há alvo para nomear no histórico
-        const actionKey: TextKey = target ? "toAttack" : "toBurnArea"
-        if (forcedBy) {
-            log.manipulatedTo(activeColor, attacker.id, actionKey, target?.id)
-            endManipulation()
-        } else {
-            log.usedTo(activeColor, attacker.id, actionKey, target?.id)
-        }
+        record(activeColor, attacker.id, target ? "toAttack" : "toBurnArea", target?.id)
 
         // Os dados são jogados quando o atacante termina de se aproximar
         combat.resolveAttack({
@@ -189,6 +190,45 @@ export const useBoardActions = ({
             delayMs,
             ...(target ? { targetId: target.id } : {}),
             ...(area ? { area } : {}),
+            ...(forcedBy ? { manipulatedBy: forcedBy } : {}),
+        })
+    }
+
+    // Dissipar é golpear a barreira corpo a corpo: a peça anda até a casa ao lado dela, e
+    // o dado é jogado quando ela chega. Gasta a ação comum, a não ser sob manipulação.
+    // Pelo movimento extra, anda o alcance sorteado e gasta a habilidade no lugar da ação.
+    const dispel = () => {
+        const barrier = menu?.barrierAtPos
+        if (!barrier || !selectedId || !activeColor) return
+        const piece = pieces.find((p) => p.id === selectedId)
+        if (!piece) return
+
+        const viaSkill = skill.reach !== null && skill.reach.move > 0
+        const walkRange = viaSkill ? skill.reach!.attack : strikeWalkRange(piece)
+        const blocked = blockedCellsFor(piece.color, barriers, pieces)
+        const approach = findApproachCell(piece, barrier, pieces, items, maze, walkRange, blocked) ?? piece.position
+        const delayMs = travelTime(piece, approach)
+
+        const forcedBy = manipulating ? activeColor : null
+        setPieces((prev) =>
+            prev.map((p) =>
+                p.id === piece.id
+                    ? {
+                          ...p,
+                          position: approach,
+                          movedThisTurn: p.movedThisTurn || (forcedBy === null && !viaSkill),
+                          usedSkillThisTurn: p.usedSkillThisTurn || viaSkill,
+                      }
+                    : p,
+            ),
+        )
+        finishAction()
+        record(activeColor, piece.id, "toDispelBarrierOf", barrier.ownerId)
+
+        combat.resolveDispel({
+            pieceId: piece.id,
+            barrier,
+            delayMs,
             ...(forcedBy ? { manipulatedBy: forcedBy } : {}),
         })
     }
@@ -206,5 +246,5 @@ export const useBoardActions = ({
         strike(true)
     }
 
-    return { walk, attack: () => strike(false), useSkill }
+    return { walk, attack: () => strike(false), dispel, useSkill }
 }

@@ -4,9 +4,10 @@ import type { ActiveSkill, SkillReach } from "./skills"
 import { NO_BLOCKED_CELLS, atPosition, blockedCellsFor, includesPosition, positionKey } from "./grid"
 import { canHitTarget, strikeWalkRange, type Strike } from "./movement"
 import { mayAttack } from "./combat"
+import { isProtected } from "./barriers"
 
 // As ações que uma casa oferece quando o jogador clica nela com o botão direito.
-export type BoardAction = "pieceInfo" | "itemInfo" | "barrierInfo" | "move" | "collect" | "attack" | "skill"
+export type BoardAction = "pieceInfo" | "itemInfo" | "barrierInfo" | "move" | "collect" | "attack" | "dispel" | "skill"
 
 const INFO_ACTIONS: Record<BoardAction, boolean> = {
     pieceInfo: true,
@@ -15,6 +16,7 @@ const INFO_ACTIONS: Record<BoardAction, boolean> = {
     move: false,
     collect: false,
     attack: false,
+    dispel: false,
     skill: false,
 }
 
@@ -56,7 +58,8 @@ export interface BoardMenuContext {
     skillCells: PiecePosition[]
 }
 
-// O que a casa clicada oferece. Vazio quer dizer que o menu nem abre.
+// O que a casa clicada oferece, na ordem em que o menu mostra: as ações primeiro, e as
+// fichas de informação por último. Vazio quer dizer que o menu nem abre.
 export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
     const {
         position,
@@ -96,32 +99,49 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
     // gastaria a ação comum e jogaria a habilidade fora.
     const usingSkill = activeSkill !== null
 
-    // Habilidade que dá movimento devolve à peça as opções de sempre:
-    // andar, coletar e golpear. Só que com o alcance sorteado no lugar do comum.
-    const canWalk = usingSkill ? ownSelection && skillReach!.move > 0 : hasBasicAction
+    // Habilidade que dá movimento devolve à peça as opções de sempre: andar, coletar,
+    // golpear e dissipar. Só que com o alcance sorteado no lugar do comum.
+    const givesMoveBack = usingSkill && ownSelection && skillReach!.move > 0
+    const canWalk = usingSkill ? givesMoveBack : hasBasicAction
     const inMoveRange = includesPosition(moveCells, position)
 
-    // Alvo legítimo: peça que a selecionada pode atacar sob o comando de quem joga
+    // Alvo legítimo: peça que a selecionada pode atacar sob o comando de quem joga, e que
+    // não esteja protegida pela barreira do time dela
     const hitsPiece =
         targetPiece !== undefined &&
         selectedPiece !== null &&
         activeColor !== null &&
-        mayAttack(selectedPiece, targetPiece, activeColor)
+        mayAttack(selectedPiece, targetPiece, activeColor) &&
+        !isProtected(targetPiece, barriers)
+
+    // Barreira que ela pode tentar dissipar: a de outro time, pela mesma regra do ataque
+    const hitsBarrier =
+        barrierHere !== undefined &&
+        selectedPiece !== null &&
+        activeColor !== null &&
+        mayAttack(selectedPiece, barrierHere, activeColor)
 
     const blocked =
         selectedPiece === null ? NO_BLOCKED_CELLS : blockedCellsFor(selectedPiece.color, barriers, pieces)
 
+    // O golpe corpo a corpo da ação comum ataca uma peça, ou dissipa uma barreira: dissipar é
+    // um golpe corpo a corpo nela. A habilidade que devolve o movimento devolve junto esse
+    // golpe, com o alcance sorteado, e com ele a tentativa de dissipar. As outras não dissipam.
+    // Com ela, o ataque a uma peça sai como a ação da habilidade, mais abaixo.
+    const meleeStrike = (range: number): Strike => ({ ranged: false, range, blocked, items })
+    const basicStrike = !usingSkill && hasBasicAction ? meleeStrike(strikeWalkRange(selectedPiece!)) : null
+    const dispelStrike = givesMoveBack ? meleeStrike(skillReach!.attack) : basicStrike
+    const attacks =
+        basicStrike !== null && hitsPiece && canHitTarget(selectedPiece!, targetPiece!, pieces, maze, basicStrike)
+    const dispels =
+        dispelStrike !== null && hitsBarrier && canHitTarget(selectedPiece!, barrierHere!, pieces, maze, dispelStrike)
+
     const actions: BoardAction[] = []
 
-    if (targetPiece && (selectedId === null || usingSkill) && !manipulating) actions.push("pieceInfo")
-    if (selectedId === null && !targetPiece && itemHere && !manipulating) actions.push("itemInfo")
-    if ((selectedId === null || usingSkill) && barrierHere && !manipulating) actions.push("barrierInfo")
+    // Primeiro, o que a peça pode fazer ali
     if (canWalk && !targetPiece && inMoveRange) actions.push(itemHere ? "collect" : "move")
-
-    if (!usingSkill && hasBasicAction && hitsPiece) {
-        const strike: Strike = { ranged: false, range: strikeWalkRange(selectedPiece!), blocked, items }
-        if (canHitTarget(selectedPiece!, targetPiece!, pieces, maze, strike)) actions.push("attack")
-    }
+    if (attacks) actions.push("attack")
+    if (dispels) actions.push("dispel")
 
     if (usingSkill && ownSelection) {
         if (skillReach!.places) {
@@ -130,7 +150,7 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
         } else {
             const strike: Strike = skillReach!.ranged
                 ? { ranged: true, range: skillReach!.attack, sight: { barriers, blockedBy: skillReach!.blockedBy } }
-                : { ranged: false, range: skillReach!.attack, blocked, items }
+                : meleeStrike(skillReach!.attack)
             const reachesPiece = hitsPiece && canHitTarget(selectedPiece!, targetPiece!, pieces, maze, strike)
             // Só habilidade de área pode mirar no chão (mas não em barreira adversária)
             const burnsGround =
@@ -141,6 +161,12 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
             if (reachesPiece || burnsGround) actions.push("skill")
         }
     }
+
+    // Por último, as fichas de informação, de prioridade baixa. Toda peça, item ou barreira
+    // tem a sua, a qualquer momento: com ou sem seleção, habilidade ou manipulação.
+    if (targetPiece) actions.push("pieceInfo")
+    if (itemHere) actions.push("itemInfo")
+    if (barrierHere) actions.push("barrierInfo")
 
     return actions
 }

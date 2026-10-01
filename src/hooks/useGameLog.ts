@@ -21,6 +21,8 @@ export interface GameLog {
     attackGuarded: (attackerId: string, targetId: string, damage: number) => void
     attackDodged: (attackerId: string, targetId: string) => void
     manipulationRoll: (itemKey: string, success: boolean) => void
+    // "{peça} dissipou a barreira de {dona}", ou não conseguiu
+    dispelRoll: (pieceId: string, ownerId: string, success: boolean) => void
     barriersWoreOff: (pieceId: string) => void
     eliminated: (pieceId: string) => void
     defeated: (color: PieceColor) => void
@@ -81,6 +83,10 @@ export const useGameLog = (): GameLog => {
         add(`${itemKey} ${t(success ? "verbFellUnderManipulation" : "verbResistedManipulation")}`)
     }
 
+    const dispelRoll = (pieceId: string, ownerId: string, success: boolean) => {
+        add(`${pieceId} ${t(success ? "verbDispelledBarrierOf" : "verbFailedToDispelBarrierOf")} ${ownerId}`)
+    }
+
     const barriersWoreOff = (pieceId: string) => {
         add(`${pieceId} ${t("barriersWoreOff")}`)
     }
@@ -105,6 +111,7 @@ export const useGameLog = (): GameLog => {
         attackGuarded,
         attackDodged,
         manipulationRoll,
+        dispelRoll,
         barriersWoreOff,
         eliminated,
         defeated,

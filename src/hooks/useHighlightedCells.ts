@@ -55,11 +55,17 @@ export const useHighlightedCells = (
 
         const stats = statsFor(piece.type, piece.level)
         const blocked = blockedCellsFor(piece.color, barriers, pieces)
-        // Casa ocupada só fica vermelha se a peça que está nela pode ser atacada
-        const attackable = (cells: PiecePosition[]) =>
+        // Casa ocupada só fica vermelha se o que está nela pode ser golpeado: a peça que a
+        // selecionada pode atacar, ou a barreira de outro time que ela pode tentar dissipar,
+        // o que só se faz com o golpe corpo a corpo (o da ação comum, ou o do movimento extra).
+        // A peça em cima dessa barreira está protegida por ela, então quem decide a casa é a barreira.
+        const commander = manipulatedBy ?? piece.color
+        const strikable = (cells: PiecePosition[], dispels: boolean) =>
             cells.filter((cell) => {
+                const barrier = atPosition(barriers, cell)
+                if (barrier && barrier.color !== piece.color) return dispels && mayAttack(piece, barrier, commander)
                 const occupant = atPosition(pieces, cell)
-                return !occupant || mayAttack(piece, occupant, manipulatedBy ?? piece.color)
+                return !occupant || mayAttack(piece, occupant, commander)
             })
 
         // Habilidade em uso: as casas destacadas são as dela
@@ -71,10 +77,12 @@ export const useHighlightedCells = (
             }
             setCells({
                 move: skill.move > 0 ? reachableCells(piece, pieces, maze, skill.move, blocked) : [],
-                attack: attackable(
+                attack: strikable(
                     skill.ranged
                         ? lineOfFire(piece, pieces, maze, skill.attack, { barriers, blockedBy: skill.blockedBy }).cells
                         : meleeAttackCells(piece, pieces, items, maze, skill.attack, blocked),
+                    // Só a habilidade que devolve o movimento devolve junto a tentativa de dissipar
+                    skill.move > 0,
                 ),
                 skill: [],
             })
@@ -89,7 +97,7 @@ export const useHighlightedCells = (
         setCells({
             move: reachableCells(piece, pieces, maze, stats.moveRange, blocked),
             // Corpo-a-corpo: uma casa a mais que o movimento, contornando as paredes.
-            attack: attackable(meleeAttackCells(piece, pieces, items, maze, stats.moveRange, blocked)),
+            attack: strikable(meleeAttackCells(piece, pieces, items, maze, stats.moveRange, blocked), true),
             skill: [],
         })
         // As dependências são os números do alcance, e não o objeto: ele é remontado a

@@ -15,6 +15,7 @@ import { positionKey } from "./grid"
 import { pickRandom } from "./random"
 import type { Maze } from "./maze"
 import { attackArea, friendlyFire, mayAttack, type PendingAttack } from "./combat"
+import { isProtected } from "./barriers"
 import { baseRangeOf, damageOf, hasRangedAttackSkill, skillFor } from "./skills"
 import { ACTION_SETTLE_MS, STEP_MS, statsFor } from "../constants/rules"
 
@@ -264,7 +265,8 @@ export class SimpleAI {
     // De onde "myPiece" golpeia "target" agora: a casa a que ela chega andando, ou a própria
     // casa quando atira. Null quando não dá.
     // `commander` é quem manda no golpe: o time da peça, ou quem a manipula. Só vale alvo que
-    // ela pode atacar, e um incêndio que pegaria alguém que ela não pode atacar é descartado.
+    // ela pode atacar e que não esteja protegido por barreira, e um incêndio que pegaria
+    // alguém que ela não pode atacar é descartado.
     private static strikeFrom(
         myPiece: PieceDefinition,
         target: PieceDefinition,
@@ -274,7 +276,7 @@ export class SimpleAI {
         barriers: Barrier[],
         items: MotivationItem[],
     ): PiecePosition | null {
-        if (!mayAttack(myPiece, target, commander)) return null
+        if (!mayAttack(myPiece, target, commander) || isProtected(target, barriers)) return null
         if (friendlyFire(myPiece, target, pieces, maze, commander, barriers).length > 0) return null
 
         const skill = this.rangedSkillOf(myPiece)

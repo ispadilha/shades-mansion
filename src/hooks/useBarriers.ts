@@ -23,6 +23,8 @@ export interface BarrierState {
     // Acende uma barreira na casa escolhida.
     // A primeira gasta a habilidade do turno, e a última encerra o uso sozinha.
     lightAt: (position: PiecePosition) => void
+    // Apaga a barreira que uma peça adversária conseguiu dissipar, e só ela
+    dispel: (barrierId: string) => void
 }
 
 // As barreiras paranormais em jogo:
@@ -71,5 +73,7 @@ export const useBarriers = ({ pieces, activePieceId, activeColor, skill, log }: 
         }
     }
 
-    return { all, chargesLeft, lightAt }
+    const dispel = (barrierId: string) => setAll((prev) => prev.filter((barrier) => barrier.id !== barrierId))
+
+    return { all, chargesLeft, lightAt, dispel }
 }

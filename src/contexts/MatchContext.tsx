@@ -107,6 +107,7 @@ export interface MatchContextValue {
         close: () => void
         walk: () => void
         attack: () => void
+        dispel: () => void
         useSkill: () => void
         showPieceInfo: () => void
         showItemInfo: () => void
@@ -263,6 +264,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         log,
         isManualRoll,
         onManipulationFailed: returnItemToBoard,
+        dispelBarrier: barriers.dispel,
     })
 
     const actions = useBoardActions({
@@ -463,6 +465,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             close: input.closeMenu,
             walk: actions.walk,
             attack: actions.attack,
+            dispel: actions.dispel,
             useSkill: actions.useSkill,
             showPieceInfo: () => {
                 setInfoPiece(input.menu?.targetPiece ?? null)

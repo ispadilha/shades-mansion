@@ -153,6 +153,10 @@ export const SUCCESS_FACE: CoinFace = "heads"
 
 export const DEFENSE_DIE: DieSides = 20
 
+// Dissipar uma barreira adversária: rolagem igual para toda peça
+export const DISPEL_DIE: DieSides = 20
+export const DISPEL_MIN_ROLL = 16
+
 // ---------------------------------------------------------------------------
 // Iniciativa
 // ---------------------------------------------------------------------------

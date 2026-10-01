@@ -118,12 +118,13 @@ export function reachableCells(
 // Encontra a casa adjacente ao alvo (8 vizinhas, com diagonais) livre e mais barata de
 // alcançar andando. Se o atacante já está adjacente, retorna sua própria posição.
 // Retorna null se nenhuma casa em volta do alvo estiver ao alcance.
+// O alvo pode ser uma peça ou uma barreira: só a casa dele importa.
 //
 // Casa com item não está livre para quem vai golpear: parar nela é coletar, e coletar é
 // outra ação. O item precisa sair antes para a casa ficar vaga.
 export function findApproachCell(
     attacker: PieceDefinition,
-    target: PieceDefinition,
+    target: { position: PiecePosition },
     pieces: PieceDefinition[],
     items: MotivationItem[],
     maze: Maze,
@@ -309,10 +310,10 @@ export type Strike =
     | { ranged: true; range: number; sight: LineSight }
 
 // A peça consegue acertar o alvo daqui? É a mesma pergunta que o destaque do tabuleiro
-// responde em cores.
+// responde em cores. O alvo pode ser uma barreira, que só um golpe corpo a corpo alcança.
 export function canHitTarget(
     attacker: PieceDefinition,
-    target: PieceDefinition,
+    target: { id: string; position: PiecePosition },
     pieces: PieceDefinition[],
     maze: Maze,
     strike: Strike,

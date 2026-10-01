@@ -7,12 +7,14 @@ import {
     piecesInBlast,
     rollDamage,
     rollDefense,
+    rollDispel,
     rollManipulation,
     type DamageRoll,
     type DefenseOutcome,
     type DamagePopup,
     type FireBurst,
     type PendingAttack,
+    type PendingDispel,
 } from "../logic/combat"
 import { dieKind, type RollTarget, type RollTone } from "../logic/rolls"
 import { useLanguage } from "./useLanguage"
@@ -23,6 +25,8 @@ import {
     ATTACK_ROLL_TIMING,
     canDodge,
     DEFENSE_DIE,
+    DISPEL_DIE,
+    DISPEL_MIN_ROLL,
     DODGE_ROLL_TIMING,
     ITEM_DROP_HOLD_MS,
     MAX_DAMAGE_POPUPS,
@@ -62,11 +66,15 @@ interface CombatResolutionOptions {
     isManualRoll: (color: PieceColor) => boolean
     // Uma manipulação falha derruba o item de volta no tabuleiro
     onManipulationFailed: (itemKey: MotivationItemKey) => void
+    // Tira do tabuleiro a barreira que uma peça conseguiu dissipar
+    dispelBarrier: (barrierId: string) => void
 }
 
 export interface CombatResolution {
     // Toda tentativa de ataque (do jogador, da IA ou vinda de uma manipulação) passa por aqui
     resolveAttack: (attack: PendingAttack) => void
+    // Tentativa de dissipar uma barreira: a peça chega ao lado dela e o dado decide
+    resolveDispel: (dispel: PendingDispel) => void
     // Tentativa de manipulação: o item já saiu do inventário de quem usou, e a moeda decide
     // se a peça obedece. Falhando, o item cai de volta no tabuleiro. Devolve o resultado a
     // quem chamou depois de encenar a rolagem.
@@ -85,14 +93,15 @@ export const useCombatResolution = ({
     log,
     isManualRoll,
     onManipulationFailed,
+    dispelBarrier,
 }: CombatResolutionOptions): CombatResolution => {
     const { t } = useLanguage()
     // Quem está rolando, com o nível ao lado. O nível pertence à ficha da rolagem porque é
     // ele que decide o dado de dano do atacante e os números de defesa de quem se defende.
     const withLevel = (piece: PieceDefinition) => `${piece.id} (${t("level")} ${piece.level})`
-    // Os dados do golpe só são jogados quando o atacante termina de se aproximar: o timer
-    // fica guardado para ser cancelado quando a tela sair.
-    const damageTimerRef = useRef<number | null>(null)
+    // Os dados só são jogados quando quem age termina de se aproximar:
+    // o timer fica guardado para ser cancelado quando a tela sair.
+    const approachTimerRef = useRef<number | null>(null)
     // A queda do item devolvido segura a partida enquanto a câmera a acompanha
     const dropTimerRef = useRef<number | null>(null)
     // A animação do golpe segura a partida enquanto acontece
@@ -100,7 +109,7 @@ export const useCombatResolution = ({
 
     useEffect(() => {
         return () => {
-            if (damageTimerRef.current !== null) clearTimeout(damageTimerRef.current)
+            if (approachTimerRef.current !== null) clearTimeout(approachTimerRef.current)
             if (dropTimerRef.current !== null) clearTimeout(dropTimerRef.current)
             if (effectTimerRef.current !== null) clearTimeout(effectTimerRef.current)
         }
@@ -113,8 +122,8 @@ export const useCombatResolution = ({
         const attackerColor = attack.manipulatedBy ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
         rolls.setResolving(true)
 
-        damageTimerRef.current = window.setTimeout(() => {
-            damageTimerRef.current = null
+        approachTimerRef.current = window.setTimeout(() => {
+            approachTimerRef.current = null
 
             // Quem segura o fogo é barreira adversária de quem o acendeu,
             // e o fogo é da peça que atira, não do time que a manipulou, se foi o caso.
@@ -311,5 +320,39 @@ export const useCombatResolution = ({
         )
     }
 
-    return { resolveAttack, resolveManipulation }
+    // O dado só é jogado quando a peça chega ao lado da barreira.
+    // Dando certo, aquela barreira se apaga, e só ela.
+    const resolveDispel = (dispel: PendingDispel) => {
+        // Quem joga o dado: o time da peça, ou quem a está manipulando
+        const rollerColor = dispel.manipulatedBy ?? pieces.find((p) => p.id === dispel.pieceId)?.color ?? null
+        rolls.setResolving(true)
+
+        approachTimerRef.current = window.setTimeout(() => {
+            approachTimerRef.current = null
+            const { die, success } = rollDispel()
+
+            rolls.show(
+                {
+                    id: `dispel-${dispel.pieceId}-${Date.now()}`,
+                    kind: dieKind(DISPEL_DIE),
+                    value: [die],
+                    title: t("dispelRoll"),
+                    subtitle: `${dispel.pieceId} → ${t("barrierOf")} ${dispel.barrier.ownerId}`,
+                    targets: [{ value: String(DISPEL_MIN_ROLL), label: t("toDispel") }],
+                    outcome: {
+                        label: success ? t("dispelWorked") : t("dispelFailed"),
+                        tone: success ? "good" : "bad",
+                    },
+                    manual: rollerColor !== null && isManualRoll(rollerColor),
+                },
+                () => {
+                    log.dispelRoll(dispel.pieceId, dispel.barrier.ownerId, success)
+                    if (success) dispelBarrier(dispel.barrier.id)
+                    rolls.setResolving(false)
+                },
+            )
+        }, dispel.delayMs)
+    }
+
+    return { resolveAttack, resolveManipulation, resolveDispel }
 }

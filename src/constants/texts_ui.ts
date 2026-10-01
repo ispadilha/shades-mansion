@@ -94,6 +94,11 @@ export const texts_ui = {
         ptBR: "Atacar",
     },
 
+    dispel: {
+        enUS: "Dispel",
+        ptBR: "Dissipar",
+    },
+
     collect: {
         enUS: "Collect",
         ptBR: "Coletar",
@@ -255,8 +260,8 @@ export const texts_ui = {
     },
 
     skillBarrier: {
-        enUS: "Paranormal Barrier",
-        ptBR: "Barreira Paranormal",
+        enUS: "Paranormal Barriers",
+        ptBR: "Barreiras Paranormais",
     },
 
     skillCreateBarrier: {
@@ -275,8 +280,8 @@ export const texts_ui = {
     },
 
     hintSelectPiece: {
-        enUS: "Left click to select a piece, right click to choose an action (if selected piece is on its turn)",
-        ptBR: "Clique esquerdo para selecionar uma peça, clique direito para escolher uma ação (se a peça selecionada estiver em seu turno)",
+        enUS: "Left click to select a piece. Right click to choose an action, if selected piece is on its turn.",
+        ptBR: "Clique esquerdo para selecionar uma peça. Clique direito para escolher uma ação, se a peça selecionada estiver em seu turno.",
     },
 
     gotIt: {
@@ -324,6 +329,11 @@ export const texts_ui = {
         ptBR: "Barreira",
     },
 
+    barrierOf: {
+        enUS: "barrier of",
+        ptBR: "barreira de",
+    },
+
     litBy: {
         enUS: "Lit by",
         ptBR: "Acesa por",
@@ -332,15 +342,19 @@ export const texts_ui = {
     barrierDescription: {
         enUS:
             "A paranormal barrier closes the cell to the other two teams and lets its own team walk through it. " +
-            "It goes out on its own when the turn of the piece that lit it comes around again.",
+            "It goes out on its own when the turn of the piece that lit it comes around again. " +
+            "A piece of its team standing on it cannot be attacked. " +
+            "An opponent standing next to it can try to dispel it.",
         ptBR:
             "Uma barreira paranormal fecha a casa para os outros dois times e deixa o próprio time passar por ela. " +
-            "Ela se apaga sozinha quando a vez da peça que a acendeu volta.",
+            "Ela se apaga sozinha quando a vez da peça que a acendeu volta. " +
+            "A peça do próprio time que estiver em cima dela não pode ser atacada. " +
+            "Uma peça adversária ao lado dela pode tentar dissipá-la.",
     },
 
     barriersLeft: {
-        enUS: "barriers left",
-        ptBR: "barreiras restantes",
+        enUS: "barrier(s) left",
+        ptBR: "barreira(s) restante(s)",
     },
 
     barriersWoreOff: {
@@ -486,6 +500,11 @@ export const texts_ui = {
     toBurnArea: {
         enUS: "to set an area on fire",
         ptBR: "para incendiar uma área",
+    },
+
+    toDispelBarrierOf: {
+        enUS: "to dispel the barrier of",
+        ptBR: "para dissipar a barreira de",
     },
 
     toCollectItem: {
@@ -686,5 +705,35 @@ export const texts_ui = {
     verbResistedManipulation: {
         enUS: "resisted the manipulation",
         ptBR: "resistiu à manipulação",
+    },
+
+    dispelRoll: {
+        enUS: "Dispel roll",
+        ptBR: "Rolagem de dissipação",
+    },
+
+    toDispel: {
+        enUS: "to dispel",
+        ptBR: "para dissipar",
+    },
+
+    dispelWorked: {
+        enUS: "The barrier is gone!",
+        ptBR: "A barreira se dissipou!",
+    },
+
+    dispelFailed: {
+        enUS: "The barrier holds!",
+        ptBR: "A barreira resistiu!",
+    },
+
+    verbDispelledBarrierOf: {
+        enUS: "dispelled the barrier of",
+        ptBR: "dissipou a barreira de",
+    },
+
+    verbFailedToDispelBarrierOf: {
+        enUS: "failed to dispel the barrier of",
+        ptBR: "não conseguiu dissipar a barreira de",
     },
 }
