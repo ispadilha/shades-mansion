@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from "react"
 import type { PieceColor, PieceDefinition } from "../logic/types"
 import {
-    baseRangeOf,
     cancelCostsSkill,
     reachOf,
+    skillRangeOf,
     type ActiveSkill,
     type Skill,
     type SkillReach,
@@ -97,16 +97,18 @@ export const useSkillFlow = ({
         if (!activePiece || !activeColor) return
         const pieceId = activePiece.id
 
-        // Habilidade sem dado entra em uso na hora, e desistir dela ainda sai de graça
-        if (!skill.roll) {
-            setActive({ skill, pieceId, range: baseRangeOf(skill, activePiece), committed: false })
+        // Habilidade de alcance fixo entra em uso na hora, e desistir dela ainda sai de graça
+        const fixedRange = skillRangeOf(skill, activePiece)
+        if (fixedRange !== null) {
+            setActive({ skill, pieceId, range: fixedRange, committed: false })
             return
         }
 
         // Com dado, o resultado é o alcance e a partir dele não há volta:
         // é o que impede "trapaça" de cancelar e rolar de novo até vir um número melhor.
-        roll.roll(skill, activePiece, activeColor, (range) => {
-            setActive({ skill, pieceId, range, committed: true })
+        // A que rola o próprio dano já entra em uso com ele.
+        roll.roll(skill, activePiece, activeColor, (range, damage) => {
+            setActive({ skill, pieceId, range, ...(damage !== undefined ? { damage } : {}), committed: true })
             setSelectedId(pieceId)
         })
     }

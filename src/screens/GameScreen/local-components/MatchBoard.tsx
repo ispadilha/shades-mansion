@@ -21,6 +21,7 @@ export const MatchBoard: React.FC<MatchBoardProps> = ({}) => {
             barriers={board.barriers}
             fireBursts={board.fireBursts}
             damagePopups={board.damagePopups}
+            chargeRuns={board.chargeRuns}
             auras={board.auras}
             selectedPieceId={board.selectedId}
             droppedItemId={board.droppedItemId}

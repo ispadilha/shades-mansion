@@ -1,6 +1,6 @@
 import type { Barrier, MotivationItem, PieceColor, PieceDefinition, PiecePosition, TextKey } from "./types"
 import type { Maze } from "./maze"
-import type { ActiveSkill, SkillReach } from "./skills"
+import { skillAreaSideOf, type ActiveSkill, type SkillReach } from "./skills"
 import { NO_BLOCKED_CELLS, atPosition, blockedCellsFor, includesPosition, positionKey } from "./grid"
 import { canHitTarget, strikeWalkRange, type Strike } from "./movement"
 import { mayAttack } from "./combat"
@@ -144,8 +144,9 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
     if (dispels) actions.push("dispel")
 
     if (usingSkill && ownSelection) {
-        if (skillReach!.places) {
-            // Habilidade que cria algo: vale onde ela alcança, e lá já é casa livre
+        if (skillReach!.effect !== "strike") {
+            // Habilidade que cria algo, ou que corre até uma casa: vale onde ela alcança,
+            // e lá já é casa livre
             if (includesPosition(skillCells, position)) actions.push("skill")
         } else {
             const strike: Strike = skillReach!.ranged
@@ -155,7 +156,7 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
             // Só habilidade de área pode mirar no chão (mas não em barreira adversária)
             const burnsGround =
                 !targetPiece &&
-                activeSkill.skill.area &&
+                skillAreaSideOf(activeSkill.skill, selectedPiece!) !== null &&
                 includesPosition(attackCells, position) &&
                 !blocked.has(positionKey(position))
             if (reachesPiece || burnsGround) actions.push("skill")

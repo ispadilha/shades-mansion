@@ -98,11 +98,8 @@ const DAMAGE_LADDER: DieSides[] = [4, 6, 8, 10, 12, 20]
 // quem é pesado demais para desviar não aprende a desviar.
 export const LEVEL_BONUS = { maxVigor: 3, moveRange: 1, guard: -1, damageSteps: 1 }
 
-// Sobe o dado de dano alguns "degraus na escada".
-// Uma escada só, para as duas coisas que fortalecem um ataque:
-// Subir de nível, e usar uma habilidade.
-// (Depende da habilidade. Aliás em geral, depende de quem chama.)
-export const climbDamageLadder = (damage: DiceSpec, steps: number): DiceSpec => {
+// Sobe o dado de dano alguns "degraus na escada": é assim que a promoção fortalece o golpe
+const climbDamageLadder = (damage: DiceSpec, steps: number): DiceSpec => {
     if (steps <= 0) return damage
     const rung = Math.min(DAMAGE_LADDER.indexOf(damage.sides) + steps, DAMAGE_LADDER.length - 1)
     return { ...damage, sides: DAMAGE_LADDER[rung] }
@@ -128,26 +125,68 @@ export const statsFor = (type: PieceType, level: number): PieceStats => {
 // Habilidades
 // ---------------------------------------------------------------------------
 
-export interface SkillLevelTable {
-    // Ao não se declarar alcance, é usado o padrão de ataque comum mais `rangeBonus`
-    range?: readonly number[]
+// Todas as definições de números das habilidades, com um valor para cada nível da peça.
+// O alcance é um dos dois: fixo, ou sorteado ao entrar em uso.
+type SkillRange =
+    | { fixedRange: readonly number[]; rangeDice?: never }
+    | { rangeDice: readonly DiceSpec[]; fixedRange?: never }
+
+export type SkillLevelTable = SkillRange & {
     // Quantos usos a habilidade sustenta ao mesmo tempo, em um turno
     charges?: readonly number[]
+    // Os dados de dano da habilidade. Sem eles, ela golpeia com o golpe comum da peça.
+    damageDice?: readonly DiceSpec[]
+    // Lado do quadrado que pega fogo, para a habilidade que atinge uma área. Ímpar para o
+    // alvo ficar no centro.
+    areaSide?: readonly number[]
 }
 
-export const SKILL_LEVELS: Partial<Record<SkillId, SkillLevelTable>> = {
+export const SKILL_LEVELS: Record<SkillId, SkillLevelTable> = {
+    extraMove: {
+        rangeDice: [
+            { count: 1, sides: 10 },
+            { count: 1, sides: 10 },
+            { count: 1, sides: 10 },
+        ],
+    },
     barrier: {
-        range: [5, 8, 11],
+        fixedRange: [5, 8, 11],
         charges: [3, 5, 7],
+    },
+    charge: {
+        rangeDice: [
+            { count: 1, sides: 12 },
+            { count: 2, sides: 6 },
+            { count: 3, sides: 4 },
+        ],
+        damageDice: [
+            { count: 1, sides: 6 },
+            { count: 1, sides: 8 },
+            { count: 1, sides: 10 },
+        ],
+    },
+    longShot: {
+        fixedRange: [9, 10, 11],
+        damageDice: [
+            { count: 1, sides: 10 },
+            { count: 1, sides: 12 },
+            { count: 1, sides: 20 },
+        ],
+    },
+    fire: {
+        fixedRange: [7, 8, 9],
+        damageDice: [
+            { count: 1, sides: 8 },
+            { count: 1, sides: 10 },
+            { count: 1, sides: 12 },
+        ],
+        areaSide: [3, 3, 3],
     },
 }
 
 // ---------------------------------------------------------------------------
 // Combate
 // ---------------------------------------------------------------------------
-
-// Lado do quadrado que o ataque em área incendeia. Ímpar para o alvo ficar no centro.
-export const FIRE_AREA_SIDE = 3
 
 export const SUCCESS_FACE: CoinFace = "heads"
 
@@ -197,6 +236,9 @@ export const MAX_LOG_ENTRIES = 100
 
 // Explosões de fogo guardadas no estado (só para a cena não reanimar as antigas)
 export const MAX_FIRE_BURSTS = 8
+
+// Investidas guardadas no estado, pelo mesmo motivo
+export const MAX_CHARGE_RUNS = 8
 
 // Quanto tempo a câmera fica presa no item que caiu de volta no tabuleiro
 export const ITEM_DROP_HOLD_MS = 1000

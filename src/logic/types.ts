@@ -33,7 +33,7 @@ export type AuraKind = "active" | "manipulated" | "skill"
 
 // As habilidades que existem. O id mora aqui, e não em `logic/skills.ts`, para a tabela de
 // níveis em `constants/rules.ts` poder falar dele sem que as regras dependam da lógica.
-export type SkillId = "extraMove" | "barrier" | "longShot" | "fire"
+export type SkillId = "extraMove" | "barrier" | "charge" | "longShot" | "fire"
 
 // O que interrompe a linha de uma habilidade que vai à distância
 export interface LineBlockers {

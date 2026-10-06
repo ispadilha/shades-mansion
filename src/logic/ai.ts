@@ -16,7 +16,7 @@ import { pickRandom } from "./random"
 import type { Maze } from "./maze"
 import { attackArea, friendlyFire, mayAttack, type PendingAttack } from "./combat"
 import { isProtected } from "./barriers"
-import { baseRangeOf, damageOf, hasRangedAttackSkill, skillFor } from "./skills"
+import { damageOf, hasRangedAttackSkill, skillFor, skillRangeOf } from "./skills"
 import { ACTION_SETTLE_MS, STEP_MS, statsFor } from "../constants/rules"
 
 export interface AIMoveResult {
@@ -282,7 +282,7 @@ export class SimpleAI {
         const skill = this.rangedSkillOf(myPiece)
         if (skill) {
             const sight = { barriers, blockedBy: skill.blockedBy }
-            const shot: Strike = { ranged: true, range: baseRangeOf(skill, myPiece), sight }
+            const shot: Strike = { ranged: true, range: skillRangeOf(skill, myPiece) ?? 0, sight }
             return canHitTarget(myPiece, target, pieces, maze, shot) ? myPiece.position : null
         }
         const walkRange = statsFor(myPiece.type, myPiece.level).moveRange

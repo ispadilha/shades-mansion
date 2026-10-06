@@ -13,7 +13,7 @@ import type {
     TextKey,
 } from "../logic/types"
 import { controlledColorsFor } from "../logic/types"
-import type { DamagePopup, FireBurst } from "../logic/combat"
+import type { ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { turnStageOf } from "../logic/turn"
 import { useAiTurn } from "../hooks/useAiTurn"
@@ -51,6 +51,7 @@ export interface MatchContextValue {
         barriers: Barrier[]
         fireBursts: FireBurst[]
         damagePopups: DamagePopup[]
+        chargeRuns: ChargeRun[]
         auras: PieceAuras
         selectedId: string | null
         droppedItemId: string | null
@@ -173,6 +174,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const [fireBursts, setFireBursts] = useState<FireBurst[]>([])
     // Números de dano já resolvidos, para a cena mostrá-los subindo (ela ignora os repetidos)
     const [damagePopups, setDamagePopups] = useState<DamagePopup[]>([])
+    // Investidas já decididas, para a cena fazer a peça correr em linha reta (ela ignora as repetidas)
+    const [chargeRuns, setChargeRuns] = useState<ChargeRun[]>([])
     const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [infoBarrier, setInfoBarrier] = useState<Barrier | null>(null)
@@ -259,6 +262,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         setPieces,
         setFireBursts,
         setDamagePopups,
+        setChargeRuns,
         setManipulatedId: focus.setManipulatedId,
         rolls,
         log,
@@ -428,6 +432,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             barriers: barriers.all,
             fireBursts,
             damagePopups,
+            chargeRuns,
             auras,
             selectedId,
             droppedItemId: focus.droppedItem?.id ?? null,

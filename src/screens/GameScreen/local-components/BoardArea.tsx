@@ -3,7 +3,7 @@ import type { RefObject } from "react"
 import { Box } from "@mui/material"
 import { Board } from "../../../components/board"
 import type { Barrier, PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../../logic/types"
-import type { DamagePopup, FireBurst } from "../../../logic/combat"
+import type { ChargeRun, DamagePopup, FireBurst } from "../../../logic/combat"
 import type { Maze } from "../../../logic/maze"
 import { CELL_SIZE } from "../../../constants/rules"
 
@@ -19,6 +19,7 @@ interface BoardAreaProps {
     barriers: Barrier[]
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
+    chargeRuns: ChargeRun[]
     auras: PieceAuras
     selectedPieceId: string | null
     droppedItemId: string | null
@@ -39,6 +40,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
     barriers,
     fireBursts,
     damagePopups,
+    chargeRuns,
     auras,
     selectedPieceId,
     droppedItemId,
@@ -78,6 +80,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                     barriers={barriers}
                     fireBursts={fireBursts}
                     damagePopups={damagePopups}
+                    chargeRuns={chargeRuns}
                     auras={auras}
                     onCellClick={onCellClick}
                     selectedPieceId={selectedPieceId}

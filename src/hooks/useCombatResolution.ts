@@ -9,11 +9,13 @@ import {
     rollDefense,
     rollDispel,
     rollManipulation,
+    type ChargeRun,
     type DamageRoll,
     type DefenseOutcome,
     type DamagePopup,
     type FireBurst,
     type PendingAttack,
+    type PendingCharge,
     type PendingDispel,
 } from "../logic/combat"
 import { dieKind, type RollTarget, type RollTone } from "../logic/rolls"
@@ -21,6 +23,7 @@ import { useLanguage } from "./useLanguage"
 import type { GameLog } from "./useGameLog"
 import type { RollQueue } from "./useRolls"
 import {
+    ACTION_SETTLE_MS,
     ATTACK_EFFECT_HOLD_MS,
     ATTACK_ROLL_TIMING,
     canDodge,
@@ -29,6 +32,7 @@ import {
     DISPEL_MIN_ROLL,
     DODGE_ROLL_TIMING,
     ITEM_DROP_HOLD_MS,
+    MAX_CHARGE_RUNS,
     MAX_DAMAGE_POPUPS,
     MAX_FIRE_BURSTS,
     statsFor,
@@ -57,6 +61,8 @@ interface CombatResolutionOptions {
     setFireBursts: Dispatch<SetStateAction<FireBurst[]>>
     // Os números de dano que sobem acima das peças atingidas
     setDamagePopups: Dispatch<SetStateAction<DamagePopup[]>>
+    // As investidas, para a cena fazer a peça correr em linha reta
+    setChargeRuns: Dispatch<SetStateAction<ChargeRun[]>>
     // Peça sob manipulação: é ela que a câmera segue enquanto a moeda está no ar
     setManipulatedId: (pieceId: string | null) => void
     rolls: RollQueue
@@ -75,6 +81,8 @@ export interface CombatResolution {
     resolveAttack: (attack: PendingAttack) => void
     // Tentativa de dissipar uma barreira: a peça chega ao lado dela e o dado decide
     resolveDispel: (dispel: PendingDispel) => void
+    // Investida: a peça já está correndo, e cada atropelada leva o dano quando ela passa por cima
+    resolveCharge: (charge: PendingCharge) => void
     // Tentativa de manipulação: o item já saiu do inventário de quem usou, e a moeda decide
     // se a peça obedece. Falhando, o item cai de volta no tabuleiro. Devolve o resultado a
     // quem chamou depois de encenar a rolagem.
@@ -88,6 +96,7 @@ export const useCombatResolution = ({
     setPieces,
     setFireBursts,
     setDamagePopups,
+    setChargeRuns,
     setManipulatedId,
     rolls,
     log,
@@ -106,12 +115,15 @@ export const useCombatResolution = ({
     const dropTimerRef = useRef<number | null>(null)
     // A animação do golpe segura a partida enquanto acontece
     const effectTimerRef = useRef<number | null>(null)
+    // Os golpes de uma investida em andamento, um por peça no caminho, e o fim da corrida
+    const chargeTimersRef = useRef<number[]>([])
 
     useEffect(() => {
         return () => {
             if (approachTimerRef.current !== null) clearTimeout(approachTimerRef.current)
             if (dropTimerRef.current !== null) clearTimeout(dropTimerRef.current)
             if (effectTimerRef.current !== null) clearTimeout(effectTimerRef.current)
+            for (const timer of chargeTimersRef.current) clearTimeout(timer)
         }
     }, [])
 
@@ -354,5 +366,34 @@ export const useCombatResolution = ({
         }, dispel.delayMs)
     }
 
-    return { resolveAttack, resolveManipulation, resolveDispel }
+    // A investida faz a peça correr em linha reta, e cada peça no caminho
+    // leva o dano no instante em que ela passa por cima.
+    // Não há defesa: o dano é o que saiu no dado.
+    // A partida fica travada até a corrida acabar.
+    const resolveCharge = (charge: PendingCharge) => {
+        rolls.setResolving(true)
+        setChargeRuns((prev) => [
+            ...prev.slice(-MAX_CHARGE_RUNS + 1),
+            {
+                id: `charge-${charge.pieceId}-${Date.now()}`,
+                pieceId: charge.pieceId,
+                to: charge.to,
+                durationMs: charge.durationMs,
+            },
+        ])
+
+        const timers = charge.hits.map((hit) =>
+            window.setTimeout(() => {
+                log.attackHit(charge.pieceId, hit.pieceId, charge.damage)
+                applyDamage([{ pieceId: hit.pieceId, damage: charge.damage }])
+            }, hit.atMs),
+        )
+        const finish = window.setTimeout(() => {
+            chargeTimersRef.current = []
+            rolls.setResolving(false)
+        }, charge.durationMs + ACTION_SETTLE_MS)
+        chargeTimersRef.current = [...timers, finish]
+    }
+
+    return { resolveAttack, resolveManipulation, resolveDispel, resolveCharge }
 }

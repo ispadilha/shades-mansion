@@ -55,7 +55,7 @@ export const texts_rules = {
             enUS:
                 "The Agile (A) runs the farthest and hits the softest: 9 vigor and a 1d4 blow. In exchange it is the only piece that slips out of a blow completely almost half of the time.\n\n" +
                 "The Barrier (B) is the middle of the table in a fight: 12 vigor and a 1d6 blow. It is the only piece that can close a corridor: it lights paranormal barriers at a distance, which let its own team through and no one else.\n\n" +
-                "The Champion (C) is the heaviest of all: 16 vigor and two d8 in a single blow, but has the most limited movement.\n\n" +
+                "The Champion (C) is the heaviest of all: 16 vigor and two d8 in a single blow, but has the most limited movement. Its charge makes up for it: it runs in a straight line over every piece in the way, and each of them takes the damage, allies included.\n\n" +
                 "The Distance shooter (D) rolls a 1d6 from where it stands, with 10 vigor, and still ducks a blow now and then.\n\n" +
                 "The Exotic (E) sits between the middle and the top: 13 vigor and a 1d8 blow.\n\n" +
                 "The Firestarter (F) rolls 1d6, with 11 vigor, and its shot burns a whole area.\n\n" +
@@ -63,7 +63,7 @@ export const texts_rules = {
             ptBR:
                 "A Ágil (A) é a que corre mais longe e a que bate mais fraco: 9 de vigor e um golpe de 1d4. Em troca, é a única peça que desvia de ataques em quase metade das vezes.\n\n" +
                 "A de Barreira (B) é o meio da tabela em uma luta: 12 de vigor e golpe de 1d6. É a única peça que consegue fechar um corredor: ela acende barreiras paranormais à distância, que deixam passar só o time dela.\n\n" +
-                "O Campeão (C) é o mais pesado de todos: 16 de vigor e dois d8 em um golpe só, mas tem o movimento mais limitado.\n\n" +
+                "O Campeão (C) é o mais pesado de todos: 16 de vigor e dois d8 em um golpe só, mas tem o movimento mais limitado. A investida compensa isso: ele corre em linha reta por cima de toda peça no caminho, e cada uma delas leva o dano, aliadas inclusive.\n\n" +
                 "A que atira à Distância (D) rola um 1d6 de onde está, com 10 de vigor, e ainda desvia de um golpe de vez em quando.\n\n" +
                 "A Exótica (E) fica entre o meio e o topo: 13 de vigor e golpe de 1d8\n\n" +
                 "A incendiária com seu Fogo (F) rola 1d6, com 11 de vigor, e seu tiro queima uma área inteira.\n\n" +
@@ -124,10 +124,12 @@ export const texts_rules = {
         description: {
             enUS:
                 "Pieces walk one cell at a time, up, down, left or right.\n\n" +
-                "Allied pieces do not block a corridor: a piece walks through the cells they occupy, but cannot finish its move on top of one. Opponent pieces close the way, and so do the paranormal barriers of other teams.",
+                "Allied pieces do not block a corridor: a piece walks through the cells they occupy, but cannot finish its move on top of one. Opponent pieces close the way, and so do the paranormal barriers of other teams.\n\n" +
+                "The Champion's charge is the exception: it runs in a straight line, in any direction, and goes over the pieces in the way. Only walls and other teams' barriers stop it.",
             ptBR:
                 "As peças andam uma casa por vez, para cima, para baixo, para a esquerda ou para a direita.\n\n" +
-                "Peças aliadas não bloqueiam o corredor: a peça atravessa as casas ocupadas por elas, mas não pode terminar o movimento em cima de nenhuma. Peças adversárias fecham a passagem, assim como as barreiras paranormais de outros times.",
+                "Peças aliadas não bloqueiam o corredor: a peça atravessa as casas ocupadas por elas, mas não pode terminar o movimento em cima de nenhuma. Peças adversárias fecham a passagem, assim como as barreiras paranormais de outros times.\n\n" +
+                "A investida do Campeão é a exceção: ela corre em linha reta, em qualquer direção, e passa por cima das peças no caminho. Só paredes e barreiras de outros times a param.",
         },
     },
 

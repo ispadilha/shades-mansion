@@ -1,11 +1,12 @@
 import type { LineBlockers, PieceDefinition, PieceType, SkillId, TextKey } from "./types"
 import type { DiceSpec } from "./rolls"
-import { SKILL_LEVELS, statsFor, climbDamageLadder } from "../constants/rules"
+import { SKILL_LEVELS, statsFor } from "../constants/rules"
 
 // O que a habilidade faz quando o jogador a aciona:
 // - "strike": vira um ataque, de perto ou de longe
 // - "place": cria algo em uma casa livre, à distância
-export type SkillEffect = "strike" | "place"
+// - "charge": investida em linha reta até uma casa vazia, por cima de quem estiver no caminho
+export type SkillEffect = "strike" | "place" | "charge"
 
 export interface Skill {
     id: SkillId
@@ -13,80 +14,66 @@ export interface Skill {
     // Como a ação se chama no menu do clique direito
     action: TextKey
     effect: SkillEffect
-    roll: DiceSpec | null
-    // O quanto a habilidade alcança além do ataque comum da própria peça.
-    // É relativo, e não um número fixo, para o tiro longo continuar sendo longo
-    // depois de a peça subir de nível.
-    // Um alcance fixo acabaria alcançado pelo ataque comum dela.
-    // Habilidade que declara `range` em `SKILL_LEVELS` não usa este bônus.
-    rangeBonus: number
     moves: boolean
     ranged: boolean
     blockedBy: LineBlockers
-    area: boolean
-    // Degraus que o dado de dano sobe na escada das promoções
-    damageSteps: number
 }
 
+// O que cada habilidade faz.
+// Os números (alcance, dano, usos, área) estão em `SKILL_LEVELS`, no arquivo `rules.ts`.
 export const SKILLS: Record<SkillId, Skill> = {
     extraMove: {
         id: "extraMove",
         name: "skillExtraMove",
         action: "attack",
         effect: "strike",
-        roll: { count: 1, sides: 10 },
-        rangeBonus: 0,
         moves: true,
         ranged: false,
         blockedBy: { pieces: true, barriers: true },
-        area: false,
-        damageSteps: 0,
     },
     barrier: {
         id: "barrier",
         name: "skillBarrier",
         action: "skillCreateBarrier",
         effect: "place",
-        roll: null,
-        // O alcance e o número de barreiras crescem com o nível: estão em `SKILL_LEVELS`
-        rangeBonus: 0,
         moves: false,
         ranged: true,
         blockedBy: { pieces: false, barriers: true },
-        area: false,
-        damageSteps: 0,
+    },
+    charge: {
+        id: "charge",
+        name: "skillCharge",
+        action: "skillCharge",
+        effect: "charge",
+        moves: false,
+        ranged: false,
+        // Passa por cima de peças: só paredes e barreiras de outros times a fecham
+        blockedBy: { pieces: false, barriers: true },
     },
     longShot: {
         id: "longShot",
         name: "skillLongShot",
         action: "skillShoot",
         effect: "strike",
-        roll: null,
-        rangeBonus: 3,
         moves: false,
         ranged: true,
         blockedBy: { pieces: true, barriers: true },
-        area: false,
-        damageSteps: 2,
     },
     fire: {
         id: "fire",
         name: "skillFire",
         action: "skillBurn",
         effect: "strike",
-        roll: null,
-        rangeBonus: 1,
         moves: false,
         ranged: true,
         blockedBy: { pieces: false, barriers: true },
-        area: true,
-        damageSteps: 1,
     },
 }
 
 const SKILL_BY_TYPE: Partial<Record<PieceType, SkillId>> = {
     A: "extraMove",
     B: "barrier",
+    C: "charge",
     D: "longShot",
     F: "fire",
 }
@@ -101,28 +88,38 @@ export const hasRangedAttackSkill = (type: PieceType) => {
     return skill?.ranged === true && skill.effect === "strike"
 }
 
-export const hasAreaSkill = (type: PieceType) => skillFor(type)?.area === true
-
 // O valor de uma grandeza da habilidade no nível em que a peça está
-const levelValue = (values: readonly number[] | undefined, level: number): number | null => {
+const levelValue = <T>(values: readonly T[] | undefined, level: number): T | null => {
     if (!values || values.length === 0) return null
     return values[Math.min(Math.max(level, 1), values.length) - 1]
 }
 
-// Até onde a habilidade alcança para esta peça: o que a tabela de níveis diz, ou o
-// alcance de ataque dela mais o bônus da habilidade.
-export const skillRangeOf = (skill: Skill, piece: PieceDefinition): number =>
-    levelValue(SKILL_LEVELS[skill.id]?.range, piece.level) ??
-    statsFor(piece.type, piece.level).attackRange + skill.rangeBonus
+// Os dados que sorteiam o alcance da habilidade, quando ela o sorteia
+export const skillRollOf = (skill: Skill, piece: PieceDefinition): DiceSpec | null =>
+    levelValue(SKILL_LEVELS[skill.id].rangeDice, piece.level)
+
+// O alcance fixo da habilidade, quando ela não o sorteia
+export const skillRangeOf = (skill: Skill, piece: PieceDefinition): number | null =>
+    levelValue(SKILL_LEVELS[skill.id].fixedRange, piece.level)
+
+// Os dados de dano da habilidade, quando ela tem os seus
+export const skillDamageOf = (skill: Skill, piece: PieceDefinition): DiceSpec | null =>
+    levelValue(SKILL_LEVELS[skill.id].damageDice, piece.level)
 
 export const skillChargesOf = (skill: Skill, piece: PieceDefinition): number | null =>
-    levelValue(SKILL_LEVELS[skill.id]?.charges, piece.level)
+    levelValue(SKILL_LEVELS[skill.id].charges, piece.level)
+
+// O lado do quadrado que a habilidade incendeia. Null quando ela não atinge uma área.
+export const skillAreaSideOf = (skill: Skill, piece: PieceDefinition): number | null =>
+    levelValue(SKILL_LEVELS[skill.id].areaSide, piece.level)
 
 export interface ActiveSkill {
     skill: Skill
     pieceId: string
-    // Alcance: sorteado no dado, ou o que `skillRangeOf` diz quando não há dado
+    // Alcance: sorteado no dado, ou o fixo, que `skillRangeOf` diz
     range: number
+    // O dano já sorteado, para a habilidade que rola o próprio dano antes de agir
+    damage?: number
     // Casos em que não pode voltar atrás
     committed: boolean
 }
@@ -147,25 +144,20 @@ export interface SkillReach {
     attack: number
     ranged: boolean
     blockedBy: LineBlockers
-    // Casas em que a habilidade cria algo, quando é desse tipo
-    places: boolean
+    // O que a habilidade faz. A que não golpeia diretamente ("place", "charge")
+    // é usada numa casa escolhida entre as destacadas para ela.
+    effect: SkillEffect
 }
 
 export const reachOf = (active: ActiveSkill): SkillReach => {
-    const places = active.skill.effect === "place"
-    const blockedBy = active.skill.blockedBy
-    if (places) return { move: 0, attack: active.range, ranged: true, blockedBy, places }
+    const { effect, blockedBy } = active.skill
+    if (effect === "place") return { move: 0, attack: active.range, ranged: true, blockedBy, effect }
+    if (effect === "charge") return { move: 0, attack: active.range, ranged: false, blockedBy, effect }
     return active.skill.moves
-        ? { move: active.range, attack: active.range, ranged: false, blockedBy, places }
-        : { move: 0, attack: active.range, ranged: active.skill.ranged, blockedBy, places }
+        ? { move: active.range, attack: active.range, ranged: false, blockedBy, effect }
+        : { move: 0, attack: active.range, ranged: active.skill.ranged, blockedBy, effect }
 }
 
-// O alcance com que uma habilidade sem dado entra em uso.
-// A que rola dado entra em zero: quem diz o alcance dela é a rolagem.
-export const baseRangeOf = (skill: Skill, piece: PieceDefinition) =>
-    skill.roll ? 0 : skillRangeOf(skill, piece)
-
-export const damageOf = (piece: PieceDefinition, skill: Skill | null): DiceSpec => {
-    const { damage } = statsFor(piece.type, piece.level)
-    return skill ? climbDamageLadder(damage, skill.damageSteps) : damage
-}
+// O dano no ataque: os dados da habilidade, quando ela tem, ou o golpe comum da peça
+export const damageOf = (piece: PieceDefinition, skill: Skill | null): DiceSpec =>
+    (skill ? skillDamageOf(skill, piece) : null) ?? statsFor(piece.type, piece.level).damage

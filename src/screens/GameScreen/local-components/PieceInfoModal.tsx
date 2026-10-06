@@ -4,8 +4,8 @@ import { ModalCard } from "../../../components/ui"
 import type { PieceDefinition } from "../../../logic/types"
 import { diceLabel } from "../../../logic/rolls"
 import { useLanguage } from "../../../hooks/useLanguage"
-import { skillChargesOf, skillFor, skillRangeOf } from "../../../logic/skills"
-import { DEFENSE_DIE, FIRE_AREA_SIDE, canDodge, statsFor } from "../../../constants/rules"
+import { skillAreaSideOf, skillChargesOf, skillDamageOf, skillFor, skillRangeOf, skillRollOf } from "../../../logic/skills"
+import { DEFENSE_DIE, canDodge, statsFor } from "../../../constants/rules"
 
 // O número que o d20 da defesa precisa alcançar
 const defenseTarget = (target: number) => `d${DEFENSE_DIE} ≥ ${target}`
@@ -16,6 +16,9 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
     const stats = statsFor(piece.type, piece.level)
     const skill = skillFor(piece.type)
     const charges = skill ? skillChargesOf(skill, piece) : null
+    const rangeDice = skill ? skillRollOf(skill, piece) : null
+    const damageDice = skill ? skillDamageOf(skill, piece) : null
+    const areaSide = skill ? skillAreaSideOf(skill, piece) : null
 
     return (
         <>
@@ -34,9 +37,15 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
             <Typography>
                 {t("skill")}: {skill ? t(skill.name) : t("skillNone")}
             </Typography>
-            {skill && skill.roll === null && (
+            {/* Habilidade que sorteia o alcance mostra os dados dele. A de alcance fixo, o número */}
+            {skill && (
                 <Typography>
-                    {t("skillRange")}: {skillRangeOf(skill, piece)}
+                    {t("skillRange")}: {rangeDice ? diceLabel(rangeDice) : skillRangeOf(skill, piece)}
+                </Typography>
+            )}
+            {damageDice && (
+                <Typography>
+                    {t("skillDamage")}: {diceLabel(damageDice)}
                 </Typography>
             )}
             {skill && charges !== null && (
@@ -44,9 +53,9 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
                     {t("skillCharges")}: {charges}
                 </Typography>
             )}
-            {skill?.area && (
+            {areaSide !== null && (
                 <Typography>
-                    {t("attackArea")}: {FIRE_AREA_SIDE} × {FIRE_AREA_SIDE}
+                    {t("attackArea")}: {areaSide} × {areaSide}
                 </Typography>
             )}
         </>

@@ -4,6 +4,7 @@ import type { Barrier, MotivationItem } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { attackArea } from "../logic/combat"
+import { chargeDurationMs, chargeVictims } from "../logic/charge"
 import { findApproachCell, pathLength, strikeWalkRange } from "../logic/movement"
 import { blockedCellsFor } from "../logic/grid"
 import { damageOf } from "../logic/skills"
@@ -143,7 +144,7 @@ export const useBoardActions = ({
         // O ataque cai em uma casa, que pode ou não ter uma peça em cima.
         // Mirar o chão é só para habilidade que atinge área.
         const target = menu.targetPiece
-        const area = active?.skill.area ? attackArea(attacker, target?.position ?? menu.position) : undefined
+        const area = active ? attackArea(attacker, target?.position ?? menu.position) : undefined
         if (!target && !area) return
 
         // Habilidade de alcance acerta de onde a peça está. Para golpe comum, se aproxima antes.
@@ -185,7 +186,7 @@ export const useBoardActions = ({
         // Os dados são jogados quando o atacante termina de se aproximar
         combat.resolveAttack({
             attackerId: attacker.id,
-            // Habilidade tem mais força que o golpe comum da mesma peça
+            // Pela habilidade, o golpe sai com os dados de dano dela, quando ela os tem
             damageDice: damageOf(attacker, active?.skill ?? null),
             delayMs,
             ...(target ? { targetId: target.id } : {}),
@@ -233,6 +234,33 @@ export const useBoardActions = ({
         })
     }
 
+    // Investida: a peça corre em linha reta até a casa escolhida, por cima de quem estiver no
+    // caminho, e cada peça atravessada leva o dano já sorteado, no instante em que ela passa
+    // por cima. Gasta a habilidade, e não a ação comum.
+    const charge = (destination: PiecePosition) => {
+        const active = skill.active
+        if (!active || active.damage === undefined || !activeColor) return
+        const runner = pieces.find((p) => p.id === active.pieceId)
+        if (!runner) return
+
+        const victims = chargeVictims(runner, destination, pieces, maze, barriers)
+        const durationMs = chargeDurationMs(runner.position, destination)
+
+        setPieces((prev) =>
+            prev.map((p) => (p.id === runner.id ? { ...p, position: destination, usedSkillThisTurn: true } : p)),
+        )
+        finishAction()
+        record(activeColor, runner.id, "toCharge")
+
+        combat.resolveCharge({
+            pieceId: runner.id,
+            to: destination,
+            damage: active.damage,
+            durationMs,
+            hits: victims.map(({ piece, at }) => ({ pieceId: piece.id, atMs: Math.round(at * durationMs) })),
+        })
+    }
+
     const useSkill = () => {
         if (!menu || !skill.active) return
         if (skill.active.skill.effect === "place") {
@@ -241,6 +269,10 @@ export const useBoardActions = ({
             // e a peça, selecionada: só o menu se fecha, e pode
             // voltar a abrir num próximo clique direito em outra casa.
             closeMenu()
+            return
+        }
+        if (skill.active.skill.effect === "charge") {
+            charge(menu.position)
             return
         }
         strike(true)

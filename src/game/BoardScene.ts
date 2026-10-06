@@ -2,9 +2,9 @@ import Phaser from "phaser"
 import type { AuraKind, Barrier, PieceAuras, PiecePosition, PieceDefinition, MotivationItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
-import type { DamagePopup, FireBurst } from "../logic/combat"
+import type { ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
-import { blockedCellsFor } from "../logic/grid"
+import { blockedCellsFor, samePosition } from "../logic/grid"
 import { isSpent } from "../logic/turn"
 import { pickRandom, randomInt } from "../logic/random"
 import {
@@ -73,6 +73,9 @@ export class BoardScene extends Phaser.Scene {
     // A última lista recebida: o caminho de uma peça contorna as barreiras dos oponentes,
     // e é aqui que o passo-a-passo da caminhada consulta quais são.
     private barriers: Barrier[] = []
+    // Investidas anunciadas, por peça: na próxima troca de casa dela, ela corre em linha reta
+    // até lá, em vez de caminhar pelo labirinto
+    private charges: Map<string, ChargeRun> = new Map()
     // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
     private pendingPieces: PieceDefinition[] | null = null
     private pendingItems: MotivationItem[] | null = null
@@ -163,6 +166,11 @@ export class BoardScene extends Phaser.Scene {
         this.spawnDamage(popup)
     }
 
+    // A investida que vem na próxima troca de casa da peça
+    playCharge(run: ChargeRun) {
+        this.charges.set(run.pieceId, run)
+    }
+
     // A queda de um item que voltou ao tabuleiro.
     // O item já está na lista: aqui ele só é jogado para cair na casa dele.
     playItemDrop(itemId: string) {
@@ -232,18 +240,34 @@ export class BoardScene extends Phaser.Scene {
             const last = this.lastCells.get(piece.id)
             const cellChanged = !last || last.x !== piece.position.x || last.y !== piece.position.y
             if (cellChanged) {
-                // Anima passo-a-passo (uma célula por vez, contornando as paredes) para criar o efeito de caminhada
                 this.tweens.killTweensOf(sprite)
-                const blocked = blockedCellsFor(piece.color, this.barriers, pieces)
-                const path = findPath(last ?? piece.position, piece.position, this.maze, blocked)
-                if (path.length === 0) {
-                    sprite.setPosition(targetPx.x, targetPx.y)
-                } else {
-                    const steps = path.map((cell) => {
-                        const px = this.cellToPixel(cell)
-                        return { x: px.x, y: px.y, duration: STEP_MS, ease: "Linear" }
+                const charge = this.charges.get(piece.id)
+                this.charges.delete(piece.id)
+                if (charge && samePosition(charge.to, piece.position)) {
+                    // Investida: corre em linha reta, por cima das outras peças e abaixo do
+                    // fogo e dos números de dano
+                    const runner = sprite.setDepth(5)
+                    this.tweens.add({
+                        targets: runner,
+                        x: targetPx.x,
+                        y: targetPx.y,
+                        duration: charge.durationMs,
+                        ease: "Linear",
+                        onComplete: () => runner.setDepth(0),
                     })
-                    this.tweens.chain({ targets: sprite, tweens: steps })
+                } else {
+                    // Anima passo-a-passo (uma célula por vez, contornando as paredes) para criar o efeito de caminhada
+                    const blocked = blockedCellsFor(piece.color, this.barriers, pieces)
+                    const path = findPath(last ?? piece.position, piece.position, this.maze, blocked)
+                    if (path.length === 0) {
+                        sprite.setPosition(targetPx.x, targetPx.y)
+                    } else {
+                        const steps = path.map((cell) => {
+                            const px = this.cellToPixel(cell)
+                            return { x: px.x, y: px.y, duration: STEP_MS, ease: "Linear" }
+                        })
+                        this.tweens.chain({ targets: sprite, tweens: steps })
+                    }
                 }
                 this.lastCells.set(piece.id, { ...piece.position })
             }

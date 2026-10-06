@@ -3,8 +3,8 @@ import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
-import { hasAreaSkill } from "./skills"
-import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, FIRE_AREA_SIDE, SUCCESS_FACE, statsFor } from "../constants/rules"
+import { skillAreaSideOf, skillFor } from "./skills"
+import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, SUCCESS_FACE, statsFor } from "../constants/rules"
 
 export interface CoinCheck {
     face: CoinFace
@@ -137,8 +137,12 @@ export interface AttackArea {
     side: number
 }
 
-export const attackArea = (attacker: PieceDefinition, target: PiecePosition): AttackArea | undefined =>
-    hasAreaSkill(attacker.type) ? { center: { ...target }, side: FIRE_AREA_SIDE } : undefined
+// O quadrado que a habilidade de área do atacante incendeia, no nível dele
+export const attackArea = (attacker: PieceDefinition, target: PiecePosition): AttackArea | undefined => {
+    const skill = skillFor(attacker.type)
+    const side = skill ? skillAreaSideOf(skill, attacker) : null
+    return side === null ? undefined : { center: { ...target }, side }
+}
 
 // Um ataque já decidido (alvo ou casa escolhidos, atacante a caminho) esperando os dados.
 // `delayMs` é o tempo que o atacante leva para chegar até o alvo — os dados só são
@@ -186,6 +190,25 @@ export interface DamagePopup {
     id: string
     position: PiecePosition
     amount: number
+}
+
+// Uma investida para a cena desenhar: a peça corre em linha reta até `to`, em `durationMs`,
+// em vez de caminhar pelo labirinto. Como as explosões, cada uma é animada uma vez só.
+export interface ChargeRun {
+    id: string
+    pieceId: string
+    to: PiecePosition
+    durationMs: number
+}
+
+// Uma investida já decidida: a peça já está correndo, e cada atropelada leva o dano no
+// instante em que ela passa por cima, `atMs` depois da largada
+export interface PendingCharge {
+    pieceId: string
+    to: PiecePosition
+    damage: number
+    durationMs: number
+    hits: Array<{ pieceId: string; atMs: number }>
 }
 
 // Fogo amigo: quem a incendiária pegaria de tabela ao mirar em "target" sem poder atacar.

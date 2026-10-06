@@ -224,6 +224,21 @@ export const texts_ui = {
         ptBR: "Usos por turno",
     },
 
+    skillDamage: {
+        enUS: "Skill damage",
+        ptBR: "Dano da habilidade",
+    },
+
+    skillDistanceRoll: {
+        enUS: "distance roll",
+        ptBR: "rolagem de distância",
+    },
+
+    skillDamageRoll: {
+        enUS: "damage roll",
+        ptBR: "rolagem de dano",
+    },
+
     attackArea: {
         enUS: "Area of effect",
         ptBR: "Área de efeito",
@@ -264,6 +279,11 @@ export const texts_ui = {
         ptBR: "Barreiras Paranormais",
     },
 
+    skillCharge: {
+        enUS: "Charge",
+        ptBR: "Investida",
+    },
+
     skillCreateBarrier: {
         enUS: "Create barrier",
         ptBR: "Criar barreira",
@@ -287,11 +307,6 @@ export const texts_ui = {
     gotIt: {
         enUS: "Got it",
         ptBR: "Entendi",
-    },
-
-    extraCells: {
-        enUS: "extra cells",
-        ptBR: "casas extras",
     },
 
     usingSkill: {
@@ -500,6 +515,11 @@ export const texts_ui = {
     toBurnArea: {
         enUS: "to set an area on fire",
         ptBR: "para incendiar uma área",
+    },
+
+    toCharge: {
+        enUS: "to charge",
+        ptBR: "para uma investida",
     },
 
     toDispelBarrierOf: {

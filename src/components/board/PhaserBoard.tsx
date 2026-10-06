@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
 import type { Barrier, PieceAuras, PieceDefinition, MotivationItem } from "../../logic/types"
-import type { DamagePopup, FireBurst } from "../../logic/combat"
+import type { ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { BoardScene } from "../../game/BoardScene"
 
@@ -13,6 +13,7 @@ interface PhaserBoardProps {
     barriers: Barrier[]
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
+    chargeRuns: ChargeRun[]
     auras: PieceAuras
     droppedItemId: string | null
 }
@@ -25,6 +26,7 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     barriers,
     fireBursts,
     damagePopups,
+    chargeRuns,
     auras,
     droppedItemId,
 }) => {
@@ -32,6 +34,7 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     const sceneRef = useRef<BoardScene | null>(null)
     const playedBurstsRef = useRef(new Set<string>())
     const playedDamageRef = useRef(new Set<string>())
+    const playedChargesRef = useRef(new Set<string>())
 
     useEffect(() => {
         if (!containerRef.current) return
@@ -64,6 +67,16 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     useEffect(() => {
         sceneRef.current?.syncBarriers(barriers)
     }, [barriers])
+
+    // Antes das peças (a ordem dos efeitos é a de declaração): a cena precisa saber que a
+    // troca de casa que chega junto é uma investida, e não uma caminhada
+    useEffect(() => {
+        for (const run of chargeRuns) {
+            if (playedChargesRef.current.has(run.id)) continue
+            playedChargesRef.current.add(run.id)
+            sceneRef.current?.playCharge(run)
+        }
+    }, [chargeRuns])
 
     useEffect(() => {
         sceneRef.current?.syncPieces(pieces)

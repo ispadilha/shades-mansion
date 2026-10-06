@@ -3,6 +3,7 @@ import type { Barrier, MotivationItem, PieceColor, PieceDefinition, PiecePositio
 import type { Maze } from "../logic/maze"
 import { lineOfFire, meleeAttackCells, reachableCells } from "../logic/movement"
 import { barrierCells } from "../logic/barriers"
+import { chargeCells } from "../logic/charge"
 import { mayAttack } from "../logic/combat"
 import { atPosition, blockedCellsFor } from "../logic/grid"
 import type { SkillReach } from "../logic/skills"
@@ -13,16 +14,13 @@ export interface HighlightedCells {
     move: PiecePosition[]
     // Casas que ela consegue atingir
     attack: PiecePosition[]
-    // Casas em que a habilidade em uso pode criar algo
+    // Casas em que a habilidade em uso pode ser usada
     skill: PiecePosition[]
 }
 
 const NOTHING: HighlightedCells = { move: [], attack: [], skill: [] }
 
 // Recalcula as casas destacadas sempre que a seleção (ou o tabuleiro) muda.
-// O alcance depende de como a peça vai agir: por padrão é ataque corpo a corpo,
-// vira linha de tiro quando uma habilidade de alcance está em uso, e vira a lista de
-// casas livres quando a habilidade em uso pode criar coisas.
 interface HighlightOptions {
     // Habilidade em uso e até onde ela chega, ou null quando nenhuma
     skill: SkillReach | null
@@ -70,9 +68,13 @@ export const useHighlightedCells = (
 
         // Habilidade em uso: as casas destacadas são as dela
         if (skill) {
-            if (skill.places) {
+            if (skill.effect === "place") {
                 const sight = { barriers, blockedBy: skill.blockedBy }
                 setCells({ move: [], attack: [], skill: barrierCells(piece, pieces, maze, skill.attack, sight) })
+                return
+            }
+            if (skill.effect === "charge") {
+                setCells({ move: [], attack: [], skill: chargeCells(piece, pieces, items, maze, skill.attack, barriers) })
                 return
             }
             setCells({
@@ -113,7 +115,7 @@ export const useHighlightedCells = (
         skill?.move,
         skill?.attack,
         skill?.ranged,
-        skill?.places,
+        skill?.effect,
         skill?.blockedBy.pieces,
         skill?.blockedBy.barriers,
         basicAvailable,

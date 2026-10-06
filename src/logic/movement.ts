@@ -217,7 +217,7 @@ function axisCells(origin: number, delta: number, step: number, steps: number): 
 // nem o destino. A linha é percorrida pelo eixo de maior variação — um passo por casa
 // andada nesse eixo — e cada passo devolve a casa em que ela caiu, ou o par de casas
 // quando ela passa bem na divisa entre duas.
-function shotSteps(from: PiecePosition, to: PiecePosition): PiecePosition[][] {
+export function lineSteps(from: PiecePosition, to: PiecePosition): PiecePosition[][] {
     const dx = to.x - from.x
     const dy = to.y - from.y
     const steps = Math.max(Math.abs(dx), Math.abs(dy))
@@ -231,11 +231,11 @@ function shotSteps(from: PiecePosition, to: PiecePosition): PiecePosition[][] {
     return groups
 }
 
-// A linha de tiro só passa enquanto sobrar por onde passar: em cada passo basta uma das
+// A linha só passa enquanto sobrar por onde passar: em cada passo basta uma das
 // casas do par estar livre. Quando a linha corre na divisa entre duas casas e as duas
-// estão bloqueadas, o tiro para ali.
-function hasClearShot(from: PiecePosition, to: PiecePosition, blocked: (cell: PiecePosition) => boolean): boolean {
-    return shotSteps(from, to).every((group) => group.some((cell) => !blocked(cell)))
+// estão bloqueadas, ela para ali.
+export function hasClearLine(from: PiecePosition, to: PiecePosition, blocked: (cell: PiecePosition) => boolean): boolean {
+    return lineSteps(from, to).every((group) => group.some((cell) => !blocked(cell)))
 }
 
 // O que a linha de tiro precisa saber para decidir onde para:
@@ -287,7 +287,7 @@ export function lineOfFire(
             // Ali está o alvo. O que fecha o tiro são as casas no caminho.
             const cell = { x: piece.position.x + dx, y: piece.position.y + dy }
             if (!isWalkable(maze, cell.x, cell.y)) continue
-            if (!hasClearShot(piece.position, cell, stopsShot)) continue
+            if (!hasClearLine(piece.position, cell, stopsShot)) continue
 
             cells.push(cell)
             const occupant = occupants.get(positionKey(cell))
