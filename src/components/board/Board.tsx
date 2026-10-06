@@ -2,20 +2,19 @@ import React, { type JSX } from "react"
 import { Box } from "@mui/material"
 import { Cell } from "./Cell"
 import { PhaserBoard } from "./PhaserBoard"
-import type { Barrier, PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../logic/types"
+import type { Barrier, PieceAuras, PieceDefinition, PiecePosition, MotivationItem, RangeKind } from "../../logic/types"
 import type { ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { isWall } from "../../logic/maze"
-import { atPosition, includesPosition } from "../../logic/grid"
+import { atPosition, positionKey } from "../../logic/grid"
 
 interface BoardProps {
     cellSize: number
     maze: Maze
     pieces: PieceDefinition[]
     items: MotivationItem[]
-    highlighted: PiecePosition[]
-    attackHighlighted: PiecePosition[]
-    skillHighlighted: PiecePosition[]
+    // De que alcance é cada casa destacada, pela `positionKey` dela
+    ranges: ReadonlyMap<string, RangeKind>
     barriers: Barrier[]
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
@@ -35,9 +34,7 @@ export const Board: React.FC<BoardProps> = ({
     maze,
     pieces,
     items,
-    highlighted,
-    attackHighlighted,
-    skillHighlighted,
+    ranges,
     barriers,
     fireBursts,
     damagePopups,
@@ -60,9 +57,7 @@ export const Board: React.FC<BoardProps> = ({
                     y={y}
                     size={cellSize}
                     isWall={isWall(maze, x, y)}
-                    isHighlighted={includesPosition(highlighted, position)}
-                    isAttackHighlighted={includesPosition(attackHighlighted, position)}
-                    isSkillHighlighted={includesPosition(skillHighlighted, position)}
+                    range={ranges.get(positionKey(position)) ?? null}
                     isSelected={piece?.id === selectedPieceId}
                     onCellClick={onCellClick}
                     onCellContextMenu={onCellContextMenu}

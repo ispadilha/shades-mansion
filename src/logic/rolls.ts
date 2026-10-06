@@ -45,6 +45,9 @@ export const rollSpec = (spec: DiceSpec): number[] => rollDice(spec.count, spec.
 // Como o punhado é escrito ("1d6", "2d8")
 export const diceLabel = (spec: DiceSpec): string => `${spec.count}d${spec.sides}`
 
+// O maior total que o punhado pode tirar
+export const diceMax = (spec: DiceSpec): number => spec.count * spec.sides
+
 // Como o resultado é lido na tela: acertou, falhou, ou é só um número
 export type RollTone = "good" | "bad" | "neutral"
 

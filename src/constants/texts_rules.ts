@@ -53,21 +53,21 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The Agile (A) runs the farthest and hits the softest: 9 vigor and a 1d4 blow. In exchange it is the only piece that slips out of a blow completely almost half of the time.\n\n" +
-                "The Barrier (B) is the middle of the table in a fight: 12 vigor and a 1d6 blow. It is the only piece that can close a corridor: it lights paranormal barriers at a distance, which let its own team through and no one else.\n\n" +
-                "The Champion (C) is the heaviest of all: 16 vigor and two d8 in a single blow, but has the most limited movement. Its charge makes up for it: it runs in a straight line over every piece in the way, and each of them takes the damage, allies included.\n\n" +
-                "The Distance shooter (D) rolls a 1d6 from where it stands, with 10 vigor, and still ducks a blow now and then.\n\n" +
-                "The Exotic (E) sits between the middle and the top: 13 vigor and a 1d8 blow.\n\n" +
-                "The Firestarter (F) rolls 1d6, with 11 vigor, and its shot burns a whole area.\n\n" +
-                "Right-click a piece and ask for its information to see all of it, including how much vigor it has left.",
+                "The Agile (A) runs the farthest, but hits the softest and has the least vigor. In exchange, no other piece slips out of a blow completely as often.\n\n" +
+                "The Barrier (B) is the middle of the table in a fight. It is the only piece that can close a corridor: it lights paranormal barriers at a distance, which let its own team through and no one else.\n\n" +
+                "The Champion (C) is the heaviest of all, with the most vigor and the strongest blow, but has the most limited movement. Its charge makes up for it: it runs in a straight line over every piece in the way, and each of them takes the damage. This includes allies, which calls for care and strategy.\n\n" +
+                "The Distance shooter (D) attacks from where it stands, and still ducks a blow now and then.\n\n" +
+                "The Exotic (E) sits between the middle and the top, in vigor and in the strength of its blow.\n\n" +
+                "The Firestarter (F) shoots from a moderate distance, and its shot burns a whole area.\n\n" +
+                "Right-click a piece and ask for its information to see its numbers, including how much vigor it has left.",
             ptBR:
-                "A Ágil (A) é a que corre mais longe e a que bate mais fraco: 9 de vigor e um golpe de 1d4. Em troca, é a única peça que desvia de ataques em quase metade das vezes.\n\n" +
-                "A de Barreira (B) é o meio da tabela em uma luta: 12 de vigor e golpe de 1d6. É a única peça que consegue fechar um corredor: ela acende barreiras paranormais à distância, que deixam passar só o time dela.\n\n" +
-                "O Campeão (C) é o mais pesado de todos: 16 de vigor e dois d8 em um golpe só, mas tem o movimento mais limitado. A investida compensa isso: ele corre em linha reta por cima de toda peça no caminho, e cada uma delas leva o dano, aliadas inclusive.\n\n" +
-                "A que atira à Distância (D) rola um 1d6 de onde está, com 10 de vigor, e ainda desvia de um golpe de vez em quando.\n\n" +
-                "A Exótica (E) fica entre o meio e o topo: 13 de vigor e golpe de 1d8\n\n" +
-                "A incendiária com seu Fogo (F) rola 1d6, com 11 de vigor, e seu tiro queima uma área inteira.\n\n" +
-                "Clique com o botão direito em uma peça e peça a informação dela para ver tudo isso, inclusive quanto vigor ainda lhe resta.",
+                "A Ágil (A) é a que corre mais longe, mas a que bate mais fraco e tem menos vigor. Em troca, nenhuma outra peça desvia de ataques com tanta frequência.\n\n" +
+                "A de Barreira (B) é o meio da tabela em uma luta. É a única peça que consegue fechar um corredor: ela acende barreiras paranormais à distância, que deixam passar só o time dela.\n\n" +
+                "O Campeão (C) é o mais pesado de todos, com o maior vigor e o golpe mais forte, mas tem o movimento mais limitado. A investida compensa isso: ele corre em linha reta por cima de toda peça no caminho, e cada uma delas leva o dano. Isso inclui aliadas, o que exige cuidado e estratégia.\n\n" +
+                "A que atira à Distância (D) ataca de onde está, e ainda desvia de um golpe de vez em quando.\n\n" +
+                "A Exótica (E) fica entre o meio e o topo, no vigor e na força do golpe.\n\n" +
+                "A incendiária com seu Fogo (F) atira a uma distância moderada, e seu tiro queima uma área inteira.\n\n" +
+                "Clique com o botão direito em uma peça e peça a informação dela para ver seus números, inclusive quanto vigor ainda lhe resta.",
         },
     },
 
@@ -93,10 +93,10 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Between choosing your side and entering the mansion, all the characters line up — Light, Gray then Dark — and roll their initiative one at a time: two d20 thrown together, counted as their sum. A total already taken is refused and the character rolls again, so the values are always different.\n\n" +
+                "Between choosing your side and entering the mansion, all the characters line up — Light, Gray then Dark — and roll their initiative one at a time: dice thrown together, counted as their sum. A total already taken is refused and the character rolls again, so the values are always different.\n\n" +
                 "The rolls are sorted from the highest to the lowest and that becomes the order of play for the whole match. The order never changes: pieces that have left the mansion are simply skipped.",
             ptBR:
-                "Entre a escolha de time e a entrada na mansão, todos os personagens se enfileiram — Claros, Cinzas e Escuros — e rolam a iniciativa um de cada vez: dois d20 jogados juntos, valendo a soma. Um total que já saiu é recusado e o personagem rola de novo, então os valores são sempre diferentes.\n\n" +
+                "Entre a escolha de time e a entrada na mansão, todos os personagens se enfileiram — Claros, Cinzas e Escuros — e rolam a iniciativa um de cada vez: dados jogados juntos, valendo a soma. Um total que já saiu é recusado e o personagem rola de novo, então os valores são sempre diferentes.\n\n" +
                 "As rolagens são ordenadas do maior para o menor e isso vira a ordem das vezes na partida inteira. A ordem nunca muda: as peças que já fugiram da mansão são apenas puladas.",
         },
     },
@@ -143,12 +143,12 @@ export const texts_rules = {
                 "Melee pieces attack by walking to a free cell next to the target and striking on arrival. The walk has to fit inside the piece's attack range.\n\n" +
                 "The shooter and the firestarter attack from where they stand, at anything with a clear line of fire. The firestarter may also aim at an empty cell.\n\n" +
                 "Every blow is settled by two rolls, one after the other. First the attacker rolls the dice of its own blow. Then the piece being attacked answers with a defense roll, which decides how much of that damage actually lands.\n\n" +
-                "A piece that drops to 0 vigor gives up the dispute and leaves the mansion.",
+                "A piece that runs out of vigor gives up the dispute and leaves the mansion.",
             ptBR:
                 "As peças corpo a corpo atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça.\n\n" +
                 "A peça atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre. A incendiária pode mirar também uma casa vazia.\n\n" +
                 "Todo ataque é resolvido em duas rolagens, uma depois da outra. Primeiro a peça atacante rola os dados de seu golpe. Depois a peça atacada responde com a rolagem de defesa, que decide quanto desse dano chega de fato.\n\n" +
-                "A peça que chega a 0 pontos de vigor desiste da disputa e sai da mansão.",
+                "A peça que fica sem vigor desiste da disputa e sai da mansão.",
         },
     },
 
@@ -159,13 +159,13 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "An attacked piece may defend itself by rolling a d20 against two numbers of its own: the dodge and the guard.\n\n" +
-                "Reaching the dodge, the piece gets out of the way entirely and takes nothing. Reaching only the guard, it holds what it can and takes half the damage, rounded up. Below both, the blow lands whole.\n\n" +
+                "An attacked piece may defend itself by rolling a die against two numbers of its own: the dodge and the guard.\n\n" +
+                "Reaching the dodge, the piece gets out of the way entirely and takes nothing. Reaching only the guard, it holds what it can and takes only a part of the damage. Below both, the blow lands whole.\n\n" +
                 "The guard is within reach of every piece, so any of them can soften a blow. The dodge is not: heavy pieces are too slow to leave the ground.\n\n" +
                 "A fire reaches several pieces at once, and each of them rolls its own defense.\n\n",
             ptBR:
-                "Uma peça atacada pode se defender rolando um d20 contra dois números próprios: a esquiva e o aparo.\n\n" +
-                "Alcançando a esquiva, a peça sai inteira da frente e não leva nada. Alcançando só o aparo, ela segura o que pode e leva metade do dano, arredondada para cima. Abaixo dos dois, o golpe entra inteiro.\n\n" +
+                "Uma peça atacada pode se defender rolando um dado contra dois números próprios: a esquiva e o aparo.\n\n" +
+                "Alcançando a esquiva, a peça sai inteira da frente e não leva nada. Alcançando só o aparo, ela segura o que pode e leva só uma parte do dano. Abaixo dos dois, o golpe entra inteiro.\n\n" +
                 "O aparo está ao alcance de qualquer peça, então todas conseguem amortecer um golpe. A esquiva não: as peças pesadas são lentas demais para sair do chão.\n\n" +
                 "Um incêndio alcança várias peças de uma vez, e cada uma rola a defesa dela.\n\n",
         },
@@ -197,12 +197,12 @@ export const texts_rules = {
             enUS:
                 "The Barrier piece lights paranormal barriers at a distance. A barrier closes its cell to the other teams: their pieces cannot walk through it, and it stops their shots and their fire. Its own team walks through it as usual, and it goes out on its own when the turn of the piece that lit it comes around again.\n\n" +
                 "A piece standing on a barrier of its own team is protected: no opponent can attack it there, up close or from afar. To attack it, the barrier has to be dispelled first.\n\n" +
-                "An opponent can try to dispel a barrier the way it attacks in melee: it walks to a cell next to the barrier and rolls 1d20. On 16 or more, that barrier is dispelled, and only that one. The attempt spends the piece's action whether it works or not.\n\n" +
+                "An opponent can try to dispel a barrier the way it attacks in melee: it walks to a cell next to the barrier and rolls a die, which has to come out high, the same for any piece. If it does, that barrier is dispelled, and only that one. The attempt spends the piece's action whether it works or not.\n\n" +
                 "Skills are no use for attacking the barriers, with one exception: the Agile piece's extra move gives the piece its usual options back, and a new attempt comes with them.",
             ptBR:
                 "A peça de Barreira acende barreiras paranormais à distância. Uma barreira fecha a casa para os outros times: as peças deles não passam por ela, e ela segura os tiros e o fogo deles. O time dela passa normalmente, e ela se apaga sozinha quando a vez da peça que a acendeu volta.\n\n" +
                 "Uma peça em cima de uma barreira do próprio time fica protegida: nenhuma peça adversária consegue atacá-la ali, nem de perto nem à distância. Para atacá-la, é preciso antes dissipar a barreira.\n\n" +
-                "Uma peça adversária pode tentar dissipar uma barreira como quem ataca corpo a corpo: ela anda até uma casa ao lado da barreira e rola 1d20. Tirando 16 ou mais, aquela barreira se dissipa, e só ela. A tentativa gasta a ação da peça, dando certo ou não.\n\n" +
+                "Uma peça adversária pode tentar dissipar uma barreira como quem ataca corpo a corpo: ela anda até uma casa ao lado da barreira e rola um dado, que precisa dar um resultado alto, o mesmo para qualquer peça. Conseguindo, aquela barreira se dissipa, e só ela. A tentativa gasta a ação da peça, dando certo ou não.\n\n" +
                 "Habilidades não servem para atacar barreiras, com uma exceção: o movimento extra da peça Ágil devolve à peça as opções de sempre, e com elas vem uma nova tentativa.",
         },
     },
@@ -214,13 +214,17 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Selecting a piece paints the cells around it in three colors: yellow for the ones it can walk to, red for the ones its attack reaches, and orange for the ones that are both: where it can end its move and also strike.\n\n" +
-                "Yellow is ground the piece can take but not threaten. Red is a target it can hit without standing there: an occupied cell, or a spot further than its legs but still within its reach. Orange is where the two overlap.\n\n" +
-                "An opponent's barrier turns red when the piece can try to dispel it. On a cell where a piece is protected by its own team's barrier, the red belongs to the barrier: the piece cannot be attacked, but the barrier can be dispelled.\n\n",
+                "The piece that acts (the piece of the turn, or a manipulated one) shows around it what it can do now: orange on the cells it can walk to, and red on the ones only its attack reaches.\n\n" +
+                "Orange is ground the piece can take, and strike from. Red is a target it can hit without standing there: an occupied cell, or a spot further than its legs but still within its attack reach.\n\n" +
+                "An opponent's barrier turns red when the piece can try to dispel it. On a cell where a piece is protected by its own team's barrier, the red belongs to the barrier: the piece cannot be attacked, but the barrier can be dispelled.\n\n" +
+                "With a skill in use, the cells where it can be used turn blue: where the piece shoots, sets fire, lights a barrier or ends a charge. Around the fire's blue, the red marks cells that cannot be aimed at, but that the flames may still reach. With a charge, the red marks the pieces it could run over on the way. Extra move is the exception: it gives the piece back the movement and the strike of its basic action, so it shows the usual orange and red, within the rolled range.\n\n" +
+                "Selecting any other piece shows how far it will be able to reach on its turn. From the piece outward: the orange of its movement, the red of its attack, and a light blue with the maximum reach of its skill (for skills that roll dice, the highest number the dice can give). For the Firestarter, the light blue includes the radius of the flames around where it can aim; for the Champion, the pieces its charge could run over on the way turn red. These highlights are only for looking: the menu offers no actions to a piece outside its turn.\n\n",
             ptBR:
-                "Selecionar uma peça pinta as casas em volta dela em três cores: amarelo nas que ela consegue alcançar andando, vermelho nas que o ataque dela alcança, e laranja nas que são as duas coisas: onde ela pode terminar o movimento e também atacar.\n\n" +
-                "O amarelo é terreno que a peça toma, mas não ameaça. O vermelho é alvo que ela atinge sem pisar ali: uma casa ocupada, ou um ponto além das pernas dela mas ainda ao alcance. O laranja é onde os dois se sobrepõem.\n\n" +
-                "A barreira de outro time fica vermelha quando a peça pode tentar dissipá-la. Numa casa em que uma peça está protegida pela barreira do próprio time, o vermelho é da barreira: a peça não pode ser atacada, mas a barreira pode ser dissipada.\n\n",
+                "A peça que age (a da vez, ou uma manipulada) mostra em volta dela o que pode fazer agora: laranja nas casas que ela alcança andando, e vermelho nas que só o ataque dela alcança.\n\n" +
+                "O laranja é terreno que a peça toma, e de onde também ataca. O vermelho é alvo que ela atinge sem pisar ali: uma casa ocupada, ou um ponto além das pernas dela mas ainda ao alcance de ataque.\n\n" +
+                "A barreira de outro time fica vermelha quando a peça pode tentar dissipá-la. Numa casa em que uma peça está protegida pela barreira do próprio time, o vermelho é da barreira: a peça não pode ser atacada, mas a barreira pode ser dissipada.\n\n" +
+                "Com uma habilidade em uso, as casas em que ela pode ser usada ficam azuis: onde a peça atira, incendeia, acende uma barreira ou termina uma investida. Em volta do azul do incêndio, o vermelho marca casas em que não se pode mirar, mas aonde o fogo ainda pode chegar. Na investida, o vermelho marca as peças que ela pode atropelar no caminho. O movimento extra é a exceção: ele devolve à peça o movimento e o golpe da ação comum, e por isso mostra o laranja e o vermelho de sempre, no alcance sorteado.\n\n" +
+                "Selecionar qualquer outra peça mostra até onde ela poderá chegar quando for a vez dela. Da peça para fora: o laranja do movimento, o vermelho do ataque, e um azul claro com o alcance máximo da habilidade dela (nas que rolam dados, o maior número que eles podem tirar). Na incendiária, o azul claro inclui o raio do fogo em volta de onde ela pode mirar; no Campeão, as peças que a investida pode atropelar no caminho ficam em vermelho. Esses destaques são só para consulta: o menu não oferece ações a uma peça fora da vez.\n\n",
         },
     },
 
@@ -264,12 +268,12 @@ export const texts_rules = {
         description: {
             enUS:
                 "A piece at full vigor has no vigor to get back, so the item promotes it instead: the piece goes up a level.\n\n" +
-                "Every level adds 3 vigor, a step of reach, an easier guard, and one step up the ladder of the damage die: a d4 becomes a d6, a d6 becomes a d8, a d8 becomes a d10.\n\n" +
+                "Every level adds vigor and reach, makes the guard easier, and moves the damage die up the ladder, to a die with more faces.\n\n" +
                 "The dodge is the one thing a promotion doesn't change: a heavy piece will still be slow.\n\n" +
                 "Right-click a piece and ask for its information to see the level it is on.",
             ptBR:
                 "Uma peça com o vigor cheio não tem vigor a recuperar, então o item a promove: ela sobe um nível.\n\n" +
-                "Cada nível acrescenta 3 de vigor, um passo de alcance, um aparo mais fácil, e um degrau na escada do dado de dano: um d4 vira d6, um d6 vira d8, um d8 vira d10.\n\n" +
+                "Cada nível acrescenta vigor e alcance, deixa o aparo mais fácil, e sobe o dado de dano na escada, para um dado de mais faces.\n\n" +
                 "A esquiva é a única coisa em que a promoção não mexe: uma peça pesada ainda será lenta.\n\n" +
                 "Clique com o botão direito em uma peça e peça a informação dela para ver em que nível ela está.",
         },

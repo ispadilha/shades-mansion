@@ -167,13 +167,13 @@ const dark = {
         selected: "#ffd700",
     },
 
-    // As casas destacadas quando uma peça está selecionada. Os três precisam se distinguir
-    // entre si em cima do chão do modo, senão o destaque deixa de informar.
+    // As casas destacadas em volta da peça selecionada, um tom por alcance
     range: {
-        move: "#d6b52b",
+        move: "#dd7a1c",
         attack: "#b3352c",
-        both: "#dd7a1c",
         skill: "#2f6aa8",
+        // O alcance máximo da habilidade de uma peça só consultada
+        skillMax: "#8cbfea",
     },
 
     manipulation: {
@@ -280,10 +280,10 @@ const light: Palette = {
     },
 
     range: {
-        move: "#cba32a",
+        move: "#b86c18",
         attack: "#9c3129",
-        both: "#b86c18",
         skill: "#2a5c8f",
+        skillMax: "#a3c5e6",
     },
 
     manipulation: {
@@ -388,10 +388,10 @@ const gray: Palette = {
     },
 
     range: {
-        move: "#d6b52b",
+        move: "#dd7a1c",
         attack: "#b3352c",
-        both: "#dd7a1c",
         skill: "#2f6aa8",
+        skillMax: "#8cbfea",
     },
 
     manipulation: {

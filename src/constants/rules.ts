@@ -192,6 +192,9 @@ export const SUCCESS_FACE: CoinFace = "heads"
 
 export const DEFENSE_DIE: DieSides = 20
 
+// O quanto do dano a peça ainda leva quando alcança só o aparo, arredondado para cima
+export const GUARDED_DAMAGE_SHARE = 0.5
+
 // Dissipar uma barreira adversária: rolagem igual para toda peça
 export const DISPEL_DIE: DieSides = 20
 export const DISPEL_MIN_ROLL = 16

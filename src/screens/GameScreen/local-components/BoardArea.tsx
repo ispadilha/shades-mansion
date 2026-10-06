@@ -2,7 +2,14 @@ import React from "react"
 import type { RefObject } from "react"
 import { Box } from "@mui/material"
 import { Board } from "../../../components/board"
-import type { Barrier, PieceAuras, PieceDefinition, PiecePosition, MotivationItem } from "../../../logic/types"
+import type {
+    Barrier,
+    PieceAuras,
+    PieceDefinition,
+    PiecePosition,
+    MotivationItem,
+    RangeKind,
+} from "../../../logic/types"
 import type { ChargeRun, DamagePopup, FireBurst } from "../../../logic/combat"
 import type { Maze } from "../../../logic/maze"
 import { CELL_SIZE } from "../../../constants/rules"
@@ -13,9 +20,7 @@ interface BoardAreaProps {
     maze: Maze
     pieces: PieceDefinition[]
     items: MotivationItem[]
-    highlighted: PiecePosition[]
-    attackHighlighted: PiecePosition[]
-    skillHighlighted: PiecePosition[]
+    ranges: ReadonlyMap<string, RangeKind>
     barriers: Barrier[]
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
@@ -34,9 +39,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
     maze,
     pieces,
     items,
-    highlighted,
-    attackHighlighted,
-    skillHighlighted,
+    ranges,
     barriers,
     fireBursts,
     damagePopups,
@@ -74,9 +77,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                     maze={maze}
                     pieces={pieces}
                     items={items}
-                    highlighted={highlighted}
-                    attackHighlighted={attackHighlighted}
-                    skillHighlighted={skillHighlighted}
+                    ranges={ranges}
                     barriers={barriers}
                     fireBursts={fireBursts}
                     damagePopups={damagePopups}

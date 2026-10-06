@@ -10,6 +10,7 @@ import type {
     PiecePosition,
     MotivationItem,
     MotivationItemKey,
+    RangeKind,
     TextKey,
 } from "../logic/types"
 import { controlledColorsFor } from "../logic/types"
@@ -45,9 +46,8 @@ export interface MatchContextValue {
         maze: Maze
         pieces: PieceDefinition[]
         items: MotivationItem[]
-        moveCells: PiecePosition[]
-        attackCells: PiecePosition[]
-        skillCells: PiecePosition[]
+        // De que alcance é cada casa destacada, pela `positionKey` dela
+        ranges: ReadonlyMap<string, RangeKind>
         barriers: Barrier[]
         fireBursts: FireBurst[]
         damagePopups: DamagePopup[]
@@ -211,11 +211,14 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     })
 
     // Casas destacadas pela seleção: até onde a peça anda e o que ela alcança.
-    // Ter ou não a ação comum é o que decide se há destaque nenhum.
+    // Para a peça que age (a da vez, ou a manipulada), ter ou não a ação comum é o que decide
+    // se há destaque nenhum. Qualquer outra peça selecionada está só sendo consultada.
     const selectedPiece = pieces.find((p) => p.id === selectedId) ?? null
+    const actingPieceId = manipulation?.itemKey ?? activePiece?.id ?? null
     const highlighted = useHighlightedCells(selectedId, pieces, maze, {
         skill: skill.reach,
         basicAvailable: selectedPiece !== null && (!selectedPiece.movedThisTurn || manipulation !== null),
+        consulting: selectedPiece !== null && selectedPiece.id !== actingPieceId,
         barriers: barriers.all,
         items: items.items,
         manipulatedBy: manipulation?.color ?? null,
@@ -426,9 +429,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             maze,
             pieces,
             items: items.items,
-            moveCells: highlighted.move,
-            attackCells: highlighted.attack,
-            skillCells: highlighted.skill,
+            ranges: highlighted.ranges,
             barriers: barriers.all,
             fireBursts,
             damagePopups,

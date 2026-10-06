@@ -4,7 +4,7 @@ import { isWalkable } from "./maze"
 import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
 import { skillAreaSideOf, skillFor } from "./skills"
-import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, SUCCESS_FACE, statsFor } from "../constants/rules"
+import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, GUARDED_DAMAGE_SHARE, SUCCESS_FACE, statsFor } from "../constants/rules"
 
 export interface CoinCheck {
     face: CoinFace
@@ -44,15 +44,15 @@ export interface DefenseRoll {
     damage: number
 }
 
-// A defesa é um d20 contra os dois números da peça.
+// A defesa é um dado contra os dois números da peça.
 // Alcançando a esquiva, o golpe é desviado.
-// Alcançando só o aparo, a peça segura o que pode e leva metade do dano.
+// Alcançando só o aparo, a peça segura o que pode e leva só parte do dano.
 export function rollDefense(piece: PieceDefinition, damage: number): DefenseRoll {
     const { dodge, guard } = statsFor(piece.type, piece.level)
     const die = rollDie(DEFENSE_DIE)
 
     if (die >= dodge) return { die, outcome: "dodged", damage: 0 }
-    if (die >= guard) return { die, outcome: "guarded", damage: Math.ceil(damage / 2) }
+    if (die >= guard) return { die, outcome: "guarded", damage: Math.ceil(damage * GUARDED_DAMAGE_SHARE) }
     return { die, outcome: "clean", damage }
 }
 

@@ -1,5 +1,5 @@
 import type { LineBlockers, PieceDefinition, PieceType, SkillId, TextKey } from "./types"
-import type { DiceSpec } from "./rolls"
+import { diceMax, type DiceSpec } from "./rolls"
 import { SKILL_LEVELS, statsFor } from "../constants/rules"
 
 // O que a habilidade faz quando o jogador a aciona:
@@ -102,6 +102,12 @@ export const skillRollOf = (skill: Skill, piece: PieceDefinition): DiceSpec | nu
 export const skillRangeOf = (skill: Skill, piece: PieceDefinition): number | null =>
     levelValue(SKILL_LEVELS[skill.id].fixedRange, piece.level)
 
+// O maior alcance que a habilidade pode ter: o fixo, ou o maior número que os dados dela tiram
+export const skillMaxRangeOf = (skill: Skill, piece: PieceDefinition): number => {
+    const dice = skillRollOf(skill, piece)
+    return dice ? diceMax(dice) : (skillRangeOf(skill, piece) ?? 0)
+}
+
 // Os dados de dano da habilidade, quando ela tem os seus
 export const skillDamageOf = (skill: Skill, piece: PieceDefinition): DiceSpec | null =>
     levelValue(SKILL_LEVELS[skill.id].damageDice, piece.level)
@@ -149,13 +155,15 @@ export interface SkillReach {
     effect: SkillEffect
 }
 
-export const reachOf = (active: ActiveSkill): SkillReach => {
-    const { effect, blockedBy } = active.skill
-    if (effect === "place") return { move: 0, attack: active.range, ranged: true, blockedBy, effect }
-    if (effect === "charge") return { move: 0, attack: active.range, ranged: false, blockedBy, effect }
-    return active.skill.moves
-        ? { move: active.range, attack: active.range, ranged: false, blockedBy, effect }
-        : { move: 0, attack: active.range, ranged: active.skill.ranged, blockedBy, effect }
+// Até onde a habilidade chega com este alcance: o sorteado ou fixo, quando ela está em uso, ou
+// o maior que ela pode ter, quando a peça só está sendo consultada
+export const reachOf = (skill: Skill, range: number): SkillReach => {
+    const { effect, blockedBy } = skill
+    if (effect === "place") return { move: 0, attack: range, ranged: true, blockedBy, effect }
+    if (effect === "charge") return { move: 0, attack: range, ranged: false, blockedBy, effect }
+    return skill.moves
+        ? { move: range, attack: range, ranged: false, blockedBy, effect }
+        : { move: 0, attack: range, ranged: skill.ranged, blockedBy, effect }
 }
 
 // O dano no ataque: os dados da habilidade, quando ela tem, ou o golpe comum da peça

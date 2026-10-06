@@ -31,6 +31,10 @@ export type PieceAuras = Record<string, AuraKind>
 // `palette.ts` diz de que cor cada uma é desenhada.
 export type AuraKind = "active" | "manipulated" | "skill"
 
+// Os alcances que o tabuleiro destaca em volta da peça selecionada.
+// `palette.ts` diz de que cor cada um é pintado.
+export type RangeKind = "move" | "attack" | "skill" | "skillMax"
+
 // As habilidades que existem. O id mora aqui, e não em `logic/skills.ts`, para a tabela de
 // níveis em `constants/rules.ts` poder falar dele sem que as regras dependam da lógica.
 export type SkillId = "extraMove" | "barrier" | "charge" | "longShot" | "fire"

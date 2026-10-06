@@ -71,7 +71,7 @@ export const useSkillFlow = ({
         }
     }, [])
 
-    const reach = useMemo(() => (active ? reachOf(active) : null), [active])
+    const reach = useMemo(() => (active ? reachOf(active.skill, active.range) : null), [active])
 
     const listLocked = active !== null || manipulating
 

@@ -15,9 +15,7 @@ export const MatchBoard: React.FC<MatchBoardProps> = ({}) => {
             maze={board.maze}
             pieces={board.pieces}
             items={board.items}
-            highlighted={board.moveCells}
-            attackHighlighted={board.attackCells}
-            skillHighlighted={board.skillCells}
+            ranges={board.ranges}
             barriers={board.barriers}
             fireBursts={board.fireBursts}
             damagePopups={board.damagePopups}

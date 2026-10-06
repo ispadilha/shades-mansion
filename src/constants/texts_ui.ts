@@ -588,8 +588,8 @@ export const texts_ui = {
     },
 
     initiativeSubtitle: {
-        enUS: "Every character rolls 2d20 — the highest total acts first",
-        ptBR: "Cada personagem rola 2d20 — o maior total age primeiro",
+        enUS: "Every character rolls the initiative dice, and the highest total acts first",
+        ptBR: "Cada personagem rola os dados de iniciativa, e o maior total age primeiro",
     },
 
     initiativeRoll: {
@@ -648,8 +648,8 @@ export const texts_ui = {
     },
 
     defenseGuard: {
-        enUS: "Blocked half",
-        ptBR: "Aparou metade",
+        enUS: "Partly blocked",
+        ptBR: "Aparou em parte",
     },
 
     defenseNone: {
