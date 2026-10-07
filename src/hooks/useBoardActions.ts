@@ -144,7 +144,7 @@ export const useBoardActions = ({
         // O ataque cai em uma casa, que pode ou não ter uma peça em cima.
         // Mirar o chão é só para habilidade que atinge área.
         const target = menu.targetPiece
-        const area = active ? attackArea(attacker, target?.position ?? menu.position) : undefined
+        const area = active ? attackArea(attacker, active.skill, target?.position ?? menu.position) : undefined
         if (!target && !area) return
 
         // Habilidade de alcance acerta de onde a peça está. Para golpe comum, se aproxima antes.
@@ -261,6 +261,18 @@ export const useBoardActions = ({
         })
     }
 
+    // Imitação: a peça passa a usar a habilidade de outra peça escolhida.
+    // Ela continua selecionada e com uma habilidade em uso, agora a imitada.
+    // Só o menu se fecha.
+    const imitate = () => {
+        const model = menu?.targetPiece
+        const active = skill.active
+        if (!model || !active || !activeColor) return
+        log.usedTo(activeColor, active.pieceId, "toMimic", model.id)
+        skill.imitate(model)
+        closeMenu()
+    }
+
     const useSkill = () => {
         if (!menu || !skill.active) return
         if (skill.active.skill.effect === "place") {
@@ -273,6 +285,10 @@ export const useBoardActions = ({
         }
         if (skill.active.skill.effect === "charge") {
             charge(menu.position)
+            return
+        }
+        if (skill.active.skill.effect === "mimic") {
+            imitate()
             return
         }
         strike(true)

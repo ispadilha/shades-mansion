@@ -26,7 +26,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ open, onClose, piece, 
 
     return (
         <ModalCard open={open && piece !== null} onClose={onClose} width={340}>
-            {piece && (
+            {piece && skill && (
                 <>
                     <Typography variant="h6" sx={{ mb: 2 }}>
                         {t("skills")}
@@ -41,7 +41,7 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ open, onClose, piece, 
                         </Box>
 
                         <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <SkillRow skill={skill} disabled={disabled} onUse={() => skill && onUse(skill)} />
+                            <SkillRow skill={skill} disabled={disabled} onUse={() => onUse(skill)} />
                         </Box>
                     </Box>
 

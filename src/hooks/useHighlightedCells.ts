@@ -4,18 +4,18 @@ import type { Maze } from "../logic/maze"
 import { lineOfFire, meleeAttackCells, reachableCells } from "../logic/movement"
 import { barrierCells } from "../logic/barriers"
 import { chargeCells, chargeVictims } from "../logic/charge"
-import { areaCells, attackArea, mayAttack } from "../logic/combat"
+import { areaCells, mayAttack } from "../logic/combat"
 import { atPosition, blockedCellsFor, positionKey } from "../logic/grid"
-import { reachOf, skillFor, skillMaxRangeOf, type SkillReach } from "../logic/skills"
+import { imitableSkillOf, reachOf, skillFor, skillMaxRangeOf, type SkillReach } from "../logic/skills"
 import { statsFor } from "../constants/rules"
 
 interface RangeCells {
     // Casas em que a peça selecionada pode terminar o movimento
     move: PiecePosition[]
-    // Casas que ela consegue atingir
+    // Casas que ela consegue atingir/enxergar
     attack: PiecePosition[]
     // Casas em que uma habilidade que não golpeia diretamente pode ser usada:
-    // onde ela cria algo, ou para onde corre
+    // onde ela cria algo, para onde corre, ou quem ela imita
     skill: PiecePosition[]
 }
 
@@ -26,8 +26,7 @@ export interface HighlightedCells extends RangeCells {
     ranges: ReadonlyMap<string, RangeKind>
 }
 
-const NO_CELLS: RangeCells = { move: [], attack: [], skill: [] }
-const NOTHING: HighlightedCells = { ...NO_CELLS, ranges: new Map() }
+const NOTHING: HighlightedCells = { move: [], attack: [], skill: [], ranges: new Map() }
 
 // Um alcance, e as casas que ele pinta
 type RangeLayer = [RangeKind, PiecePosition[]]
@@ -120,6 +119,16 @@ export const useHighlightedCells = (
             if (reach.effect === "charge") {
                 return { move: [], attack: [], skill: chargeCells(piece, pieces, items, maze, reach.attack, barriers) }
             }
+            if (reach.effect === "mimic") {
+                // Tudo o que a peça enxerga, menos as casas das peças que não se imitam.
+                // As peças que sobram são as que ela pode imitar.
+                const sight = { barriers, blockedBy: reach.blockedBy }
+                const seen = lineOfFire(piece, pieces, maze, reach.attack, sight).cells.filter((cell) => {
+                    const occupant = atPosition(pieces, cell)
+                    return !occupant || imitableSkillOf(occupant) !== null
+                })
+                return { move: [], attack: seen, skill: seen.filter((cell) => atPosition(pieces, cell) !== undefined) }
+            }
             return {
                 move: reach.move > 0 ? reachableCells(piece, pieces, maze, reach.move, blocked) : [],
                 attack: strikable(
@@ -133,13 +142,14 @@ export const useHighlightedCells = (
             }
         }
 
-        // Onde o fogo pode chegar mirando em qualquer uma destas casas: o quadrado do incêndio em
-        // volta de cada uma, recortado como o fogo de verdade. Vazio quando o golpe não atinge área.
-        const burnable = (targets: PiecePosition[]) =>
-            targets.flatMap((target) => {
-                const area = attackArea(piece, target)
-                return area ? areaCells(maze, area.center, area.side, { color: piece.color, barriers }) : []
-            })
+        // Onde o fogo pode chegar mirando em qualquer uma das casas que a habilidade alcança:
+        // o quadrado do incêndio em volta de cada uma, recortado como o fogo de verdade.
+        // Vazio quando ela não atinge área.
+        const burnable = (reach: SkillReach, reached: RangeCells) => {
+            const side = reach.area
+            if (side === null) return []
+            return reached.attack.flatMap((target) => areaCells(maze, target, side, { color: piece.color, barriers }))
+        }
 
         // Quem a investida atropela correndo até qualquer uma das casas em que ela pode terminar:
         // as peças no caminho, aliadas inclusive. Vazio quando a habilidade não é uma investida.
@@ -157,14 +167,15 @@ export const useHighlightedCells = (
         if (consulting) {
             const basic = basicCells()
             const pieceSkill = skillFor(piece.type)
-            const maxReach = pieceSkill ? reachOf(pieceSkill, skillMaxRangeOf(pieceSkill, piece)) : null
-            const reached = maxReach ? skillCells(maxReach) : NO_CELLS
-            const trampled = maxReach ? runOver(maxReach, reached) : []
+            const maxReach = reachOf(pieceSkill, piece, skillMaxRangeOf(pieceSkill, piece))
+            const reached = skillCells(maxReach)
+            const fireRadius = burnable(maxReach, reached)
+            const trampled = runOver(maxReach, reached)
             setCells({
                 ...NOTHING,
                 ranges: paint([
                     ...basicLayers(basic),
-                    ["skillMax", [...allCells(reached), ...burnable(reached.attack)]],
+                    ["skillMax", [...allCells(reached), ...fireRadius]],
                     ["attack", trampled],
                 ]),
             })
@@ -172,7 +183,7 @@ export const useHighlightedCells = (
         }
 
         // Habilidade em uso: onde ela pode ser usada ganha destaque azul, seja para golpear, criar
-        // algo ou correr. A de área ganha também o vermelho em volta: casas em que não se pode
+        // algo, correr ou imitar. A de área ganha também o vermelho em volta: casas em que não se pode
         // mirar, mas aonde o incêndio pode chegar. Na investida, o vermelho é de quem ela pode
         // atropelar no caminho. O movimento extra é a exceção: ele devolve o movimento e o golpe
         // da ação comum, e mostra as cores dela.
@@ -183,7 +194,7 @@ export const useHighlightedCells = (
                     ? basicLayers(reached)
                     : [
                           ["skill", allCells(reached)],
-                          ["attack", [...burnable(reached.attack), ...runOver(skill, reached)]],
+                          ["attack", [...burnable(skill, reached), ...runOver(skill, reached)]],
                       ]
             setCells({ ...reached, ranges: paint(layers) })
             return
@@ -212,6 +223,7 @@ export const useHighlightedCells = (
         skill?.effect,
         skill?.blockedBy.pieces,
         skill?.blockedBy.barriers,
+        skill?.area,
         basicAvailable,
         consulting,
     ])

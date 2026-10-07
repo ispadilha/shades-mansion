@@ -1,5 +1,4 @@
 import type { PieceDefinition } from "./types"
-import { skillFor } from "./skills"
 
 export type TurnStage =
     // Ainda tem a ação comum
@@ -9,8 +8,7 @@ export type TurnStage =
     // Não sobrou nada: só encerrar o turno
     | "spent"
 
-export const hasSkillLeft = (piece: PieceDefinition) =>
-    skillFor(piece.type) !== null && !piece.usedSkillThisTurn
+export const hasSkillLeft = (piece: PieceDefinition) => !piece.usedSkillThisTurn
 
 export const turnStageOf = (piece: PieceDefinition): TurnStage => {
     if (!piece.movedThisTurn) return "idle"

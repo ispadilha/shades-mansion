@@ -15,10 +15,10 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
     const { t, tTeam } = useLanguage()
     const stats = statsFor(piece.type, piece.level)
     const skill = skillFor(piece.type)
-    const charges = skill ? skillChargesOf(skill, piece) : null
-    const rangeDice = skill ? skillRollOf(skill, piece) : null
-    const damageDice = skill ? skillDamageOf(skill, piece) : null
-    const areaSide = skill ? skillAreaSideOf(skill, piece) : null
+    const charges = skillChargesOf(skill, piece)
+    const rangeDice = skillRollOf(skill, piece)
+    const damageDice = skillDamageOf(skill, piece)
+    const areaSide = skillAreaSideOf(skill, piece)
 
     return (
         <>
@@ -35,20 +35,18 @@ const PieceSheet: React.FC<{ piece: PieceDefinition }> = ({ piece }) => {
             </Typography>
             <Typography>{t("guard")}: {defenseTarget(stats.guard)}</Typography>
             <Typography>
-                {t("skill")}: {skill ? t(skill.name) : t("skillNone")}
+                {t("skill")}: {t(skill.name)}
             </Typography>
             {/* Habilidade que sorteia o alcance mostra os dados dele. A de alcance fixo, o número */}
-            {skill && (
-                <Typography>
-                    {t("skillRange")}: {rangeDice ? diceLabel(rangeDice) : skillRangeOf(skill, piece)}
-                </Typography>
-            )}
+            <Typography>
+                {t("skillRange")}: {rangeDice ? diceLabel(rangeDice) : skillRangeOf(skill, piece)}
+            </Typography>
             {damageDice && (
                 <Typography>
                     {t("skillDamage")}: {diceLabel(damageDice)}
                 </Typography>
             )}
-            {skill && charges !== null && (
+            {charges !== null && (
                 <Typography>
                     {t("skillCharges")}: {charges}
                 </Typography>

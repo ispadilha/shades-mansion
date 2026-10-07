@@ -5,8 +5,7 @@ import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
 interface SkillRowProps {
-    // A habilidade, ou null para a linha "nenhuma" de peça que ainda não tem
-    skill: Skill | null
+    skill: Skill
     disabled: boolean
     onUse: () => void
 }
@@ -17,10 +16,8 @@ export const SkillRow: React.FC<SkillRowProps> = ({ skill, disabled, onUse }) =>
 
     return (
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, py: 0.5 }}>
-            <Typography sx={{ flex: 1, fontSize: 14, color: skill ? palette.surface.text : palette.surface.textMuted }}>
-                {skill ? t(skill.name) : t("skillNone")}
-            </Typography>
-            <Button size="small" variant="contained" disabled={skill === null || disabled} onClick={onUse}>
+            <Typography sx={{ flex: 1, fontSize: 14, color: palette.surface.text }}>{t(skill.name)}</Typography>
+            <Button size="small" variant="contained" disabled={disabled} onClick={onUse}>
                 {t("use")}
             </Button>
         </Box>

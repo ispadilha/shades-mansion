@@ -27,7 +27,9 @@ export const SkillBanner: React.FC<SkillBannerProps> = ({ active, piece, charges
         : active && skillStaysActive(active.skill)
           ? ` — ${chargesLeft} ${t("barriersLeft")}`
           : ""
-    const message = active ? `${t("usingSkill")}: ${t(active.skill.name)} (${active.pieceId})${detail}` : ""
+    // Habilidade usada por meio de outra (a imitação) diz as duas: a da peça, e a que ela imita
+    const name = active?.via ? `${t(active.via.name)} → ${t(active.skill.name)}` : active ? t(active.skill.name) : ""
+    const message = active ? `${t("usingSkill")}: ${name} (${active.pieceId})${detail}` : ""
 
     return (
         <HudBanner

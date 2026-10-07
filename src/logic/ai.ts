@@ -248,7 +248,7 @@ export class SimpleAI {
         manipulatedBy: PieceColor | null,
     ): AIMoveResult {
         const moveSteps = pathLength(attacker.position, approach, maze, blockedCellsFor(attacker.color, barriers, pieces))
-        const area = attackArea(attacker, target.position)
+        const area = attackArea(attacker, this.rangedSkillOf(attacker), target.position)
         return {
             updatedPieces: this.moved(pieces, attacker.id, approach, manipulatedBy === null),
             pendingAttack: {

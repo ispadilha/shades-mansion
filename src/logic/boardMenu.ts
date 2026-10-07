@@ -145,8 +145,8 @@ export function boardActionsFor(context: BoardMenuContext): BoardAction[] {
 
     if (usingSkill && ownSelection) {
         if (skillReach!.effect !== "strike") {
-            // Habilidade que cria algo, ou que corre até uma casa: vale onde ela alcança,
-            // e lá já é casa livre
+            // Habilidade que cria algo, que corre até uma casa, ou que imita uma peça: vale nas
+            // casas que o destaque dá para ela, que já são as livres, ou as das peças imitáveis
             if (includesPosition(skillCells, position)) actions.push("skill")
         } else {
             const strike: Strike = skillReach!.ranged

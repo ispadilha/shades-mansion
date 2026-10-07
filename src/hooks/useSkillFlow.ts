@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateActio
 import type { PieceColor, PieceDefinition } from "../logic/types"
 import {
     cancelCostsSkill,
+    imitableSkillOf,
     reachOf,
     skillRangeOf,
     type ActiveSkill,
@@ -38,6 +39,8 @@ export interface SkillFlow {
     // Até onde ela chega. Memorizado porque vira dependência de efeito.
     reach: SkillReach | null
     use: (skill: Skill) => void
+    // Imitação: a peça passa a usar a habilidade de outra peça escolhida
+    imitate: (model: PieceDefinition) => void
     cancel: () => void
     // Encerra o uso sem gasto de habilidade
     clear: () => void
@@ -71,7 +74,10 @@ export const useSkillFlow = ({
         }
     }, [])
 
-    const reach = useMemo(() => (active ? reachOf(active.skill, active.range) : null), [active])
+    const reach = useMemo(
+        () => (active && activePiece ? reachOf(active.skill, activePiece, active.range) : null),
+        [active, activePiece],
+    )
 
     const listLocked = active !== null || manipulating
 
@@ -92,15 +98,17 @@ export const useSkillFlow = ({
         }, SKILL_MODAL_DELAY_MS)
     }
 
-    const use = (skill: Skill) => {
-        setListOpen(false)
+    // Põe a habilidade em uso.
+    // `via` é a habilidade por meio da qual a peça a usa, quando não é a dela. (Imitação)
+    const enter = (skill: Skill, via?: Skill) => {
         if (!activePiece || !activeColor) return
         const pieceId = activePiece.id
+        const origin = via ? { via } : {}
 
         // Habilidade de alcance fixo entra em uso na hora, e desistir dela ainda sai de graça
         const fixedRange = skillRangeOf(skill, activePiece)
         if (fixedRange !== null) {
-            setActive({ skill, pieceId, range: fixedRange, committed: false })
+            setActive({ skill, pieceId, range: fixedRange, committed: false, ...origin })
             return
         }
 
@@ -108,9 +116,25 @@ export const useSkillFlow = ({
         // é o que impede "trapaça" de cancelar e rolar de novo até vir um número melhor.
         // A que rola o próprio dano já entra em uso com ele.
         roll.roll(skill, activePiece, activeColor, (range, damage) => {
-            setActive({ skill, pieceId, range, ...(damage !== undefined ? { damage } : {}), committed: true })
+            const rolledDamage = damage !== undefined ? { damage } : {}
+            setActive({ skill, pieceId, range, ...rolledDamage, committed: true, ...origin })
             setSelectedId(pieceId)
         })
+    }
+
+    const use = (skill: Skill) => {
+        setListOpen(false)
+        enter(skill)
+    }
+
+    // A imitação ativa a habilidade da peça escolhida,
+    // que entra em uso como entraria pela lista:
+    // rolando os dados se for o caso, e com o mesmo ponto sem volta.
+    // Passado esse ponto, quem fica gasta no turno é a imitação.
+    const imitate = (model: PieceDefinition) => {
+        const copied = imitableSkillOf(model)
+        if (!active || active.skill.effect !== "mimic" || !copied) return
+        enter(copied, active.skill)
     }
 
     // Desistir: antes do ponto sem volta não custa nada.
@@ -133,6 +157,7 @@ export const useSkillFlow = ({
         active,
         reach,
         use,
+        imitate,
         cancel,
         clear: () => setActive(null),
         spend,

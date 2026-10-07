@@ -74,9 +74,19 @@ export const texts_ui = {
         ptBR: "Voltar",
     },
 
+    team: {
+        enUS: "Team",
+        ptBR: "Equipe",
+    },
+
     light: {
         enUS: "Light",
         ptBR: "Claro",
+    },
+
+    gray: {
+        enUS: "Gray",
+        ptBR: "Cinza",
     },
 
     dark: {
@@ -149,16 +159,6 @@ export const texts_ui = {
         ptBR: "(força uma ação: mover ou atacar — uso único)",
     },
 
-    gray: {
-        enUS: "Gray",
-        ptBR: "Cinza",
-    },
-
-    team: {
-        enUS: "Team",
-        ptBR: "Equipe",
-    },
-
     level: {
         enUS: "Level",
         ptBR: "Nível",
@@ -182,6 +182,11 @@ export const texts_ui = {
     attackRange: {
         enUS: "Attack range",
         ptBR: "Alcance de ataque",
+    },
+
+    attackArea: {
+        enUS: "Area of effect",
+        ptBR: "Área de efeito",
     },
 
     damage: {
@@ -214,6 +219,16 @@ export const texts_ui = {
         ptBR: "não desvia",
     },
 
+    skills: {
+        enUS: "Skills",
+        ptBR: "Habilidades",
+    },
+
+    skill: {
+        enUS: "Skill",
+        ptBR: "Habilidade",
+    },
+
     skillRange: {
         enUS: "Skill range",
         ptBR: "Alcance da habilidade",
@@ -239,79 +254,14 @@ export const texts_ui = {
         ptBR: "rolagem de dano",
     },
 
-    attackArea: {
-        enUS: "Area of effect",
-        ptBR: "Área de efeito",
-    },
-
-    skills: {
-        enUS: "Skills",
-        ptBR: "Habilidades",
-    },
-
-    skill: {
-        enUS: "Skill",
-        ptBR: "Habilidade",
-    },
-
-    skillNone: {
-        enUS: "None",
-        ptBR: "Nenhuma",
-    },
-
-    skillExtraMove: {
-        enUS: "Extra move",
-        ptBR: "Movimento extra",
-    },
-
-    skillLongShot: {
-        enUS: "Long shot",
-        ptBR: "Tiro longo",
-    },
-
-    skillFire: {
-        enUS: "Fire",
-        ptBR: "Incêndio",
-    },
-
-    skillBarrier: {
-        enUS: "Paranormal Barriers",
-        ptBR: "Barreiras Paranormais",
-    },
-
-    skillCharge: {
-        enUS: "Charge",
-        ptBR: "Investida",
-    },
-
-    skillCreateBarrier: {
-        enUS: "Create barrier",
-        ptBR: "Criar barreira",
-    },
-
-    skillShoot: {
-        enUS: "Shoot",
-        ptBR: "Atirar",
-    },
-
-    skillBurn: {
-        enUS: "Fire",
-        ptBR: "Incendiar",
-    },
-
-    hintSelectPiece: {
-        enUS: "Left click to select a piece. Right click to choose an action, if selected piece is on its turn.",
-        ptBR: "Clique esquerdo para selecionar uma peça. Clique direito para escolher uma ação, se a peça selecionada estiver em seu turno.",
-    },
-
-    gotIt: {
-        enUS: "Got it",
-        ptBR: "Entendi",
-    },
-
     usingSkill: {
         enUS: "Using skill",
         ptBR: "Usando habilidade",
+    },
+    
+    cancelSkill: {
+            enUS: "Cancel skill",
+            ptBR: "Cancelar habilidade",
     },
 
     finishSkill: {
@@ -319,24 +269,19 @@ export const texts_ui = {
         ptBR: "Encerrar",
     },
 
-    cancelSkill: {
-        enUS: "Cancel skill",
-        ptBR: "Cancelar habilidade",
+    skillExtraMove: {
+        enUS: "Extra move",
+        ptBR: "Movimento extra",
     },
 
-    pieceInfo: {
-        enUS: "Piece info",
-        ptBR: "Informações da peça",
+    skillBarrier: {
+        enUS: "Paranormal Barriers",
+        ptBR: "Barreiras Paranormais",
     },
 
-    itemInfo: {
-        enUS: "Item info",
-        ptBR: "Informações do item",
-    },
-
-    barrierInfo: {
-        enUS: "Barrier info",
-        ptBR: "Informações da barreira",
+    skillCreateBarrier: {
+        enUS: "Create barrier",
+        ptBR: "Criar barreira",
     },
 
     barrier: {
@@ -380,6 +325,116 @@ export const texts_ui = {
     toCreateBarrier: {
         enUS: "to light a barrier",
         ptBR: "para acender uma barreira",
+    },
+
+        dispelRoll: {
+        enUS: "Dispel roll",
+        ptBR: "Rolagem de dissipação",
+    },
+
+    toDispel: {
+        enUS: "to dispel",
+        ptBR: "para dissipar",
+    },
+    
+    toDispelBarrierOf: {
+            enUS: "to dispel the barrier of",
+            ptBR: "para dissipar a barreira de",
+    },
+
+    dispelWorked: {
+        enUS: "The barrier is gone!",
+        ptBR: "A barreira se dissipou!",
+    },
+
+    dispelFailed: {
+        enUS: "The barrier holds!",
+        ptBR: "A barreira resistiu!",
+    },
+
+    verbDispelledBarrierOf: {
+        enUS: "dispelled the barrier of",
+        ptBR: "dissipou a barreira de",
+    },
+
+    verbFailedToDispelBarrierOf: {
+        enUS: "failed to dispel the barrier of",
+        ptBR: "não conseguiu dissipar a barreira de",
+    },
+
+    skillCharge: {
+        enUS: "Charge",
+        ptBR: "Investida",
+    },
+
+    toCharge: {
+        enUS: "to charge",
+        ptBR: "para uma investida",
+    },
+
+    skillLongShot: {
+        enUS: "Long shot",
+        ptBR: "Tiro longo",
+    },
+
+    skillShoot: {
+        enUS: "Shoot",
+        ptBR: "Atirar",
+    },
+
+    skillMimic: {
+        enUS: "Mimic",
+        ptBR: "Imitação",
+    },
+
+    skillImitate: {
+        enUS: "Mimic",
+        ptBR: "Imitar",
+    },
+
+    toMimic: {
+        enUS: "to mimic",
+        ptBR: "para imitar",
+    },
+
+    skillFire: {
+        enUS: "Fire",
+        ptBR: "Incêndio",
+    },
+
+    skillBurn: {
+        enUS: "Fire",
+        ptBR: "Incendiar",
+    },
+
+    toBurnArea: {
+        enUS: "to set an area on fire",
+        ptBR: "para incendiar uma área",
+    },
+
+    hintSelectPiece: {
+        enUS: "Left click to select a piece. Right click to choose an action, if selected piece is on its turn.",
+        ptBR: "Clique esquerdo para selecionar uma peça. Clique direito para escolher uma ação, se a peça selecionada estiver em seu turno.",
+    },
+
+    gotIt: {
+        enUS: "Got it",
+        ptBR: "Entendi",
+    },
+
+    pieceInfo: {
+        enUS: "Piece info",
+        ptBR: "Informações da peça",
+    },
+
+    itemInfo: {
+        enUS: "Item info",
+        ptBR: "Informações do item",
+    },
+
+    barrierInfo: {
+        enUS: "Barrier info",
+        ptBR: "Informações da barreira",
     },
 
     turn: {
@@ -457,16 +512,6 @@ export const texts_ui = {
         ptBR: "Nenhum item no inventário.",
     },
 
-    manipulatingPiece: {
-        enUS: "Manipulating",
-        ptBR: "Manipulando",
-    },
-
-    cancelManipulation: {
-        enUS: "Cancel manipulation",
-        ptBR: "Cancelar manipulação",
-    },
-
     verbUsed: {
         enUS: "used",
         ptBR: "usou",
@@ -510,21 +555,6 @@ export const texts_ui = {
     toAttack: {
         enUS: "to attack",
         ptBR: "para atacar",
-    },
-
-    toBurnArea: {
-        enUS: "to set an area on fire",
-        ptBR: "para incendiar uma área",
-    },
-
-    toCharge: {
-        enUS: "to charge",
-        ptBR: "para uma investida",
-    },
-
-    toDispelBarrierOf: {
-        enUS: "to dispel the barrier of",
-        ptBR: "para dissipar a barreira de",
     },
 
     toCollectItem: {
@@ -696,20 +726,30 @@ export const texts_ui = {
         enUS: "Click to roll",
         ptBR: "Clique para rolar",
     },
-
+    
     manipulationRoll: {
         enUS: "Manipulation roll",
         ptBR: "Rolagem de manipulação",
     },
-
+    
     manipulationWorked: {
         enUS: "It worked!",
         ptBR: "Funcionou!",
     },
-
+    
     manipulationFailed: {
         enUS: "It failed!",
         ptBR: "Falhou!",
+    },
+
+    manipulatingPiece: {
+        enUS: "Manipulating",
+        ptBR: "Manipulando",
+    },
+
+    cancelManipulation: {
+        enUS: "Cancel manipulation",
+        ptBR: "Cancelar manipulação",
     },
 
     toManipulate: {
@@ -725,35 +765,5 @@ export const texts_ui = {
     verbResistedManipulation: {
         enUS: "resisted the manipulation",
         ptBR: "resistiu à manipulação",
-    },
-
-    dispelRoll: {
-        enUS: "Dispel roll",
-        ptBR: "Rolagem de dissipação",
-    },
-
-    toDispel: {
-        enUS: "to dispel",
-        ptBR: "para dissipar",
-    },
-
-    dispelWorked: {
-        enUS: "The barrier is gone!",
-        ptBR: "A barreira se dissipou!",
-    },
-
-    dispelFailed: {
-        enUS: "The barrier holds!",
-        ptBR: "A barreira resistiu!",
-    },
-
-    verbDispelledBarrierOf: {
-        enUS: "dispelled the barrier of",
-        ptBR: "dissipou a barreira de",
-    },
-
-    verbFailedToDispelBarrierOf: {
-        enUS: "failed to dispel the barrier of",
-        ptBR: "não conseguiu dissipar a barreira de",
     },
 }

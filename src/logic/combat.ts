@@ -3,7 +3,7 @@ import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
-import { skillAreaSideOf, skillFor } from "./skills"
+import { skillAreaSideOf, skillFor, type Skill } from "./skills"
 import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, GUARDED_DAMAGE_SHARE, SUCCESS_FACE, statsFor } from "../constants/rules"
 
 export interface CoinCheck {
@@ -137,9 +137,13 @@ export interface AttackArea {
     side: number
 }
 
-// O quadrado que a habilidade de área do atacante incendeia, no nível dele
-export const attackArea = (attacker: PieceDefinition, target: PiecePosition): AttackArea | undefined => {
-    const skill = skillFor(attacker.type)
+// O quadrado que a habilidade de área incendeia em volta do alvo, no nível do atacante.
+// Quem chama diz a habilidade: a peça pode estar usando uma que não é a dela, pela imitação.
+export const attackArea = (
+    attacker: PieceDefinition,
+    skill: Skill | null,
+    target: PiecePosition,
+): AttackArea | undefined => {
     const side = skill ? skillAreaSideOf(skill, attacker) : null
     return side === null ? undefined : { center: { ...target }, side }
 }
@@ -222,7 +226,7 @@ export function friendlyFire(
     commander: PieceColor,
     barriers: Barrier[],
 ): PieceDefinition[] {
-    const area = attackArea(attacker, target.position)
+    const area = attackArea(attacker, skillFor(attacker.type), target.position)
     if (!area) return []
     // A conta da IA precisa ver o mesmo fogo que vai acontecer, barreiras recortadas
     const burning = areaCells(maze, area.center, area.side, { color: attacker.color, barriers })

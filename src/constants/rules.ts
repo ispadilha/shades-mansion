@@ -173,6 +173,9 @@ export const SKILL_LEVELS: Record<SkillId, SkillLevelTable> = {
             { count: 1, sides: 20 },
         ],
     },
+    mimic: {
+        fixedRange: [7, 9, 11],
+    },
     fire: {
         fixedRange: [7, 8, 9],
         damageDice: [
