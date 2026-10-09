@@ -203,6 +203,18 @@ export const DISPEL_DIE: DieSides = 20
 export const DISPEL_MIN_ROLL = 16
 
 // ---------------------------------------------------------------------------
+// Afinidade
+// ---------------------------------------------------------------------------
+
+// Os dados da rolagem de afinidade, um para cada nível.
+// Vale o nível mais alto entre as duas peças da dupla.
+export const AFFINITY_DICE: readonly DiceSpec[] = [
+    { count: 1, sides: 4 },
+    { count: 1, sides: 6 },
+    { count: 1, sides: 8 },
+]
+
+// ---------------------------------------------------------------------------
 // Iniciativa
 // ---------------------------------------------------------------------------
 

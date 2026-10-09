@@ -258,10 +258,10 @@ export const texts_ui = {
         enUS: "Using skill",
         ptBR: "Usando habilidade",
     },
-    
+
     cancelSkill: {
-            enUS: "Cancel skill",
-            ptBR: "Cancelar habilidade",
+        enUS: "Cancel skill",
+        ptBR: "Cancelar habilidade",
     },
 
     finishSkill: {
@@ -327,7 +327,7 @@ export const texts_ui = {
         ptBR: "para acender uma barreira",
     },
 
-        dispelRoll: {
+    dispelRoll: {
         enUS: "Dispel roll",
         ptBR: "Rolagem de dissipação",
     },
@@ -336,10 +336,10 @@ export const texts_ui = {
         enUS: "to dispel",
         ptBR: "para dissipar",
     },
-    
+
     toDispelBarrierOf: {
-            enUS: "to dispel the barrier of",
-            ptBR: "para dissipar a barreira de",
+        enUS: "to dispel the barrier of",
+        ptBR: "para dissipar a barreira de",
     },
 
     dispelWorked: {
@@ -726,17 +726,17 @@ export const texts_ui = {
         enUS: "Click to roll",
         ptBR: "Clique para rolar",
     },
-    
+
     manipulationRoll: {
         enUS: "Manipulation roll",
         ptBR: "Rolagem de manipulação",
     },
-    
+
     manipulationWorked: {
         enUS: "It worked!",
         ptBR: "Funcionou!",
     },
-    
+
     manipulationFailed: {
         enUS: "It failed!",
         ptBR: "Falhou!",
@@ -765,5 +765,40 @@ export const texts_ui = {
     verbResistedManipulation: {
         enUS: "resisted the manipulation",
         ptBR: "resistiu à manipulação",
+    },
+
+    and: {
+        enUS: "and",
+        ptBR: "e",
+    },
+
+    affinityRoll: {
+        enUS: "Affinity roll",
+        ptBR: "Rolagem de afinidade",
+    },
+
+    affinityReading: {
+        enUS: "vigor for both",
+        ptBR: "de vigor para as duas",
+    },
+    
+    verbReinvigoratedByAffinity: {
+        enUS: "recovered vigor through affinity",
+        ptBR: "revigoraram pela afinidade",
+    },
+
+    scoutDuo: {
+        enUS: "Scout duo",
+        ptBR: "Dupla de reconhecimento",
+    },
+
+    combatDuo: {
+        enUS: "Combat duo",
+        ptBR: "Dupla de combate",
+    },
+
+    tacticalDuo: {
+        enUS: "Tactical duo",
+        ptBR: "Dupla tática",
     },
 }

@@ -7,10 +7,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Umbra crosses the mansion without lighting anything, which is why the Dark side always seems to know where the others are before the others have decided.\n\n" +
-                "The fastest piece of the Dark team.",
+                "The fastest piece of the Dark team. Forms the scout duo with Nyx.",
             ptBR:
                 "Umbra atravessa a mansão sem acender nada, e é por isso que o lado escuro sempre parece saber onde os outros estão antes que os outros tenham decidido.\n\n" +
-                "É a peça mais rápida do time escuro.",
+                "É a peça mais rápida do time escuro. Forma a dupla de reconhecimento com Nyx.",
         },
     },
 
@@ -23,11 +23,11 @@ export const texts_characters = {
             enUS:
                 "Nyx keeps the Dark line honest: no room is taken before it is held. Where Nyx decides a corridor ends, a violet light rises out of the floor and burns without heat, and the ones who do not belong to the Dark side simply do not get through.\n\n" +
                 "The rest of the team calls this patience; the other two teams have another word for it.\n\n" +
-                "The barrier piece of the Dark team.",
+                "The barrier piece of the Dark team. Forms the scout duo with Umbra.",
             ptBR:
                 "Nyx mantém a linha escura honesta: nenhuma sala é tomada antes de ser sustentada. Onde Nyx decide que um corredor acaba, sobe do chão uma luz violeta que queima sem esquentar, e quem não é do lado escuro simplesmente não passa.\n\n" +
                 "O resto do time chama isso de paciência; os outros dois times têm outra palavra.\n\n" +
-                "É a peça de barreiras do time escuro.",
+                "É a peça de barreiras do time escuro. Forma a dupla de reconhecimento com Umbra.",
         },
     },
 
@@ -39,10 +39,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Corvus does not scout, does not wait and does not aim. Whatever the Dark side cannot go around, it sends Corvus through.\n\n" +
-                "The heaviest hitter of the Dark team.",
+                "The heaviest hitter of the Dark team. Forms the combat duo with Tenebra.",
             ptBR:
                 "Corvus não explora, não espera e não mira. O que o lado escuro não consegue contornar, ele manda Corvus atravessar.\n\n" +
-                "É a peça mais forte do time escuro.",
+                "É a peça mais forte do time escuro. Forma a dupla de combate com Tenebra.",
         },
     },
 
@@ -54,10 +54,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Tenebra learned the mansion as a set of straight lines and treats everything else as scenery. A closed door is a relief; an open corridor is an invitation.\n\n" +
-                "The long-range shooter of the Dark team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire.",
+                "The long-range shooter of the Dark team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire. Forms the combat duo with Corvus.",
             ptBR:
                 "Tenebra aprendeu a mansão como um conjunto de retas e trata todo o resto como cenário. Uma porta fechada é um alívio; um corredor aberto é um convite.\n\n" +
-                "É a peça de tiro longo do time escuro: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro.",
+                "É a peça de tiro longo do time escuro: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro. Forma a dupla de combate com Corvus.",
         },
     },
 
@@ -69,10 +69,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Nobody on the Dark side is quite sure what Noctua is. Noctua does not seem to mind.\n\n" +
-                "For now it plays exactly like the balanced piece of the Dark team — what else it does has not been decided yet.",
+                "The exotic piece of the Dark team: mimics the skill of another piece within its line of sight, ally or opponent. Forms the tactical duo with Pyrrha.",
             ptBR:
                 "Ninguém no lado escuro sabe direito o que Noctua é. Noctua não parece se incomodar.\n\n" +
-                "Por enquanto, joga exatamente como a peça balanceada do time escuro — o que mais ela faz ainda não foi decidido.",
+                "É a peça exótica do time escuro: imita a habilidade de outra peça na sua linha de visão, aliada ou adversária. Forma a dupla tática com Pyrrha.",
         },
     },
 
@@ -83,11 +83,11 @@ export const texts_characters = {
         },
         description: {
             enUS:
-                "Pyrrha was let into the Dark team on one condition: never to stand close to anyone the team cannot lose. The condition has already been broken twice.\n\n" +
-                "The firestarter of the Dark team: shoots from where it stands, and the shot sets an area on fire.",
+                "Pyrrha was let into the Dark team on one condition: to stand close to no one but Noctua, the only one willing to stay next to the fire. The condition has already been broken twice.\n\n" +
+                "The firestarter of the Dark team: shoots from where it stands, and the shot sets an area on fire. Forms the tactical duo with Noctua.",
             ptBR:
-                "Pyrrha foi aceita no time escuro sob uma condição: nunca ficar perto de quem o time não pode perder. A condição já foi quebrada duas vezes.\n\n" +
-                "É a incendiária do time escuro: atira de onde está, e o tiro incendeia uma área.",
+                "Pyrrha foi aceita no time escuro sob uma condição: não ficar perto de ninguém além de Noctua, a única disposta a ficar ao lado do fogo. A condição já foi quebrada duas vezes.\n\n" +
+                "É a incendiária do time escuro: atira de onde está, e o tiro incendeia uma área. Forma a dupla tática com Noctua.",
         },
     },
 
@@ -99,10 +99,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Cinis was the first to notice that the mansion rebuilds itself between one night and the next, and the only one who found that convenient. The Gray team owes most of its maps to this restlessness.\n\n" +
-                "The fastest piece of the Gray team.",
+                "The fastest piece of the Gray team. Forms the scout duo with Limen.",
             ptBR:
                 "Cinis foi o primeiro a notar que a mansão se reconstrói de uma noite para a outra, e o único a achar isso conveniente. O time cinza deve a essa inquietação a maior parte dos seus mapas.\n\n" +
-                "É a peça mais rápida do time cinza.",
+                "É a peça mais rápida do time cinza. Forma a dupla de reconhecimento com Limen.",
         },
     },
 
@@ -115,11 +115,11 @@ export const texts_characters = {
             enUS:
                 "Limen holds the doorways the other two sides insist on crossing, and closes them with a pale blue fog that looks like nothing at all until someone tries to walk into it.\n\n" +
                 "Belonging to neither of them is not a position Limen took by accident.\n\n" +
-                "The barrier piece of the Gray team.",
+                "The barrier piece of the Gray team. Forms the scout duo with Cinis.",
             ptBR:
                 "Limen ocupa as passagens que os outros dois lados insistem em atravessar, e as fecha com uma névoa azul pálida que não parece nada até alguém tentar entrar nela.\n\n" +
                 "Não pertencer a nenhum deles não é uma posição que Limen tenha tomado por acaso.\n\n" +
-                "É a peça de barreiras do time cinza.",
+                "É a peça de barreiras do time cinza. Forma a dupla de reconhecimento com Cinis.",
         },
     },
 
@@ -131,10 +131,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Nimbus arrives the way weather arrives: late, and all at once. The Gray team sends this one down the corridor when the corridor is no longer worth negotiating for.\n\n" +
-                "The heaviest hitter of the Gray team.",
+                "The heaviest hitter of the Gray team. Forms the combat duo with Fumus.",
             ptBR:
                 "Nimbus chega como o tempo chega: tarde e de uma vez só. O time cinza manda essa peça corredor abaixo quando o corredor deixa de valer uma negociação.\n\n" +
-                "É a peça mais forte do time cinza.",
+                "É a peça mais forte do time cinza. Forma a dupla de combate com Fumus.",
         },
     },
 
@@ -146,10 +146,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Fumus prefers the far end of a long room and has opinions about which rooms qualify. Both other teams have learned to enter those rooms sideways.\n\n" +
-                "The long-range shooter of the Gray team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire.",
+                "The long-range shooter of the Gray team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire. Forms the combat duo with Nimbus.",
             ptBR:
                 "Fumus prefere o fundo de uma sala comprida e tem opiniões sobre quais salas se qualificam. Os dois outros times aprenderam a entrar nessas salas de lado.\n\n" +
-                "É a peça de tiro longo do time cinza: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro.",
+                "É a peça de tiro longo do time cinza: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro. Forma a dupla de combate com Nimbus.",
         },
     },
 
@@ -161,10 +161,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Aenigma answers the questions the Gray team has not asked yet and refuses the ones it has. Nobody has decided whether that is useful.\n\n" +
-                "For now it plays exactly like the balanced piece of the Gray team — what else it does has not been decided yet.",
+                "The exotic piece of the Gray team: mimics the skill of another piece within its line of sight, ally or opponent. Forms the tactical duo with Favilla.",
             ptBR:
                 "Aenigma responde as perguntas que o time cinza ainda não fez e recusa as que já fez. Ninguém decidiu se isso é útil.\n\n" +
-                "Por enquanto, joga exatamente como a peça balanceada do time cinza — o que mais ela faz ainda não foi decidido.",
+                "É a peça exótica do time cinza: imita a habilidade de outra peça na sua linha de visão, aliada ou adversária. Forma a dupla tática com Favilla.",
         },
     },
 
@@ -176,10 +176,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Favilla keeps what is left of every room the Gray team has walked through, and would gladly add a few more to the collection.\n\n" +
-                "The firestarter of the Gray team: shoots from where it stands, and the shot sets an area on fire.",
+                "The firestarter of the Gray team: shoots from where it stands, and the shot sets an area on fire. Forms the tactical duo with Aenigma.",
             ptBR:
                 "Favilla guarda o que sobrou de cada sala por onde o time cinza passou, e acrescentaria mais algumas à coleção com prazer.\n\n" +
-                "É a incendiária do time cinza: atira de onde está, e o tiro incendeia uma área.",
+                "É a incendiária do time cinza: atira de onde está, e o tiro incendeia uma área. Forma a dupla tática com Aenigma.",
         },
     },
 
@@ -191,10 +191,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Scintilla carries the last lamp still burning inside the mansion and claims to know every corridor by the way its echo answers. Where Scintilla passes, the Light side learns which doors still open — and which rooms have already been given up.\n\n" +
-                "The fastest piece of the Light team.",
+                "The fastest piece of the Light team. Forms the scout duo with Aurora.",
             ptBR:
                 "Scintilla carrega a última lamparina ainda acesa dentro da mansão e diz conhecer cada corredor pelo jeito como o eco responde. Por onde Scintilla passa, o lado claro descobre quais portas ainda abrem — e quais salas já foram entregues.\n\n" +
-                "É a peça mais rápida do time claro.",
+                "É a peça mais rápida do time claro. Forma a dupla de reconhecimento com Aurora.",
         },
     },
 
@@ -206,10 +206,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Aurora took the first watch on the night the mansion closed itself, and has never handed it over. The habit is to wait at a threshold and let the corridor come, rather than chase what moves in it — and to leave a white flame standing in the doorway, edged in a yellow so faint it reads as a trick of the eye.\n\n" +
-                "The barrier piece of the Light team.",
+                "The barrier piece of the Light team. Forms the scout duo with Scintilla.",
             ptBR:
                 "Aurora assumiu a primeira vigília na noite em que a mansão se fechou e nunca a passou adiante. Prefere esperar em uma soleira e deixar o corredor vir até ela, em vez de correr atrás do que se mexe lá dentro — e deixar na passagem uma chama branca, com uma borda amarela tão leve que parece engano da vista.\n\n" +
-                "É a peça de barreiras do time claro.",
+                "É a peça de barreiras do time claro. Forma a dupla de reconhecimento com Scintilla.",
         },
     },
 
@@ -221,10 +221,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Lumen moves slowly because there is nothing in the mansion worth arriving early for. What Lumen reaches, Lumen breaks — the Light side keeps this one for the doors and the shades that refuse to give way.\n\n" +
-                "The heaviest hitter of the Light team.",
+                "The heaviest hitter of the Light team. Forms the combat duo with Vesper.",
             ptBR:
                 "Lumen anda devagar porque não há nada na mansão que valha a pena alcançar cedo. O que Lumen alcança, Lumen quebra — o lado claro guarda essa peça para as portas e para as sombras que se recusam a sair do caminho.\n\n" +
-                "É a peça mais forte do time claro.",
+                "É a peça mais forte do time claro. Forma a dupla de combate com Vesper.",
         },
     },
 
@@ -236,10 +236,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Vesper never learned the mansion's floor plan, only its sight lines. Standing still in the right room is worth more, to Vesper, than any amount of walking.\n\n" +
-                "The long-range shooter of the Light team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire.",
+                "The long-range shooter of the Light team: hits from where it stands, one piece at a time; walls and other pieces interrupt its line of fire. Forms the combat duo with Lumen.",
             ptBR:
                 "Vesper nunca aprendeu a planta da mansão, só as linhas de visão dela. Ficar parado na sala certa vale mais, para Vesper, do que qualquer quantidade de caminhada.\n\n" +
-                "É a peça de tiro longo do time claro: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro.",
+                "É a peça de tiro longo do time claro: acerta de onde está, uma peça por vez; paredes e outras peças interrompem sua linha de tiro. Forma a dupla de combate com Lumen.",
         },
     },
 
@@ -251,10 +251,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Iris arrived with the Light team and was never introduced. The others treat that as an oversight; Iris treats it as an arrangement.\n\n" +
-                "For now it plays exactly like the balanced piece of the Light team — what else it does has not been decided yet.",
+                "The exotic piece of the Light team: mimics the skill of another piece within its line of sight, ally or opponent. Forms the tactical duo with Ignis.",
             ptBR:
                 "Iris chegou com o time claro e nunca foi apresentada. Os outros tratam isso como um descuido; Iris trata como um acordo.\n\n" +
-                "Por enquanto, joga exatamente como a peça balanceada do time claro — o que mais ela faz ainda não foi decidido.",
+                "É a peça exótica do time claro: imita a habilidade de outra peça na sua linha de visão, aliada ou adversária. Forma a dupla tática com Ignis.",
         },
     },
 
@@ -266,10 +266,10 @@ export const texts_characters = {
         description: {
             enUS:
                 "Every briefing ends by reminding Ignis to look at who is standing around the target. Ignis always says yes, and looks at the target.\n\n" +
-                "The firestarter of the Light team: shoots from where it stands, and the shot sets an area on fire.",
+                "The firestarter of the Light team: shoots from where it stands, and the shot sets an area on fire. Forms the tactical duo with Iris.",
             ptBR:
                 "Toda instrução termina lembrando Ignis de olhar quem está em volta do alvo. Ignis sempre diz que sim, e olha para o alvo.\n\n" +
-                "É a incendiária do time claro: atira de onde está, e o tiro incendeia uma área.",
+                "É a incendiária do time claro: atira de onde está, e o tiro incendeia uma área. Forma a dupla tática com Iris.",
 
         },
     },

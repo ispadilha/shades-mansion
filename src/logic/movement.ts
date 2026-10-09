@@ -7,6 +7,7 @@ import {
     SURROUNDING_STEPS,
     atPosition,
     positionKey,
+    touching,
     type BlockedCells,
 } from "./grid"
 import { statsFor } from "../constants/rules"
@@ -131,11 +132,7 @@ export function findApproachCell(
     walkRange: number,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): PiecePosition | null {
-    const dxAbs = Math.abs(attacker.position.x - target.position.x)
-    const dyAbs = Math.abs(attacker.position.y - target.position.y)
-    if (Math.max(dxAbs, dyAbs) === 1) {
-        return attacker.position
-    }
+    if (touching(attacker.position, target.position)) return attacker.position
 
     const candidates = SURROUNDING_STEPS.map(([dx, dy]) => ({
         x: target.position.x + dx,

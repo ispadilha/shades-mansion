@@ -71,6 +71,23 @@ export const texts_rules = {
         },
     },
 
+    affinity: {
+        name: {
+            enUS: "Affinity",
+            ptBR: "Afinidade",
+        },
+        description: {
+            enUS:
+                "Within each team, the six pieces form three duos that trust each other: the scout duo, with the Agile and the Barrier; the combat duo, with the Champion and the Distance shooter; and the tactical duo, with the Exotic and the Firestarter.\n\n" +
+                "When a piece starts its turn next to its partner, and either of them has lost vigor, both roll their affinity dice: each of them recovers the vigor rolled, up to its maximum.\n\n" +
+                "A duo that stays side by side gets this roll twice per round, once at the start of each one's turn. The higher the level of either of them, the stronger the dice.",
+            ptBR:
+                "Dentro de cada time, as seis peças formam três duplas que confiam uma na outra: a dupla de reconhecimento, com a Ágil e a de Barreira; a dupla de combate, com o Campeão e a que atira à Distância; e a dupla tática, com a Exótica e a incendiária.\n\n" +
+                "Quando uma peça começa o turno ao lado da parceira, e alguma das duas perdeu vigor, as duas rolam os dados de afinidade: cada uma revigora o que sair, até o seu vigor máximo.\n\n" +
+                "Uma dupla que fica lado a lado ganha essa rolagem duas vezes por rodada, uma no começo do turno de cada uma. Quanto mais alto o nível de qualquer uma delas, mais forte o dado.",
+        },
+    },
+
     gameModes: {
         name: {
             enUS: "Commanding a team",
@@ -252,11 +269,13 @@ export const texts_rules = {
             enUS:
                 "Using an item which motivates your own piece gives it back the vigor it has lost.\n\n" +
                 "Reinvigorating is what the item does while the piece is short of vigor. At full vigor, the same item promotes it instead.\n\n" +
-                "It can't be used on a piece that has already left the mansion, so an item held too long can be lost with its owner.",
+                "It can't be used on a piece that has already left the mansion, so an item held too long can be lost with its owner.\n\n" +
+                "Besides items, the pieces of an affinity duo reinvigorate each other when one of them starts its turn next to the other.",
             ptBR:
                 "Usar um item que motiva a sua própria peça devolve a ela o vigor que perdeu.\n\n" +
                 "Revigorar é o que o item faz quando a peça foi atingida em disputas. Com o vigor cheio, o mesmo item a promove.\n\n" +
-                "Ele não pode ser usado em uma peça que já fugiu da mansão, então um item guardado tempo demais pode se perder junto com o dono.",
+                "Ele não pode ser usado em uma peça que já fugiu da mansão, então um item guardado tempo demais pode se perder junto com o dono.\n\n" +
+                "Além dos itens, as peças de uma dupla de afinidade se revigoram quando uma delas começa o turno ao lado da outra.",
         },
     },
 

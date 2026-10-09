@@ -29,7 +29,7 @@ export type PieceAuras = Record<string, AuraKind>
 
 // Aura vale ao mesmo tempo para o tabuleiro e para o HUD.
 // `palette.ts` diz de que cor cada uma é desenhada.
-export type AuraKind = "active" | "manipulated" | "skill"
+export type AuraKind = "active" | "manipulated" | "skill" | "affinity"
 
 // Os alcances que o tabuleiro destaca em volta da peça selecionada.
 // `palette.ts` diz de que cor cada um é pintado.

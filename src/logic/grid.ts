@@ -32,6 +32,9 @@ export const samePosition = (a: PiecePosition, b: PiecePosition) => a.x === b.x 
 
 export const manhattan = (a: PiecePosition, b: PiecePosition) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
 
+// Duas casas encostadas: uma é uma das oito em volta da outra
+export const touching = (a: PiecePosition, b: PiecePosition) => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y)) === 1
+
 export const neighbors = (p: PiecePosition): PiecePosition[] =>
     ORTHOGONAL_STEPS.map(([dx, dy]) => ({ x: p.x + dx, y: p.y + dy }))
 

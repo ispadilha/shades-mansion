@@ -14,6 +14,8 @@ export interface GameLog {
     // "{time} manipulou {peça} para {ação} [{alvo}]"
     manipulatedTo: (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => void
     reinvigorated: (color: PieceColor, piece: string) => void
+    // "{peça} (+x) e {parceira} (+y) revigoraram pela afinidade"
+    affinity: (pieceId: string, gain: number, partnerId: string, partnerGain: number) => void
     promoted: (color: PieceColor, piece: string, level: number) => void
     // Item que saiu de uma manipulação falha e caiu de volta no labirinto
     returned: (itemKey: string) => void
@@ -58,6 +60,13 @@ export const useGameLog = (): GameLog => {
 
     // Quanto a peça perdeu de vigor, no fim da frase: "xX acertou yY (−7)"
     const vigorLoss = (damage: number) => ` (−${damage})`
+
+    // E quanto ganhou, logo depois do nome: "xA (+3) e xB (+5) revigoraram pela afinidade"
+    const vigorGain = (amount: number) => ` (+${amount})`
+
+    const affinity = (pieceId: string, gain: number, partnerId: string, partnerGain: number) => {
+        add(`${pieceId}${vigorGain(gain)} ${t("and")} ${partnerId}${vigorGain(partnerGain)} ${t("verbReinvigoratedByAffinity")}`)
+    }
 
     const promoted = (color: PieceColor, piece: string, level: number) => {
         add(`${tTeam(color)} ${t("verbPromoted")} ${piece} ${t("toLevel")} ${level}`)
@@ -105,6 +114,7 @@ export const useGameLog = (): GameLog => {
         usedTo,
         manipulatedTo,
         reinvigorated,
+        affinity,
         promoted,
         returned,
         attackHit,

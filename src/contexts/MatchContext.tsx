@@ -25,6 +25,7 @@ import { useEliminations } from "../hooks/useEliminations"
 import { useGame } from "../hooks/useGame"
 import { useGameLog } from "../hooks/useGameLog"
 import { useHighlightedCells } from "../hooks/useHighlightedCells"
+import { useAffinity } from "../hooks/useAffinity"
 import { useBarriers } from "../hooks/useBarriers"
 import { useBoardInput } from "../hooks/useBoardInput"
 import { useIdleHint, type IdleHint } from "../hooks/useIdleHint"
@@ -207,6 +208,17 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         activePieceId: activePiece?.id ?? null,
         activeColor,
         skill,
+        log,
+    })
+
+    // A dupla de afinidade que se revigora no começo da vez, enquanto a rolagem dela acontece
+    const affinityDuo = useAffinity({
+        pieces,
+        setPieces,
+        activePiece,
+        turnKey: `${turn.round}-${turn.turnIndex}`,
+        rolls,
+        isManualRoll,
         log,
     })
 
@@ -416,10 +428,12 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const auras = useMemo<PieceAuras>(() => {
         const result: PieceAuras = {}
         if (activePieceId) result[activePieceId] = "active"
+        // A dupla que se revigora brilha junta, por cima da aura da vez
+        for (const id of affinityDuo) result[id] = "affinity"
         if (skillPieceId) result[skillPieceId] = "skill"
         if (manipulatedId) result[manipulatedId] = "manipulated"
         return result
-    }, [activePieceId, skillPieceId, manipulatedId])
+    }, [activePieceId, affinityDuo, skillPieceId, manipulatedId])
 
     // O valor nasce de novo a cada render de propósito: quem o lê depende do estado da
     // partida de qualquer jeito, e memorizar não pouparia render nenhum.
