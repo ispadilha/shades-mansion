@@ -78,11 +78,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Within each team, the six pieces form three duos that trust each other: the scout duo, with the Agile and the Barrier; the combat duo, with the Champion and the Distance shooter; and the tactical duo, with the Exotic and the Firestarter.\n\n" +
+                "Within each team, the six pieces form three duos that motivate each other: the Agile with the Barrier, the Champion with the Distance shooter, and the Exotic with the Firestarter.\n\n" +
                 "When a piece starts its turn next to its partner, and either of them has lost vigor, both roll their affinity dice: each of them recovers the vigor rolled, up to its maximum.\n\n" +
                 "A duo that stays side by side gets this roll twice per round, once at the start of each one's turn. The higher the level of either of them, the stronger the dice.",
             ptBR:
-                "Dentro de cada time, as seis peças formam três duplas que confiam uma na outra: a dupla de reconhecimento, com a Ágil e a de Barreira; a dupla de combate, com o Campeão e a que atira à Distância; e a dupla tática, com a Exótica e a incendiária.\n\n" +
+                "Dentro de cada time, as seis peças formam três duplas que motivam uma à outra: a Ágil com a de Barreira, o Campeão com a que atira à Distância, e a Exótica com a incendiária.\n\n" +
                 "Quando uma peça começa o turno ao lado da parceira, e alguma das duas perdeu vigor, as duas rolam os dados de afinidade: cada uma revigora o que sair, até o seu vigor máximo.\n\n" +
                 "Uma dupla que fica lado a lado ganha essa rolagem duas vezes por rodada, uma no começo do turno de cada uma. Quanto mais alto o nível de qualquer uma delas, mais forte o dado.",
         },

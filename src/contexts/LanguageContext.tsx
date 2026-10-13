@@ -2,7 +2,7 @@ import React, { createContext, useState, type ReactNode } from "react"
 import { texts_ui } from "../constants/texts_ui"
 import { texts_characters } from "../constants/texts_characters"
 import { texts_rules } from "../constants/texts_rules"
-import type { CharacterKey, Language, LoreField, PieceColor, RuleKey, TextKey } from "../logic/types"
+import type { CharacterField, CharacterKey, Language, LoreField, PieceColor, RuleKey, TextKey } from "../logic/types"
 
 // O nome de cada time também é um texto da interface
 const TEAM_TEXT_KEY: Record<PieceColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
@@ -12,7 +12,7 @@ interface LanguageContextValue {
     setValue: (lang: Language) => void
     t: (key: TextKey) => string
     tTeam: (color: PieceColor) => string
-    tCharacter: (key: CharacterKey, field: LoreField) => string
+    tCharacter: (key: CharacterKey, field: CharacterField) => string
     tRule: (key: RuleKey, field: LoreField) => string
 }
 
@@ -34,7 +34,7 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
         return texts_ui[TEAM_TEXT_KEY[color]][value]
     }
 
-    const tCharacter = (key: CharacterKey, field: LoreField): string => {
+    const tCharacter = (key: CharacterKey, field: CharacterField): string => {
         return texts_characters[key][field][value]
     }
 

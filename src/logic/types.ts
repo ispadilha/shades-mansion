@@ -76,6 +76,8 @@ export const ALL_ITEM_KEYS: MotivationItemKey[] = ITEM_PREFIXES.flatMap((prefix)
 export const itemKeyColor = (key: MotivationItemKey): PieceColor =>
     key[0] === "l" ? "light" : key[0] === "d" ? "dark" : "gray"
 
+export const keyPieceType = (key: MotivationItemKey): PieceType => key[1] as PieceType
+
 export const ALL_TEAM_COLORS: PieceColor[] = ["light", "dark", "gray"]
 
 // O que o jogador escolhe na tela de seleção: comandar um time, todos eles
@@ -102,6 +104,8 @@ export type TextKey = keyof typeof texts_ui
 
 // Verbetes da biblioteca (personagens e regras).
 // Cada um tem um nome curto e uma descrição longa.
+// O de personagem é uma ficha: o tipo de peça, a história, a habilidade e a afinidade.
 export type CharacterKey = keyof typeof texts_characters
 export type RuleKey = keyof typeof texts_rules
 export type LoreField = "name" | "description"
+export type CharacterField = LoreField | "type" | "skill" | "affinity"

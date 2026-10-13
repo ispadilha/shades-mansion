@@ -174,6 +174,11 @@ export const texts_ui = {
         ptBR: "Tipo",
     },
 
+    description: {
+        enUS: "Description",
+        ptBR: "Descrição",
+    },
+
     moveRange: {
         enUS: "Move range",
         ptBR: "Alcance de movimento",
@@ -772,6 +777,11 @@ export const texts_ui = {
         ptBR: "e",
     },
 
+    affinity: {
+        enUS: "Affinity",
+        ptBR: "Afinidade",
+    },
+
     affinityRoll: {
         enUS: "Affinity roll",
         ptBR: "Rolagem de afinidade",
@@ -781,24 +791,9 @@ export const texts_ui = {
         enUS: "vigor for both",
         ptBR: "de vigor para as duas",
     },
-    
+
     verbReinvigoratedByAffinity: {
         enUS: "recovered vigor through affinity",
         ptBR: "revigoraram pela afinidade",
-    },
-
-    scoutDuo: {
-        enUS: "Scout duo",
-        ptBR: "Dupla de reconhecimento",
-    },
-
-    combatDuo: {
-        enUS: "Combat duo",
-        ptBR: "Dupla de combate",
-    },
-
-    tacticalDuo: {
-        enUS: "Tactical duo",
-        ptBR: "Dupla tática",
     },
 }

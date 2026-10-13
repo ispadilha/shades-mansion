@@ -1,5 +1,5 @@
 export { BackButton } from "./BackButton"
-export { LoreText } from "./LoreText"
+export { LibraryEntry } from "./LibraryEntry"
 export { MenuButton } from "./MenuButton"
 export { ModalCard } from "./ModalCard"
 export { ScreenLayout } from "./ScreenLayout"

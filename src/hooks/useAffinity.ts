@@ -47,9 +47,8 @@ export const useAffinity = ({
         if (!activePiece || checkedRef.current === turnKey) return
         checkedRef.current = turnKey
 
-        const affinity = affinityAtTurnStart(activePiece, pieces)
-        if (!affinity) return
-        const { duo, partner } = affinity
+        const partner = affinityAtTurnStart(activePiece, pieces)
+        if (!partner) return
         const dice = affinityDiceOf(activePiece, partner)
         const values = rollSpec(dice)
         const amount = sumDice(values)
@@ -64,7 +63,7 @@ export const useAffinity = ({
                 kind: dieKind(dice.sides),
                 value: values,
                 title: t("affinityRoll"),
-                subtitle: `${t(duo.name)}: ${activePiece.id} ${t("and")} ${partner.id}`,
+                subtitle: `${activePiece.id} ${t("and")} ${partner.id}`,
                 outcome: { label: t("affinityReading"), tone: "good" },
                 manual: isManualRoll(activePiece.color),
             },

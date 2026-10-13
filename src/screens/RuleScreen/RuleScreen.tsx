@@ -1,6 +1,6 @@
 import React from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
-import { BackButton, LoreText, ScreenLayout, ScreenTitle } from "../../components/ui"
+import { BackButton, LibraryEntry, ScreenLayout, ScreenTitle } from "../../components/ui"
 import { ruleKeys } from "../../constants/texts_rules"
 import { useLanguage } from "../../hooks/useLanguage"
 
@@ -19,7 +19,7 @@ export const RuleScreen: React.FC<RuleScreenProps> = ({}) => {
         <ScreenLayout gap={3} padded>
             <ScreenTitle sx={{ textAlign: "center" }}>{tRule(key, "name")}</ScreenTitle>
 
-            <LoreText>{tRule(key, "description")}</LoreText>
+            <LibraryEntry sections={[{ text: tRule(key, "description") }]} />
 
             <BackButton onClick={() => navigate("/library/rules")} sx={{ mt: 2 }} />
         </ScreenLayout>
