@@ -1,35 +1,35 @@
 import { useEffect, useRef } from "react"
-import type { PieceColor, PieceDefinition } from "../logic/types"
+import type { CharacterColor, CharacterDefinition } from "../logic/types"
 
 interface EliminationHandlers {
-    onPieceEliminated: (pieceId: string) => void
-    onTeamDefeated: (color: PieceColor) => void
+    onCharacterEliminated: (characterId: string) => void
+    onTeamDefeated: (color: CharacterColor) => void
 }
 
-// Peças eliminadas (id que desapareceu) e times derrotados (cor que desapareceu) entre
-// renders. A lista de peças é a única fonte: quem sai dela saiu da partida.
+// Personagens eliminadas (id que desapareceu) e times derrotados (cor que desapareceu) entre
+// renders. A lista de personagens é a única fonte: quem sai dela saiu da partida.
 export const useEliminations = (
-    pieces: PieceDefinition[],
-    { onPieceEliminated, onTeamDefeated }: EliminationHandlers,
+    characters: CharacterDefinition[],
+    { onCharacterEliminated, onTeamDefeated }: EliminationHandlers,
 ) => {
-    const previousRef = useRef(pieces)
+    const previousRef = useRef(characters)
 
     useEffect(() => {
         const previous = previousRef.current
-        if (previous === pieces) return
+        if (previous === characters) return
 
-        const currentIds = new Set(pieces.map((p) => p.id))
-        for (const piece of previous) {
-            if (!currentIds.has(piece.id)) onPieceEliminated(piece.id)
+        const currentIds = new Set(characters.map((p) => p.id))
+        for (const character of previous) {
+            if (!currentIds.has(character.id)) onCharacterEliminated(character.id)
         }
 
         const previousColors = new Set(previous.map((p) => p.color))
-        const currentColors = new Set(pieces.map((p) => p.color))
+        const currentColors = new Set(characters.map((p) => p.color))
         for (const color of previousColors) {
             if (!currentColors.has(color)) onTeamDefeated(color)
         }
 
-        previousRef.current = pieces
+        previousRef.current = characters
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pieces])
+    }, [characters])
 }

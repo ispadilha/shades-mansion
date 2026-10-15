@@ -1,29 +1,29 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import type { PieceDefinition, TextKey } from "../../../logic/types"
+import type { CharacterDefinition, TextKey } from "../../../logic/types"
 import { turnStageOf } from "../../../logic/turn"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
 interface TurnStatusProps {
-    // Peça da vez (null só enquanto a partida está terminando)
-    activePiece: PieceDefinition | null
+    // Personagem da vez (null só enquanto a partida está terminando)
+    activeCharacter: CharacterDefinition | null
     isPlayerTurn: boolean
     spectating: boolean
 }
 
 // De quem é a vez e o que o jogador pode fazer agora
-export const TurnStatus: React.FC<TurnStatusProps> = ({ activePiece, isPlayerTurn, spectating }) => {
+export const TurnStatus: React.FC<TurnStatusProps> = ({ activeCharacter, isPlayerTurn, spectating }) => {
     const palette = usePalette()
     const { t, tTeam } = useLanguage()
 
-    const turnLabel = activePiece ? `${activePiece.id} (${tTeam(activePiece.color)})` : "—"
+    const turnLabel = activeCharacter ? `${activeCharacter.id} (${tTeam(activeCharacter.color)})` : "—"
 
     // Três estados na vez do jogador:
     // ainda tem tudo,
     // já gastou a ação comum mas ainda tem a habilidade,
     // ou não tem mais nada
-    const stage = isPlayerTurn && activePiece ? turnStageOf(activePiece) : null
+    const stage = isPlayerTurn && activeCharacter ? turnStageOf(activeCharacter) : null
     const spent = stage === "spent"
     const statusKey: TextKey = stage === "spent" ? "alreadyActed" : stage === "moved" ? "alreadyMoved" : "yourTurn"
 

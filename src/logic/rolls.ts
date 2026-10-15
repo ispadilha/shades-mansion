@@ -11,7 +11,7 @@ export type DiceKind = "d4" | "d6" | "d8" | "d10" | "d12" | "d20"
 export type RollKind = "coin" | DiceKind
 
 // Um punhado de dados: quantos, e de quantas faces. É assim que o dano de cada tipo de
-// peça é descrito nas regras ("2d8" vira { count: 2, sides: 8 }).
+// personagem é descrito nas regras ("2d8" vira { count: 2, sides: 8 }).
 export interface DiceSpec {
     count: number
     sides: DieSides

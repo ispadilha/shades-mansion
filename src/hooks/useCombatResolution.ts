@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { Barrier, PieceColor, PieceDefinition, PiecePosition, MotivationItemKey, TextKey } from "../logic/types"
+import type { Barrier, CharacterColor, CharacterDefinition, CharacterPosition, MotivationItemKey, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import {
     areaCells,
-    piecesInBlast,
+    charactersInBlast,
     rollDamage,
     rollDefense,
     rollDispel,
@@ -39,10 +39,10 @@ import {
     SUCCESS_FACE,
 } from "../constants/rules"
 
-// Uma peça atingida e quanto ela levou. As defesas são roladas uma a uma, mas o dano
+// Uma personagem atingida e quanto ela levou. As defesas são roladas uma a uma, mas o dano
 // fica guardado aqui até o fim: ninguém sai do tabuleiro no meio das rolagens.
 interface Hit {
-    pieceId: string
+    characterId: string
     damage: number
 }
 
@@ -53,47 +53,47 @@ const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }
 }
 
 interface CombatResolutionOptions {
-    pieces: PieceDefinition[]
+    characters: CharacterDefinition[]
     maze: Maze
     // Barreiras acesas: as adversárias de quem atira seguram o fogo do incêndio
     barriers: Barrier[]
-    setPieces: Dispatch<SetStateAction<PieceDefinition[]>>
+    setCharacters: Dispatch<SetStateAction<CharacterDefinition[]>>
     setFireBursts: Dispatch<SetStateAction<FireBurst[]>>
-    // Os números de dano que sobem acima das peças atingidas
+    // Os números de dano que sobem acima das personagens atingidas
     setDamagePopups: Dispatch<SetStateAction<DamagePopup[]>>
-    // As investidas, para a cena fazer a peça correr em linha reta
+    // As investidas, para a cena fazer a personagem correr em linha reta
     setChargeRuns: Dispatch<SetStateAction<ChargeRun[]>>
-    // Peça sob manipulação: é ela que a câmera segue enquanto a moeda está no ar
-    setManipulatedId: (pieceId: string | null) => void
+    // Personagem sob manipulação: é ela que a câmera segue enquanto a moeda está no ar
+    setManipulatedId: (characterId: string | null) => void
     rolls: RollQueue
     log: GameLog
     // Rolagem de time comandado por jogador espera o clique no dado,
     // as de times comandados por IA rolam automaticamente.
-    isManualRoll: (color: PieceColor) => boolean
+    isManualRoll: (color: CharacterColor) => boolean
     // Uma manipulação falha derruba o item de volta no tabuleiro
     onManipulationFailed: (itemKey: MotivationItemKey) => void
-    // Tira do tabuleiro a barreira que uma peça conseguiu dissipar
+    // Tira do tabuleiro a barreira que uma personagem conseguiu dissipar
     dispelBarrier: (barrierId: string) => void
 }
 
 export interface CombatResolution {
     // Toda tentativa de ataque (do jogador, da IA ou vinda de uma manipulação) passa por aqui
     resolveAttack: (attack: PendingAttack) => void
-    // Tentativa de dissipar uma barreira: a peça chega ao lado dela e o dado decide
+    // Tentativa de dissipar uma barreira: a personagem chega ao lado dela e o dado decide
     resolveDispel: (dispel: PendingDispel) => void
-    // Investida: a peça já está correndo, e cada atropelada leva o dano quando ela passa por cima
+    // Investida: a personagem já está correndo, e cada atropelada leva o dano quando ela passa por cima
     resolveCharge: (charge: PendingCharge) => void
     // Tentativa de manipulação: o item já saiu do inventário de quem usou, e a moeda decide
-    // se a peça obedece. Falhando, o item cai de volta no tabuleiro. Devolve o resultado a
+    // se a personagem obedece. Falhando, o item cai de volta no tabuleiro. Devolve o resultado a
     // quem chamou depois de encenar a rolagem.
-    resolveManipulation: (color: PieceColor, itemKey: MotivationItemKey, onSettled: (success: boolean) => void) => void
+    resolveManipulation: (color: CharacterColor, itemKey: MotivationItemKey, onSettled: (success: boolean) => void) => void
 }
 
 export const useCombatResolution = ({
-    pieces,
+    characters,
     maze,
     barriers,
-    setPieces,
+    setCharacters,
     setFireBursts,
     setDamagePopups,
     setChargeRuns,
@@ -107,7 +107,7 @@ export const useCombatResolution = ({
     const { t } = useLanguage()
     // Quem está rolando, com o nível ao lado. O nível pertence à ficha da rolagem porque é
     // ele que decide o dado de dano do atacante e os números de defesa de quem se defende.
-    const withLevel = (piece: PieceDefinition) => `${piece.id} (${t("level")} ${piece.level})`
+    const withLevel = (character: CharacterDefinition) => `${character.id} (${t("level")} ${character.level})`
     // Os dados só são jogados quando quem age termina de se aproximar:
     // o timer fica guardado para ser cancelado quando a tela sair.
     const approachTimerRef = useRef<number | null>(null)
@@ -115,7 +115,7 @@ export const useCombatResolution = ({
     const dropTimerRef = useRef<number | null>(null)
     // A animação do golpe segura a partida enquanto acontece
     const effectTimerRef = useRef<number | null>(null)
-    // Os golpes de uma investida em andamento, um por peça no caminho, e o fim da corrida
+    // Os golpes de uma investida em andamento, um por personagem no caminho, e o fim da corrida
     const chargeTimersRef = useRef<number[]>([])
 
     useEffect(() => {
@@ -127,19 +127,19 @@ export const useCombatResolution = ({
         }
     }, [])
 
-    // O atacante rola o dano e, em cima dele, cada peça atingida rola sua defesa.
+    // O atacante rola o dano e, em cima dele, cada personagem atingida rola sua defesa.
     // Só quando não sobra rolagem é que o golpe aparece no tabuleiro.
     const resolveAttack = (attack: PendingAttack) => {
-        // Quem joga os dados do golpe: o time da peça, ou quem a está manipulando
-        const attackerColor = attack.manipulatedBy ?? pieces.find((p) => p.id === attack.attackerId)?.color ?? null
+        // Quem joga os dados do golpe: o time da personagem, ou quem a está manipulando
+        const attackerColor = attack.manipulatedBy ?? characters.find((p) => p.id === attack.attackerId)?.color ?? null
         rolls.setResolving(true)
 
         approachTimerRef.current = window.setTimeout(() => {
             approachTimerRef.current = null
 
             // Quem segura o fogo é barreira adversária de quem o acendeu,
-            // e o fogo é da peça que atira, não do time que a manipulou, se foi o caso.
-            const firedBy = pieces.find((p) => p.id === attack.attackerId)
+            // e o fogo é da personagem que atira, não do time que a manipulou, se foi o caso.
+            const firedBy = characters.find((p) => p.id === attack.attackerId)
             const fire = firedBy ? { color: firedBy.color, barriers } : undefined
             // As casas que o golpe alcança saem antes das rolagens, porque é delas que vem
             // quem se defende. Nada é animado ainda: o tabuleiro só reage depois dos dados.
@@ -174,15 +174,15 @@ export const useCombatResolution = ({
         }, attack.delayMs)
     }
 
-    // Quem se defende: a peça mirada, ou todas as da área quando o golpe incendeia
-    const defendersOf = (attack: PendingAttack, reached: PiecePosition[]): PieceDefinition[] => {
-        if (attack.area) return piecesInBlast(pieces, reached, attack.area.center)
-        const target = pieces.find((p) => p.id === attack.targetId)
+    // Quem se defende: a personagem mirada, ou todas as da área quando o golpe incendeia
+    const defendersOf = (attack: PendingAttack, reached: CharacterPosition[]): CharacterDefinition[] => {
+        if (attack.area) return charactersInBlast(characters, reached, attack.area.center)
+        const target = characters.find((p) => p.id === attack.targetId)
         return target ? [target] : []
     }
 
     // Os números que o d20 da defesa tenta alcançar
-    const defenseTargets = (defender: PieceDefinition): RollTarget[] => {
+    const defenseTargets = (defender: CharacterDefinition): RollTarget[] => {
         const { dodge, guard } = statsFor(defender.type, defender.level)
 
         return [
@@ -193,13 +193,13 @@ export const useCombatResolution = ({
         ]
     }
 
-    // Uma defesa de cada vez, rolada por quem comanda a peça atingida. O que cada uma leva
+    // Uma defesa de cada vez, rolada por quem comanda a personagem atingida. O que cada uma leva
     // vai se somando em `hits` e só é aplicado no fim.
     const resolveDefenders = (
         attack: PendingAttack,
-        reached: PiecePosition[],
+        reached: CharacterPosition[],
         damage: DamageRoll,
-        defenders: PieceDefinition[],
+        defenders: CharacterDefinition[],
         index: number,
         hits: Hit[],
     ) => {
@@ -229,16 +229,16 @@ export const useCombatResolution = ({
                 else if (defense.outcome === "guarded") log.attackGuarded(attack.attackerId, defender.id, defense.damage)
                 else log.attackHit(attack.attackerId, defender.id, defense.damage)
 
-                const next = defense.damage > 0 ? [...hits, { pieceId: defender.id, damage: defense.damage }] : hits
+                const next = defense.damage > 0 ? [...hits, { characterId: defender.id, damage: defense.damage }] : hits
                 resolveDefenders(attack, reached, damage, defenders, index + 1, next)
             },
         )
     }
 
-    // Fim das rolagens: agora sim o golpe aparece no tabuleiro, e o dano de todas as peças
-    // atingidas entra junto com ele. Nenhuma peça sai do tabuleiro antes de a animação
+    // Fim das rolagens: agora sim o golpe aparece no tabuleiro, e o dano de todas as personagens
+    // atingidas entra junto com ele. Nenhuma personagem sai do tabuleiro antes de a animação
     // mostrar o que a tirou de lá.
-    const settleAttack = (attack: PendingAttack, reached: PiecePosition[], hits: Hit[]) => {
+    const settleAttack = (attack: PendingAttack, reached: CharacterPosition[], hits: Hit[]) => {
         const animated = playAttackEffect(attack, reached)
         if (hits.length > 0) applyDamage(hits)
 
@@ -255,7 +255,7 @@ export const useCombatResolution = ({
 
     // A animação do golpe, e se houve alguma para a partida esperar.
     // É por aqui que cada tipo de ataque mostra o que fez.
-    const playAttackEffect = (attack: PendingAttack, reached: PiecePosition[]): boolean => {
+    const playAttackEffect = (attack: PendingAttack, reached: CharacterPosition[]): boolean => {
         const { area } = attack
         if (!area) return false
 
@@ -268,29 +268,29 @@ export const useCombatResolution = ({
 
     // Quem chega a zero sai do tabuleiro
     const applyDamage = (hits: Hit[]) => {
-        // O número sobe da casa em que a peça estava: ele precisa aparecer mesmo para
+        // O número sobe da casa em que a personagem estava: ele precisa aparecer mesmo para
         // quem foi eliminada por este golpe.
         const popups = hits.flatMap((hit) => {
-            const piece = pieces.find((p) => p.id === hit.pieceId)
-            if (!piece) return []
-            return [{ id: `dmg-${hit.pieceId}-${Date.now()}`, position: { ...piece.position }, amount: hit.damage }]
+            const character = characters.find((p) => p.id === hit.characterId)
+            if (!character) return []
+            return [{ id: `dmg-${hit.characterId}-${Date.now()}`, position: { ...character.position }, amount: hit.damage }]
         })
         if (popups.length > 0) {
             setDamagePopups((prev) => [...prev.slice(-MAX_DAMAGE_POPUPS + popups.length), ...popups])
         }
 
-        setPieces((prev) =>
+        setCharacters((prev) =>
             prev
-                .map((piece) => {
-                    const hit = hits.find((h) => h.pieceId === piece.id)
-                    return hit ? { ...piece, vigor: piece.vigor - hit.damage } : piece
+                .map((character) => {
+                    const hit = hits.find((h) => h.characterId === character.id)
+                    return hit ? { ...character, vigor: character.vigor - hit.damage } : character
                 })
-                .filter((piece) => piece.vigor > 0),
+                .filter((character) => character.vigor > 0),
         )
     }
 
     const resolveManipulation = (
-        color: PieceColor,
+        color: CharacterColor,
         itemKey: MotivationItemKey,
         onSettled: (success: boolean) => void,
     ) => {
@@ -332,11 +332,11 @@ export const useCombatResolution = ({
         )
     }
 
-    // O dado só é jogado quando a peça chega ao lado da barreira.
+    // O dado só é jogado quando a personagem chega ao lado da barreira.
     // Dando certo, aquela barreira se apaga, e só ela.
     const resolveDispel = (dispel: PendingDispel) => {
-        // Quem joga o dado: o time da peça, ou quem a está manipulando
-        const rollerColor = dispel.manipulatedBy ?? pieces.find((p) => p.id === dispel.pieceId)?.color ?? null
+        // Quem joga o dado: o time da personagem, ou quem a está manipulando
+        const rollerColor = dispel.manipulatedBy ?? characters.find((p) => p.id === dispel.characterId)?.color ?? null
         rolls.setResolving(true)
 
         approachTimerRef.current = window.setTimeout(() => {
@@ -345,11 +345,11 @@ export const useCombatResolution = ({
 
             rolls.show(
                 {
-                    id: `dispel-${dispel.pieceId}-${Date.now()}`,
+                    id: `dispel-${dispel.characterId}-${Date.now()}`,
                     kind: dieKind(DISPEL_DIE),
                     value: [die],
                     title: t("dispelRoll"),
-                    subtitle: `${dispel.pieceId} → ${t("barrierOf")} ${dispel.barrier.ownerId}`,
+                    subtitle: `${dispel.characterId} → ${t("barrierOf")} ${dispel.barrier.ownerId}`,
                     targets: [{ value: String(DISPEL_MIN_ROLL), label: t("toDispel") }],
                     outcome: {
                         label: success ? t("dispelWorked") : t("dispelFailed"),
@@ -358,7 +358,7 @@ export const useCombatResolution = ({
                     manual: rollerColor !== null && isManualRoll(rollerColor),
                 },
                 () => {
-                    log.dispelRoll(dispel.pieceId, dispel.barrier.ownerId, success)
+                    log.dispelRoll(dispel.characterId, dispel.barrier.ownerId, success)
                     if (success) dispelBarrier(dispel.barrier.id)
                     rolls.setResolving(false)
                 },
@@ -366,7 +366,7 @@ export const useCombatResolution = ({
         }, dispel.delayMs)
     }
 
-    // A investida faz a peça correr em linha reta, e cada peça no caminho
+    // A investida faz a personagem correr em linha reta, e cada personagem no caminho
     // leva o dano no instante em que ela passa por cima.
     // Não há defesa: o dano é o que saiu no dado.
     // A partida fica travada até a corrida acabar.
@@ -375,8 +375,8 @@ export const useCombatResolution = ({
         setChargeRuns((prev) => [
             ...prev.slice(-MAX_CHARGE_RUNS + 1),
             {
-                id: `charge-${charge.pieceId}-${Date.now()}`,
-                pieceId: charge.pieceId,
+                id: `charge-${charge.characterId}-${Date.now()}`,
+                characterId: charge.characterId,
                 to: charge.to,
                 durationMs: charge.durationMs,
             },
@@ -384,8 +384,8 @@ export const useCombatResolution = ({
 
         const timers = charge.hits.map((hit) =>
             window.setTimeout(() => {
-                log.attackHit(charge.pieceId, hit.pieceId, charge.damage)
-                applyDamage([{ pieceId: hit.pieceId, damage: charge.damage }])
+                log.attackHit(charge.characterId, hit.characterId, charge.damage)
+                applyDamage([{ characterId: hit.characterId, damage: charge.damage }])
             }, hit.atMs),
         )
         const finish = window.setTimeout(() => {

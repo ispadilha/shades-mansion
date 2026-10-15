@@ -1,4 +1,4 @@
-import type { PieceColor, PieceType, SkillId } from "../logic/types"
+import type { CharacterColor, CharacterType, SkillId } from "../logic/types"
 import type { CoinFace, DiceSpec, DieSides } from "../logic/rolls"
 
 // As definições de constantes do jogo ficam todas neste arquivo:
@@ -41,20 +41,20 @@ export const EXTRA_CORRIDOR_RATIO = 0.3
 // ---------------------------------------------------------------------------
 
 // Ordem em que os times entram na fila da tela de iniciativa
-export const LINEUP_COLORS: PieceColor[] = ["light", "gray", "dark"]
+export const LINEUP_COLORS: CharacterColor[] = ["light", "gray", "dark"]
 
 // Ordem em que os times ocupam suas linhas no tabuleiro. Importa em um caso só: quando
-// duas peças disputam a mesma casa livre, quem vem antes fica com ela.
-export const PLACEMENT_COLORS: PieceColor[] = ["dark", "gray", "light"]
+// duas personagens disputam a mesma casa livre, quem vem antes fica com ela.
+export const PLACEMENT_COLORS: CharacterColor[] = ["dark", "gray", "light"]
 
 // ---------------------------------------------------------------------------
-// Peças
+// Personagens
 // ---------------------------------------------------------------------------
 
 // d20 não alcança
 export const NO_DODGE = 21
 
-export interface PieceStats {
+export interface CharacterStats {
     moveRange: number
     attackRange: number
     maxVigor: number
@@ -67,7 +67,7 @@ export interface PieceStats {
 
 export const STRIKE_REACH_BONUS = 1
 
-export const PIECE_STATS: Record<PieceType, Omit<PieceStats, "attackRange">> = {
+export const CHARACTER_STATS: Record<CharacterType, Omit<CharacterStats, "attackRange">> = {
     // "Ágil"
     A: { moveRange: 9, maxVigor: 9, damage: { count: 1, sides: 4 }, dodge: 12, guard: 7 },
     // "Barreira"
@@ -82,7 +82,7 @@ export const PIECE_STATS: Record<PieceType, Omit<PieceStats, "attackRange">> = {
     F: { moveRange: 5, maxVigor: 11, damage: { count: 1, sides: 6 }, dodge: NO_DODGE, guard: 13 },
 }
 
-export const canDodge = (type: PieceType) => PIECE_STATS[type].dodge <= 20
+export const canDodge = (type: CharacterType) => CHARACTER_STATS[type].dodge <= 20
 
 // ---------------------------------------------------------------------------
 // Promoções
@@ -105,9 +105,9 @@ const climbDamageLadder = (damage: DiceSpec, steps: number): DiceSpec => {
     return { ...damage, sides: DAMAGE_LADDER[rung] }
 }
 
-// Os atributos de uma peça no nível em que ela está
-export const statsFor = (type: PieceType, level: number): PieceStats => {
-    const base = PIECE_STATS[type]
+// Os atributos de uma personagem no nível em que ela está
+export const statsFor = (type: CharacterType, level: number): CharacterStats => {
+    const base = CHARACTER_STATS[type]
     const steps = Math.max(0, level - 1)
     const moveRange = base.moveRange + steps * LEVEL_BONUS.moveRange
 
@@ -125,7 +125,7 @@ export const statsFor = (type: PieceType, level: number): PieceStats => {
 // Habilidades
 // ---------------------------------------------------------------------------
 
-// Todas as definições de números das habilidades, com um valor para cada nível da peça.
+// Todas as definições de números das habilidades, com um valor para cada nível da personagem.
 // O alcance é um dos dois: fixo, ou sorteado ao entrar em uso.
 type SkillRange =
     | { fixedRange: readonly number[]; rangeDice?: never }
@@ -133,8 +133,8 @@ type SkillRange =
 
 export type SkillLevelTable = SkillRange & {
     // Quantos usos a habilidade sustenta ao mesmo tempo, em um turno
-    charges?: readonly number[]
-    // Os dados de dano da habilidade. Sem eles, ela golpeia com o golpe comum da peça.
+    uses?: readonly number[]
+    // Os dados de dano da habilidade. Sem eles, ela golpeia com o golpe comum da personagem.
     damageDice?: readonly DiceSpec[]
     // Lado do quadrado que pega fogo, para a habilidade que atinge uma área. Ímpar para o
     // alvo ficar no centro.
@@ -151,7 +151,7 @@ export const SKILL_LEVELS: Record<SkillId, SkillLevelTable> = {
     },
     barrier: {
         fixedRange: [5, 8, 11],
-        charges: [3, 5, 7],
+        uses: [3, 5, 7],
     },
     charge: {
         rangeDice: [
@@ -195,10 +195,10 @@ export const SUCCESS_FACE: CoinFace = "heads"
 
 export const DEFENSE_DIE: DieSides = 20
 
-// O quanto do dano a peça ainda leva quando alcança só o aparo, arredondado para cima
+// O quanto do dano a personagem ainda leva quando alcança só o aparo, arredondado para cima
 export const GUARDED_DAMAGE_SHARE = 0.5
 
-// Dissipar uma barreira adversária: rolagem igual para toda peça
+// Dissipar uma barreira adversária: rolagem igual para toda personagem
 export const DISPEL_DIE: DieSides = 20
 export const DISPEL_MIN_ROLL = 16
 
@@ -207,7 +207,7 @@ export const DISPEL_MIN_ROLL = 16
 // ---------------------------------------------------------------------------
 
 // Os dados da rolagem de afinidade, um para cada nível.
-// Vale o nível mais alto entre as duas peças da dupla.
+// Vale o nível mais alto entre as duas personagens da dupla.
 export const AFFINITY_DICE: readonly DiceSpec[] = [
     { count: 1, sides: 4 },
     { count: 1, sides: 6 },
@@ -221,7 +221,7 @@ export const AFFINITY_DICE: readonly DiceSpec[] = [
 export const INITIATIVE_DIE: DieSides = 20
 export const INITIATIVE_DICE = 2
 
-// Quantas somas diferentes os dados da iniciativa conseguem produzir. É o teto de peças
+// Quantas somas diferentes os dados da iniciativa conseguem produzir. É o teto de personagens
 // que cabem em uma ordem sem empate, e é por ele que o sorteio sabe quando desistir.
 export const DISTINCT_INITIATIVE_TOTALS = INITIATIVE_DICE * INITIATIVE_DIE - INITIATIVE_DICE + 1
 
@@ -236,11 +236,11 @@ export const ITEM_COPIES = 2
 // Ritmo da partida
 // ---------------------------------------------------------------------------
 
-// Tempo que uma peça leva para andar uma casa
+// Tempo que uma personagem leva para andar uma casa
 export const STEP_MS = 280
 
 // Folga somada à caminhada antes de resolver o que vem depois dela (os dados do golpe,
-// a coleta do item): a ação só acontece com a peça já parada no lugar.
+// a coleta do item): a ação só acontece com a personagem já parada no lugar.
 export const ACTION_SETTLE_MS = 50
 
 // Intervalo entre as decisões da IA
@@ -261,7 +261,7 @@ export const MAX_CHARGE_RUNS = 8
 // Quanto tempo a câmera fica presa no item que caiu de volta no tabuleiro
 export const ITEM_DROP_HOLD_MS = 1000
 
-// Tempo para a câmera ir até a peça que vai usar habilidade, antes de abrir o modal
+// Tempo para a câmera ir até a personagem que vai usar habilidade, antes de abrir o modal
 export const SKILL_MODAL_DELAY_MS = 500
 
 // Tempo para a barra de dica aparecer
@@ -300,7 +300,7 @@ export const INITIATIVE_ROLL_TIMING = {
 // Apagar e acender da tela de iniciativa quando ela troca as rolagens pela ordem sorteada
 export const INITIATIVE_FADE_MS = 1000
 
-// Um ataque tem a rolagem do dano e uma de defesa por peça atingida. Elas correm mais
+// Um ataque tem a rolagem do dano e uma de defesa por personagem atingida. Elas correm mais
 // rápido que as da iniciativa porque acontecem o tempo todo.
 export const ATTACK_ROLL_TIMING = { spinMs: 460, holdMs: 620 }
 export const DODGE_ROLL_TIMING = { spinMs: 380, holdMs: 700 }
@@ -322,15 +322,15 @@ export const FLAMES_PER_CELL = 2
 // depois esticada para o tamanho pedido na paleta.
 export const AURA_TEXTURE_SIZE = 128
 
-// Peça que já agiu na rodada fica translúcida
-export const MOVED_PIECE_ALPHA = 0.55
+// Personagem que já agiu na rodada fica translúcida
+export const MOVED_CHARACTER_ALPHA = 0.55
 
 // A queda do item que volta ao tabuleiro: de onde ele cai, e em quanto tempo
 export const ITEM_DROP_MS = 1000
 export const ITEM_DROP_HEIGHT = 1.6
 
-// Saídas de cena: peça eliminada, item coletado, e a troca de transparência das peças
-export const PIECE_FADE_MS = 280
+// Saídas de cena: personagem eliminada, item coletado, e a troca de transparência das personagens
+export const CHARACTER_FADE_MS = 280
 export const ITEM_FADE_MS = 220
 export const ALPHA_TWEEN_MS = 200
 
@@ -358,17 +358,17 @@ export const ROLL_READING_LINE = { fontSize: 16, lineHeight: "24px", minHeight: 
 // O brilho difuso atrás do número do d4, no quadrado de 64 do desenho do dado
 export const DIE_GLOW = { x: 32, y: 35, radius: 26 }
 
-// A barra de vigor sob a peça, em frações da casa
+// A barra de vigor sob a personagem, em frações da casa
 export const VIGOR_BAR = { width: 0.56, height: 0.1, offsetY: 0.42, inset: 1 }
 
-// A estrela que marca a promoção da peça
+// A estrela que marca a promoção da personagem
 export const LEVEL_STAR = { x: 0.37, y: 0.26, outer: 0.075, inner: 0.032, points: 5 }
 
-// A mesma estrela no token do HUD. A posição é outra porque ali a peça é um círculo:
+// A mesma estrela no ícone do HUD. A posição é outra porque ali a personagem é um círculo:
 // a estrela desce pela diagonal para caber dentro do anel da aura.
-export const TOKEN_LEVEL_STAR = { x: 0.27, y: 0.27 }
+export const ICON_LEVEL_STAR = { x: 0.27, y: 0.27 }
 
-// O número de dano que sobe acima da peça atingida
+// O número de dano que sobe acima da personagem atingida
 export const DAMAGE_POPUP_MS = 1000
 export const DAMAGE_POPUP_RISE = 0.5
 export const DAMAGE_POPUP_FONT = 0.22

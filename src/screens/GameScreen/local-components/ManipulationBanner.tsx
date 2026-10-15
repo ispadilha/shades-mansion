@@ -19,7 +19,7 @@ export const ManipulationBanner: React.FC<ManipulationBannerProps> = ({ itemKey,
             bg={palette.manipulation.bandBg}
             outline={palette.manipulation.bandOutline}
             textColor={palette.manipulation.bandText}
-            message={itemKey ? `${t("manipulatingPiece")}: ${itemKey}` : ""}
+            message={itemKey ? `${t("manipulatingCharacter")}: ${itemKey}` : ""}
             actionLabel={t("cancelManipulation")}
             onAction={onCancel}
         />

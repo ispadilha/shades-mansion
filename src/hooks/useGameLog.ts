@@ -1,5 +1,5 @@
 import { useState } from "react"
-import type { PieceColor, TextKey } from "../logic/types"
+import type { CharacterColor, TextKey } from "../logic/types"
 import { useLanguage } from "./useLanguage"
 import { MAX_LOG_ENTRIES } from "../constants/rules"
 
@@ -9,25 +9,25 @@ export interface GameLog {
     // As entradas já escritas, da mais antiga para a mais recente
     entries: string[]
     add: (entry: string) => void
-    // "{time} usou {peça} para {ação} [{alvo}]"
-    usedTo: (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => void
-    // "{time} manipulou {peça} para {ação} [{alvo}]"
-    manipulatedTo: (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => void
-    reinvigorated: (color: PieceColor, piece: string) => void
-    // "{peça} (+x) e {parceira} (+y) revigoraram pela afinidade"
-    affinity: (pieceId: string, gain: number, partnerId: string, partnerGain: number) => void
-    promoted: (color: PieceColor, piece: string, level: number) => void
+    // "{time} usou {personagem} para {ação} [{alvo}]"
+    usedTo: (color: CharacterColor, character: string, actionKey: TextKey, target?: string) => void
+    // "{time} manipulou {personagem} para {ação} [{alvo}]"
+    manipulatedTo: (color: CharacterColor, character: string, actionKey: TextKey, target?: string) => void
+    reinvigorated: (color: CharacterColor, character: string) => void
+    // "{personagem} (+x) e {parceira} (+y) revigoraram pela afinidade"
+    affinity: (characterId: string, gain: number, partnerId: string, partnerGain: number) => void
+    promoted: (color: CharacterColor, character: string, level: number) => void
     // Item que saiu de uma manipulação falha e caiu de volta no labirinto
     returned: (itemKey: string) => void
     attackHit: (attackerId: string, targetId: string, damage: number) => void
     attackGuarded: (attackerId: string, targetId: string, damage: number) => void
     attackDodged: (attackerId: string, targetId: string) => void
     manipulationRoll: (itemKey: string, success: boolean) => void
-    // "{peça} dissipou a barreira de {dona}", ou não conseguiu
-    dispelRoll: (pieceId: string, ownerId: string, success: boolean) => void
-    barriersWoreOff: (pieceId: string) => void
-    eliminated: (pieceId: string) => void
-    defeated: (color: PieceColor) => void
+    // "{personagem} dissipou a barreira de {dona}", ou não conseguiu
+    dispelRoll: (characterId: string, ownerId: string, success: boolean) => void
+    barriersWoreOff: (characterId: string) => void
+    eliminated: (characterId: string) => void
+    defeated: (color: CharacterColor) => void
 }
 
 export const useGameLog = (): GameLog => {
@@ -39,37 +39,37 @@ export const useGameLog = (): GameLog => {
         setEntries((prev) => [...prev.slice(-(MAX_LOG_ENTRIES - 1)), entry])
     }
 
-    // Movimento simples é a exceção do formato: "{time} moveu {peça}".
-    const usedTo = (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => {
+    // Movimento simples é a exceção do formato: "{time} moveu {personagem}".
+    const usedTo = (color: CharacterColor, character: string, actionKey: TextKey, target?: string) => {
         if (actionKey === "toMove") {
-            add(`${tTeam(color)} ${t("verbMoved")} ${piece}`)
+            add(`${tTeam(color)} ${t("verbMoved")} ${character}`)
             return
         }
-        const base = `${tTeam(color)} ${t("verbUsed")} ${piece} ${t(actionKey)}`
+        const base = `${tTeam(color)} ${t("verbUsed")} ${character} ${t(actionKey)}`
         add(target ? `${base} ${target}` : base)
     }
 
-    const manipulatedTo = (color: PieceColor, piece: string, actionKey: TextKey, target?: string) => {
-        const base = `${tTeam(color)} ${t("verbManipulated")} ${piece} ${t(actionKey)}`
+    const manipulatedTo = (color: CharacterColor, character: string, actionKey: TextKey, target?: string) => {
+        const base = `${tTeam(color)} ${t("verbManipulated")} ${character} ${t(actionKey)}`
         add(target ? `${base} ${target}` : base)
     }
 
-    const reinvigorated = (color: PieceColor, piece: string) => {
-        add(`${tTeam(color)} ${t("verbReinvigorated")} ${piece}`)
+    const reinvigorated = (color: CharacterColor, character: string) => {
+        add(`${tTeam(color)} ${t("verbReinvigorated")} ${character}`)
     }
 
-    // Quanto a peça perdeu de vigor, no fim da frase: "xX acertou yY (−7)"
+    // Quanto a personagem perdeu de vigor, no fim da frase: "xX acertou yY (−7)"
     const vigorLoss = (damage: number) => ` (−${damage})`
 
     // E quanto ganhou, logo depois do nome: "xA (+3) e xB (+5) revigoraram pela afinidade"
     const vigorGain = (amount: number) => ` (+${amount})`
 
-    const affinity = (pieceId: string, gain: number, partnerId: string, partnerGain: number) => {
-        add(`${pieceId}${vigorGain(gain)} ${t("and")} ${partnerId}${vigorGain(partnerGain)} ${t("verbReinvigoratedByAffinity")}`)
+    const affinity = (characterId: string, gain: number, partnerId: string, partnerGain: number) => {
+        add(`${characterId}${vigorGain(gain)} ${t("and")} ${partnerId}${vigorGain(partnerGain)} ${t("verbReinvigoratedByAffinity")}`)
     }
 
-    const promoted = (color: PieceColor, piece: string, level: number) => {
-        add(`${tTeam(color)} ${t("verbPromoted")} ${piece} ${t("toLevel")} ${level}`)
+    const promoted = (color: CharacterColor, character: string, level: number) => {
+        add(`${tTeam(color)} ${t("verbPromoted")} ${character} ${t("toLevel")} ${level}`)
     }
 
     const returned = (itemKey: string) => {
@@ -92,19 +92,19 @@ export const useGameLog = (): GameLog => {
         add(`${itemKey} ${t(success ? "verbFellUnderManipulation" : "verbResistedManipulation")}`)
     }
 
-    const dispelRoll = (pieceId: string, ownerId: string, success: boolean) => {
-        add(`${pieceId} ${t(success ? "verbDispelledBarrierOf" : "verbFailedToDispelBarrierOf")} ${ownerId}`)
+    const dispelRoll = (characterId: string, ownerId: string, success: boolean) => {
+        add(`${characterId} ${t(success ? "verbDispelledBarrierOf" : "verbFailedToDispelBarrierOf")} ${ownerId}`)
     }
 
-    const barriersWoreOff = (pieceId: string) => {
-        add(`${pieceId} ${t("barriersWoreOff")}`)
+    const barriersWoreOff = (characterId: string) => {
+        add(`${characterId} ${t("barriersWoreOff")}`)
     }
 
-    const eliminated = (pieceId: string) => {
-        add(`${pieceId} ${t("wasEliminated")}!`)
+    const eliminated = (characterId: string) => {
+        add(`${characterId} ${t("wasEliminated")}!`)
     }
 
-    const defeated = (color: PieceColor) => {
+    const defeated = (color: CharacterColor) => {
         add(`${tTeam(color)} ${t("wasDefeated")}!`)
     }
 

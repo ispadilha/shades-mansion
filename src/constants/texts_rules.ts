@@ -6,11 +6,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Three teams compete for the mansion and only one of them will conquer it. Light, Gray and Dark each field six pieces, and the match ends when a single team still has pieces on the board.\n\n" +
-                "Play is turn-based piece by piece.",
+                "Three teams compete for the mansion and only one of them will conquer it. Light, Gray and Dark each field six characters, and the match ends when a single team still has characters on the board.\n\n" +
+                "Play is turn-based character by character.",
             ptBR:
-                "Três times competem pela mansão e só um deles a conquistará. Os times Claro, Cinza e Escuro têm seis peças cada, e a partida acaba quando um único time ainda tem peças no tabuleiro.\n\n" +
-                "O jogo é por turnos, peça a peça.",
+                "Três times competem pela mansão e só um deles a conquistará. Os times Claro, Cinza e Escuro têm seis personagens cada, e a partida acaba quando um único time ainda tem personagens no tabuleiro.\n\n" +
+                "O jogo é por turnos, personagem a personagem.",
         },
     },
 
@@ -36,38 +36,38 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Light, Gray and Dark each start with six pieces, one of each type: Agile (A), Barrier (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
+                "Light, Gray and Dark each start with six characters, one of each type: Agile (A), Barrier (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
                 "The six types are the same for the three teams, and no two of them are alike: they differ in how far they walk, how far they reach, how much vigor they have, the dice their blow rolls and how well they defend themselves.\n\n" +
                 "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row.",
             ptBR:
-                "Claro, Cinza e Escuro começam com seis peças cada, uma de cada tipo: Ágil (A), a de Barreira (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
+                "Claro, Cinza e Escuro começam com seis personagens cada, uma de cada tipo: Ágil (A), a de Barreira (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
                 "Os seis tipos são os mesmos para os três times, e não há dois iguais: eles se diferenciam em quanto andam, quanto alcançam, quanto vigor têm, os dados que o golpe deles rola e o quanto conseguem se defender.\n\n" +
-                "As peças escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
+                "As personagens escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
         },
     },
 
-    pieceTypes: {
+    characterTypes: {
         name: {
-            enUS: "The six pieces",
-            ptBR: "As seis peças",
+            enUS: "The six characters",
+            ptBR: "As seis personagens",
         },
         description: {
             enUS:
-                "The Agile (A) runs the farthest, but hits the softest and has the least vigor. In exchange, no other piece slips out of a blow completely as often.\n\n" +
-                "The Barrier (B) is the middle of the table in a fight. It is the only piece that can close a corridor: it lights paranormal barriers at a distance, which let its own team through and no one else.\n\n" +
-                "The Champion (C) is the heaviest of all, with the most vigor and the strongest blow, but has the most limited movement. Its charge makes up for it: it runs in a straight line over every piece in the way, and each of them takes the damage. This includes allies, which calls for care and strategy.\n\n" +
+                "The Agile (A) runs the farthest, but hits the softest and has the least vigor. In exchange, no other character slips out of a blow completely as often.\n\n" +
+                "The Barrier (B) is the middle of the table in a fight. It is the only character that can close a corridor: it lights paranormal barriers at a distance, which let its own team through and no one else.\n\n" +
+                "The Champion (C) is the heaviest of all, with the most vigor and the strongest blow, but has the most limited movement. Its charge makes up for it: it runs in a straight line over every character in the way, and each of them takes the damage. This includes allies, which calls for care and strategy.\n\n" +
                 "The Distance shooter (D) attacks from where it stands, and still ducks a blow now and then.\n\n" +
-                "The Exotic (E) sits between the middle and the top, in vigor and in the strength of its blow. Its skill is mimicry: it picks another piece within its line of sight, ally or opponent, and uses the chosen piece's skill as if it were its own, at its own level and for that turn only. It cannot mimic another Exotic.\n\n" +
+                "The Exotic (E) sits between the middle and the top, in vigor and in the strength of its blow. Its skill is mimicry: it picks another character within its line of sight, ally or opponent, and uses the chosen character's skill as if it were its own, at its own level and for that turn only. It cannot mimic another Exotic.\n\n" +
                 "The Firestarter (F) shoots from a moderate distance, and its shot burns a whole area.\n\n" +
-                "Right-click a piece and ask for its information to see its numbers, including how much vigor it has left.",
+                "Right-click a character and ask for its information to see its numbers, including how much vigor it has left.",
             ptBR:
-                "A Ágil (A) é a que corre mais longe, mas a que bate mais fraco e tem menos vigor. Em troca, nenhuma outra peça desvia de ataques com tanta frequência.\n\n" +
-                "A de Barreira (B) é o meio da tabela em uma luta. É a única peça que consegue fechar um corredor: ela acende barreiras paranormais à distância, que deixam passar só o time dela.\n\n" +
-                "O Campeão (C) é o mais pesado de todos, com o maior vigor e o golpe mais forte, mas tem o movimento mais limitado. A investida compensa isso: ele corre em linha reta por cima de toda peça no caminho, e cada uma delas leva o dano. Isso inclui aliadas, o que exige cuidado e estratégia.\n\n" +
+                "A Ágil (A) é a que corre mais longe, mas a que bate mais fraco e tem menos vigor. Em troca, nenhuma outra personagem desvia de ataques com tanta frequência.\n\n" +
+                "A de Barreira (B) é o meio da tabela em uma luta. É a única personagem que consegue fechar um corredor: ela acende barreiras paranormais à distância, que deixam passar só o time dela.\n\n" +
+                "O Campeão (C) é o mais pesado de todos, com o maior vigor e o golpe mais forte, mas tem o movimento mais limitado. A investida compensa isso: ele corre em linha reta por cima de toda personagem no caminho, e cada uma delas leva o dano. Isso inclui aliadas, o que exige cuidado e estratégia.\n\n" +
                 "A que atira à Distância (D) ataca de onde está, e ainda desvia de um golpe de vez em quando.\n\n" +
-                "A Exótica (E) fica entre o meio e o topo, no vigor e na força do golpe. A habilidade dela é a imitação: ela escolhe outra peça na sua linha de visão, aliada ou adversária, e usa a habilidade da peça escolhida como se fosse sua, no seu próprio nível e só naquele turno. Só não imita outra Exótica.\n\n" +
+                "A Exótica (E) fica entre o meio e o topo, no vigor e na força do golpe. A habilidade dela é a imitação: ela escolhe outra personagem na sua linha de visão, aliada ou adversária, e usa a habilidade da personagem escolhida como se fosse sua, no seu próprio nível e só naquele turno. Só não imita outra Exótica.\n\n" +
                 "A incendiária com seu Fogo (F) atira a uma distância moderada, e seu tiro queima uma área inteira.\n\n" +
-                "Clique com o botão direito em uma peça e peça a informação dela para ver seus números, inclusive quanto vigor ainda lhe resta.",
+                "Clique com o botão direito em uma personagem e peça a informação dela para ver seus números, inclusive quanto vigor ainda lhe resta.",
         },
     },
 
@@ -78,12 +78,12 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Within each team, the six pieces form three duos that motivate each other: the Agile with the Barrier, the Champion with the Distance shooter, and the Exotic with the Firestarter.\n\n" +
-                "When a piece starts its turn next to its partner, and either of them has lost vigor, both roll their affinity dice: each of them recovers the vigor rolled, up to its maximum.\n\n" +
+                "Within each team, the six characters form three duos that motivate each other: the Agile with the Barrier, the Champion with the Distance shooter, and the Exotic with the Firestarter.\n\n" +
+                "When a character starts its turn next to its partner, and either of them has lost vigor, both roll their affinity dice: each of them recovers the vigor rolled, up to its maximum.\n\n" +
                 "A duo that stays side by side gets this roll twice per round, once at the start of each one's turn. The higher the level of either of them, the stronger the dice.",
             ptBR:
-                "Dentro de cada time, as seis peças formam três duplas que motivam uma à outra: a Ágil com a de Barreira, o Campeão com a que atira à Distância, e a Exótica com a incendiária.\n\n" +
-                "Quando uma peça começa o turno ao lado da parceira, e alguma das duas perdeu vigor, as duas rolam os dados de afinidade: cada uma revigora o que sair, até o seu vigor máximo.\n\n" +
+                "Dentro de cada time, as seis personagens formam três duplas que motivam uma à outra: a Ágil com a de Barreira, o Campeão com a que atira à Distância, e a Exótica com a incendiária.\n\n" +
+                "Quando uma personagem começa o turno ao lado da parceira, e alguma das duas perdeu vigor, as duas rolam os dados de afinidade: cada uma revigora o que sair, até o seu vigor máximo.\n\n" +
                 "Uma dupla que fica lado a lado ganha essa rolagem duas vezes por rodada, uma no começo do turno de cada uma. Quanto mais alto o nível de qualquer uma delas, mais forte o dado.",
         },
     },
@@ -111,10 +111,10 @@ export const texts_rules = {
         description: {
             enUS:
                 "Between choosing your side and entering the mansion, all the characters line up — Light, Gray then Dark — and roll their initiative one at a time: dice thrown together, counted as their sum. A total already taken is refused and the character rolls again, so the values are always different.\n\n" +
-                "The rolls are sorted from the highest to the lowest and that becomes the order of play for the whole match. The order never changes: pieces that have left the mansion are simply skipped.",
+                "The rolls are sorted from the highest to the lowest and that becomes the order of play for the whole match. The order never changes: characters that have left the mansion are simply skipped.",
             ptBR:
                 "Entre a escolha de time e a entrada na mansão, todos os personagens se enfileiram — Claros, Cinzas e Escuros — e rolam a iniciativa um de cada vez: dados jogados juntos, valendo a soma. Um total que já saiu é recusado e o personagem rola de novo, então os valores são sempre diferentes.\n\n" +
-                "As rolagens são ordenadas do maior para o menor e isso vira a ordem das vezes na partida inteira. A ordem nunca muda: as peças que já fugiram da mansão são apenas puladas.",
+                "As rolagens são ordenadas do maior para o menor e isso vira a ordem das vezes na partida inteira. A ordem nunca muda: as personagens que já fugiram da mansão são apenas puladas.",
         },
     },
 
@@ -125,11 +125,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "A turn belongs to a single piece. When the order of turns reaches its end, a new round starts.\n\n" +
-                "Click the piece of the turn to select it and see its ranges highlighted; right-click a cell for the available action. End Turn passes play to the next piece in the order.",
+                "A turn belongs to a single character. When the order of turns reaches its end, a new round starts.\n\n" +
+                "Click the character of the turn to select it and see its ranges highlighted; right-click a cell for the available action. End Turn passes play to the next character in the order.",
             ptBR:
-                "O turno é de uma peça só. Quando a ordem de turnos chega ao fim, começa uma nova rodada.\n\n" +
-                "Clique na peça da vez para selecioná-la e ver os alcances destacados; clique com o botão direito em uma casa para a ação disponível. \"Terminar turno\" passa a vez para a próxima peça da ordem.",
+                "O turno é de uma personagem só. Quando a ordem de turnos chega ao fim, começa uma nova rodada.\n\n" +
+                "Clique na personagem da vez para selecioná-la e ver os alcances destacados; clique com o botão direito em uma casa para a ação disponível. \"Terminar turno\" passa a vez para a próxima personagem da ordem.",
         },
     },
 
@@ -140,13 +140,13 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Pieces walk one cell at a time, up, down, left or right.\n\n" +
-                "Allied pieces do not block a corridor: a piece walks through the cells they occupy, but cannot finish its move on top of one. Opponent pieces close the way, and so do the paranormal barriers of other teams.\n\n" +
-                "The Champion's charge is the exception: it runs in a straight line, in any direction, and goes over the pieces in the way. Only walls and other teams' barriers stop it.",
+                "Characters walk one cell at a time, up, down, left or right.\n\n" +
+                "Allied characters do not block a corridor: a character walks through the cells they occupy, but cannot finish its move on top of one. Opponent characters close the way, and so do the paranormal barriers of other teams.\n\n" +
+                "The Champion's charge is the exception: it runs in a straight line, in any direction, and goes over the characters in the way. Only walls and other teams' barriers stop it.",
             ptBR:
-                "As peças andam uma casa por vez, para cima, para baixo, para a esquerda ou para a direita.\n\n" +
-                "Peças aliadas não bloqueiam o corredor: a peça atravessa as casas ocupadas por elas, mas não pode terminar o movimento em cima de nenhuma. Peças adversárias fecham a passagem, assim como as barreiras paranormais de outros times.\n\n" +
-                "A investida do Campeão é a exceção: ela corre em linha reta, em qualquer direção, e passa por cima das peças no caminho. Só paredes e barreiras de outros times a param.",
+                "As personagens andam uma casa por vez, para cima, para baixo, para a esquerda ou para a direita.\n\n" +
+                "Personagens aliadas não bloqueiam o corredor: a personagem atravessa as casas ocupadas por elas, mas não pode terminar o movimento em cima de nenhuma. Personagens adversárias fecham a passagem, assim como as barreiras paranormais de outros times.\n\n" +
+                "A investida do Campeão é a exceção: ela corre em linha reta, em qualquer direção, e passa por cima das personagens no caminho. Só paredes e barreiras de outros times a param.",
         },
     },
 
@@ -157,15 +157,15 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Melee pieces attack by walking to a free cell next to the target and striking on arrival. The walk has to fit inside the piece's attack range.\n\n" +
+                "Melee characters attack by walking to a free cell next to the target and striking on arrival. The walk has to fit inside the character's attack range.\n\n" +
                 "The shooter and the firestarter attack from where they stand, at anything with a clear line of fire. The firestarter may also aim at an empty cell.\n\n" +
-                "Every blow is settled by two rolls, one after the other. First the attacker rolls the dice of its own blow. Then the piece being attacked answers with a defense roll, which decides how much of that damage actually lands.\n\n" +
-                "A piece that runs out of vigor gives up the dispute and leaves the mansion.",
+                "Every blow is settled by two rolls, one after the other. First the attacker rolls the dice of its own blow. Then the character being attacked answers with a defense roll, which decides how much of that damage actually lands.\n\n" +
+                "A character that runs out of vigor gives up the dispute and leaves the mansion.",
             ptBR:
-                "As peças corpo a corpo atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da peça.\n\n" +
-                "A peça atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre. A incendiária pode mirar também uma casa vazia.\n\n" +
-                "Todo ataque é resolvido em duas rolagens, uma depois da outra. Primeiro a peça atacante rola os dados de seu golpe. Depois a peça atacada responde com a rolagem de defesa, que decide quanto desse dano chega de fato.\n\n" +
-                "A peça que fica sem vigor desiste da disputa e sai da mansão.",
+                "As personagens corpo a corpo atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da personagem.\n\n" +
+                "A personagem atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre. A incendiária pode mirar também uma casa vazia.\n\n" +
+                "Todo ataque é resolvido em duas rolagens, uma depois da outra. Primeiro a personagem atacante rola os dados de seu golpe. Depois a personagem atacada responde com a rolagem de defesa, que decide quanto desse dano chega de fato.\n\n" +
+                "A personagem que fica sem vigor desiste da disputa e sai da mansão.",
         },
     },
 
@@ -176,15 +176,15 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "An attacked piece may defend itself by rolling a die against two numbers of its own: the dodge and the guard.\n\n" +
-                "Reaching the dodge, the piece gets out of the way entirely and takes nothing. Reaching only the guard, it holds what it can and takes only a part of the damage. Below both, the blow lands whole.\n\n" +
-                "The guard is within reach of every piece, so any of them can soften a blow. The dodge is not: heavy pieces are too slow to leave the ground.\n\n" +
-                "A fire reaches several pieces at once, and each of them rolls its own defense.\n\n",
+                "An attacked character may defend itself by rolling a die against two numbers of its own: the dodge and the guard.\n\n" +
+                "Reaching the dodge, the character gets out of the way entirely and takes nothing. Reaching only the guard, it holds what it can and takes only a part of the damage. Below both, the blow lands whole.\n\n" +
+                "The guard is within reach of every character, so any of them can soften a blow. The dodge is not: heavy characters are too slow to leave the ground.\n\n" +
+                "A fire reaches several characters at once, and each of them rolls its own defense.\n\n",
             ptBR:
-                "Uma peça atacada pode se defender rolando um dado contra dois números próprios: a esquiva e o aparo.\n\n" +
-                "Alcançando a esquiva, a peça sai inteira da frente e não leva nada. Alcançando só o aparo, ela segura o que pode e leva só uma parte do dano. Abaixo dos dois, o golpe entra inteiro.\n\n" +
-                "O aparo está ao alcance de qualquer peça, então todas conseguem amortecer um golpe. A esquiva não: as peças pesadas são lentas demais para sair do chão.\n\n" +
-                "Um incêndio alcança várias peças de uma vez, e cada uma rola a defesa dela.\n\n",
+                "Uma personagem atacada pode se defender rolando um dado contra dois números próprios: a esquiva e o aparo.\n\n" +
+                "Alcançando a esquiva, a personagem sai inteira da frente e não leva nada. Alcançando só o aparo, ela segura o que pode e leva só uma parte do dano. Abaixo dos dois, o golpe entra inteiro.\n\n" +
+                "O aparo está ao alcance de qualquer personagem, então todas conseguem amortecer um golpe. A esquiva não: as personagens pesadas são lentas demais para sair do chão.\n\n" +
+                "Um incêndio alcança várias personagens de uma vez, e cada uma rola a defesa dela.\n\n",
         },
     },
 
@@ -195,12 +195,12 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The firestarter shoots from a distance, and where the shot lands an area catches fire. It is the only piece that can aim at the ground.\n\n" +
-                "The fire does not tell friend from foe: every piece standing on a burning cell takes damage, including the firestarter's own team and the firestarter itself when it fires at something too close. Each of them rolls its own defense.\n\n" +
+                "The firestarter shoots from a distance, and where the shot lands an area catches fire. It is the only character that can aim at the ground.\n\n" +
+                "The fire does not tell friend from foe: every character standing on a burning cell takes damage, including the firestarter's own team and the firestarter itself when it fires at something too close. Each of them rolls its own defense.\n\n" +
                 "Strategy often involves caution.",
             ptBR:
-                "A peça incendiária atira a alguma distância, e onde o tiro cai uma área pega fogo. Esta é a única peça que pode mirar o chão.\n\n" +
-                "O fogo não distingue amigo de inimigo: toda peça em uma casa em chamas leva dano, inclusive as do próprio time da incendiária e até ela mesma, quando atira em algo perto demais. Cada uma delas rola a própria defesa.\n\n" +
+                "A personagem incendiária atira a alguma distância, e onde o tiro cai uma área pega fogo. Esta é a única personagem que pode mirar o chão.\n\n" +
+                "O fogo não distingue amigo de inimigo: toda personagem em uma casa em chamas leva dano, inclusive as do próprio time da incendiária e até ela mesma, quando atira em algo perto demais. Cada uma delas rola a própria defesa.\n\n" +
                 "A estratégia muitas vezes envolve cautela.",
         },
     },
@@ -212,15 +212,15 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The Barrier piece lights paranormal barriers at a distance. A barrier closes its cell to the other teams: their pieces cannot walk through it, and it stops their shots and their fire. Its own team walks through it as usual, and it goes out on its own when the turn of the piece that lit it comes around again.\n\n" +
-                "A piece standing on a barrier of its own team is protected: no opponent can attack it there, up close or from afar. To attack it, the barrier has to be dispelled first.\n\n" +
-                "An opponent can try to dispel a barrier the way it attacks in melee: it walks to a cell next to the barrier and rolls a die, which has to come out high, the same for any piece. If it does, that barrier is dispelled, and only that one. The attempt spends the piece's action whether it works or not.\n\n" +
-                "Skills are no use for attacking the barriers, with one exception: the Agile piece's extra move gives the piece its usual options back, and a new attempt comes with them.",
+                "The Barrier character lights paranormal barriers at a distance. A barrier closes its cell to the other teams: their characters cannot walk through it, and it stops their shots and their fire. Its own team walks through it as usual, and it goes out on its own when the turn of the character that lit it comes around again.\n\n" +
+                "A character standing on a barrier of its own team is protected: no opponent can attack it there, up close or from afar. To attack it, the barrier has to be dispelled first.\n\n" +
+                "An opponent can try to dispel a barrier the way it attacks in melee: it walks to a cell next to the barrier and rolls a die, which has to come out high, the same for any character. If it does, that barrier is dispelled, and only that one. The attempt spends the character's action whether it works or not.\n\n" +
+                "Skills are no use for attacking the barriers, with one exception: the Agile character's extra move gives the character its usual options back, and a new attempt comes with them.",
             ptBR:
-                "A peça de Barreira acende barreiras paranormais à distância. Uma barreira fecha a casa para os outros times: as peças deles não passam por ela, e ela segura os tiros e o fogo deles. O time dela passa normalmente, e ela se apaga sozinha quando a vez da peça que a acendeu volta.\n\n" +
-                "Uma peça em cima de uma barreira do próprio time fica protegida: nenhuma peça adversária consegue atacá-la ali, nem de perto nem à distância. Para atacá-la, é preciso antes dissipar a barreira.\n\n" +
-                "Uma peça adversária pode tentar dissipar uma barreira como quem ataca corpo a corpo: ela anda até uma casa ao lado da barreira e rola um dado, que precisa dar um resultado alto, o mesmo para qualquer peça. Conseguindo, aquela barreira se dissipa, e só ela. A tentativa gasta a ação da peça, dando certo ou não.\n\n" +
-                "Habilidades não servem para atacar barreiras, com uma exceção: o movimento extra da peça Ágil devolve à peça as opções de sempre, e com elas vem uma nova tentativa.",
+                "A personagem de Barreira acende barreiras paranormais à distância. Uma barreira fecha a casa para os outros times: as personagens deles não passam por ela, e ela segura os tiros e o fogo deles. O time dela passa normalmente, e ela se apaga sozinha quando a vez da personagem que a acendeu volta.\n\n" +
+                "Uma personagem em cima de uma barreira do próprio time fica protegida: nenhuma personagem adversária consegue atacá-la ali, nem de perto nem à distância. Para atacá-la, é preciso antes dissipar a barreira.\n\n" +
+                "Uma personagem adversária pode tentar dissipar uma barreira como quem ataca corpo a corpo: ela anda até uma casa ao lado da barreira e rola um dado, que precisa dar um resultado alto, o mesmo para qualquer personagem. Conseguindo, aquela barreira se dissipa, e só ela. A tentativa gasta a ação da personagem, dando certo ou não.\n\n" +
+                "Habilidades não servem para atacar barreiras, com uma exceção: o movimento extra da personagem Ágil devolve à personagem as opções de sempre, e com elas vem uma nova tentativa.",
         },
     },
 
@@ -231,17 +231,17 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The piece that acts (the piece of the turn, or a manipulated one) shows around it what it can do now: orange on the cells it can walk to, and red on the ones only its attack reaches.\n\n" +
-                "Orange is ground the piece can take, and strike from. Red is a target it can hit without standing there: an occupied cell, or a spot further than its legs but still within its attack reach.\n\n" +
-                "An opponent's barrier turns red when the piece can try to dispel it. On a cell where a piece is protected by its own team's barrier, the red belongs to the barrier: the piece cannot be attacked, but the barrier can be dispelled.\n\n" +
-                "With a skill in use, the cells where it can be used turn blue: where the piece shoots, sets fire, lights a barrier or ends a charge, or, for mimicry, what it can see and the pieces it can mimic. Once a piece is chosen, the highlights become those of the mimicked skill. Around the fire's blue, the red marks cells that cannot be aimed at, but that the flames may still reach. With a charge, the red marks the pieces it could run over on the way. Extra move is the exception: it gives the piece back the movement and the strike of its basic action, so it shows the usual orange and red, within the rolled range.\n\n" +
-                "Selecting any other piece shows how far it will be able to reach on its turn. From the piece outward: the orange of its movement, the red of its attack, and a light blue with the maximum reach of its skill (for skills that roll dice, the highest number the dice can give). For the Firestarter, the light blue includes the radius of the flames around where it can aim; for the Champion, the pieces its charge could run over on the way turn red. These highlights are only for looking: the menu offers no actions to a piece outside its turn.\n\n",
+                "The character that acts (the character of the turn, or a manipulated one) shows around it what it can do now: orange on the cells it can walk to, and red on the ones only its attack reaches.\n\n" +
+                "Orange is ground the character can take, and strike from. Red is a target it can hit without standing there: an occupied cell, or a spot further than its legs but still within its attack reach.\n\n" +
+                "An opponent's barrier turns red when the character can try to dispel it. On a cell where a character is protected by its own team's barrier, the red belongs to the barrier: the character cannot be attacked, but the barrier can be dispelled.\n\n" +
+                "With a skill in use, the cells where it can be used turn blue: where the character shoots, sets fire, lights a barrier or ends a charge, or, for mimicry, what it can see and the characters it can mimic. Once a character is chosen, the highlights become those of the mimicked skill. Around the fire's blue, the red marks cells that cannot be aimed at, but that the flames may still reach. With a charge, the red marks the characters it could run over on the way. Extra move is the exception: it gives the character back the movement and the strike of its basic action, so it shows the usual orange and red, within the rolled range.\n\n" +
+                "Selecting any other character shows how far it will be able to reach on its turn. From the character outward: the orange of its movement, the red of its attack, and a light blue with the maximum reach of its skill (for skills that roll dice, the highest number the dice can give). For the Firestarter, the light blue includes the radius of the flames around where it can aim; for the Champion, the characters its charge could run over on the way turn red. These highlights are only for looking: the menu offers no actions to a character outside its turn.\n\n",
             ptBR:
-                "A peça que age (a da vez, ou uma manipulada) mostra em volta dela o que pode fazer agora: laranja nas casas que ela alcança andando, e vermelho nas que só o ataque dela alcança.\n\n" +
-                "O laranja é terreno que a peça toma, e de onde também ataca. O vermelho é alvo que ela atinge sem pisar ali: uma casa ocupada, ou um ponto além das pernas dela mas ainda ao alcance de ataque.\n\n" +
-                "A barreira de outro time fica vermelha quando a peça pode tentar dissipá-la. Numa casa em que uma peça está protegida pela barreira do próprio time, o vermelho é da barreira: a peça não pode ser atacada, mas a barreira pode ser dissipada.\n\n" +
-                "Com uma habilidade em uso, as casas em que ela pode ser usada ficam azuis: onde a peça atira, incendeia, acende uma barreira, termina uma investida ou, na imitação, o que ela enxerga e as peças que pode imitar. Escolhida a peça, os destaques passam a ser os da habilidade imitada. Em volta do azul do incêndio, o vermelho marca casas em que não se pode mirar, mas aonde o fogo ainda pode chegar. Na investida, o vermelho marca as peças que ela pode atropelar no caminho. O movimento extra é a exceção: ele devolve à peça o movimento e o golpe da ação comum, e por isso mostra o laranja e o vermelho de sempre, no alcance sorteado.\n\n" +
-                "Selecionar qualquer outra peça mostra até onde ela poderá chegar quando for a vez dela. Da peça para fora: o laranja do movimento, o vermelho do ataque, e um azul claro com o alcance máximo da habilidade dela (nas que rolam dados, o maior número que eles podem tirar). Na incendiária, o azul claro inclui o raio do fogo em volta de onde ela pode mirar; no Campeão, as peças que a investida pode atropelar no caminho ficam em vermelho. Esses destaques são só para consulta: o menu não oferece ações a uma peça fora da vez.\n\n",
+                "A personagem que age (a da vez, ou uma manipulada) mostra em volta dela o que pode fazer agora: laranja nas casas que ela alcança andando, e vermelho nas que só o ataque dela alcança.\n\n" +
+                "O laranja é terreno que a personagem toma, e de onde também ataca. O vermelho é alvo que ela atinge sem pisar ali: uma casa ocupada, ou um ponto além das pernas dela mas ainda ao alcance de ataque.\n\n" +
+                "A barreira de outro time fica vermelha quando a personagem pode tentar dissipá-la. Numa casa em que uma personagem está protegida pela barreira do próprio time, o vermelho é da barreira: a personagem não pode ser atacada, mas a barreira pode ser dissipada.\n\n" +
+                "Com uma habilidade em uso, as casas em que ela pode ser usada ficam azuis: onde a personagem atira, incendeia, acende uma barreira, termina uma investida ou, na imitação, o que ela enxerga e as personagens que pode imitar. Escolhida a personagem, os destaques passam a ser os da habilidade imitada. Em volta do azul do incêndio, o vermelho marca casas em que não se pode mirar, mas aonde o fogo ainda pode chegar. Na investida, o vermelho marca as personagens que ela pode atropelar no caminho. O movimento extra é a exceção: ele devolve à personagem o movimento e o golpe da ação comum, e por isso mostra o laranja e o vermelho de sempre, no alcance sorteado.\n\n" +
+                "Selecionar qualquer outra personagem mostra até onde ela poderá chegar quando for a vez dela. Da personagem para fora: o laranja do movimento, o vermelho do ataque, e um azul claro com o alcance máximo da habilidade dela (nas que rolam dados, o maior número que eles podem tirar). Na incendiária, o azul claro inclui o raio do fogo em volta de onde ela pode mirar; no Campeão, as personagens que a investida pode atropelar no caminho ficam em vermelho. Esses destaques são só para consulta: o menu não oferece ações a uma personagem fora da vez.\n\n",
         },
     },
 
@@ -252,11 +252,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The mansion hides items that are valuable to the different pieces. Each one is a motivation for the piece it belongs to: a reason to recover, to grow, and to stay in the dispute.\n\n" +
-                "An item that motivates one of your own pieces reinvigorates it when it has lost vigor, and promotes it when it has not. An item that motivates another team's piece is a temptation you can use to manipulate it.\n\n",
+                "The mansion hides items that are valuable to the different characters. Each one is a motivation for the character it belongs to: a reason to recover, to grow, and to stay in the dispute.\n\n" +
+                "An item that motivates one of your own characters reinvigorates it when it has lost vigor, and promotes it when it has not. An item that motivates another team's character is a temptation you can use to manipulate it.\n\n",
             ptBR:
-                "A mansão esconde itens que são valiosos para as diferentes peças. Cada um é uma motivação para a peça a que pertence: um motivo para se recuperar, para evoluir, e para continuar na disputa.\n\n" +
-                "Um item que motiva uma peça sua a revigora, quando ela perdeu vigor, e a promove quando isso não aconteceu. Um item que motiva a peça de outro time é uma tentação que você pode usar para manipulá-la.\n\n",
+                "A mansão esconde itens que são valiosos para as diferentes personagens. Cada um é uma motivação para a personagem a que pertence: um motivo para se recuperar, para evoluir, e para continuar na disputa.\n\n" +
+                "Um item que motiva uma personagem sua a revigora, quando ela perdeu vigor, e a promove quando isso não aconteceu. Um item que motiva a personagem de outro time é uma tentação que você pode usar para manipulá-la.\n\n",
         },
     },
 
@@ -267,15 +267,15 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Using an item which motivates your own piece gives it back the vigor it has lost.\n\n" +
-                "Reinvigorating is what the item does while the piece is short of vigor. At full vigor, the same item promotes it instead.\n\n" +
-                "It can't be used on a piece that has already left the mansion, so an item held too long can be lost with its owner.\n\n" +
-                "Besides items, the pieces of an affinity duo reinvigorate each other when one of them starts its turn next to the other.",
+                "Using an item which motivates your own character gives it back the vigor it has lost.\n\n" +
+                "Reinvigorating is what the item does while the character is short of vigor. At full vigor, the same item promotes it instead.\n\n" +
+                "It can't be used on a character that has already left the mansion, so an item held too long can be lost with its owner.\n\n" +
+                "Besides items, the characters of an affinity duo reinvigorate each other when one of them starts its turn next to the other.",
             ptBR:
-                "Usar um item que motiva a sua própria peça devolve a ela o vigor que perdeu.\n\n" +
-                "Revigorar é o que o item faz quando a peça foi atingida em disputas. Com o vigor cheio, o mesmo item a promove.\n\n" +
-                "Ele não pode ser usado em uma peça que já fugiu da mansão, então um item guardado tempo demais pode se perder junto com o dono.\n\n" +
-                "Além dos itens, as peças de uma dupla de afinidade se revigoram quando uma delas começa o turno ao lado da outra.",
+                "Usar um item que motiva a sua própria personagem devolve a ela o vigor que perdeu.\n\n" +
+                "Revigorar é o que o item faz quando a personagem foi atingida em disputas. Com o vigor cheio, o mesmo item a promove.\n\n" +
+                "Ele não pode ser usado em uma personagem que já fugiu da mansão, então um item guardado tempo demais pode se perder junto com o dono.\n\n" +
+                "Além dos itens, as personagens de uma dupla de afinidade se revigoram quando uma delas começa o turno ao lado da outra.",
         },
     },
 
@@ -286,15 +286,15 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "A piece at full vigor has no vigor to get back, so the item promotes it instead: the piece goes up a level.\n\n" +
+                "A character at full vigor has no vigor to get back, so the item promotes it instead: the character goes up a level.\n\n" +
                 "Every level adds vigor and reach, makes the guard easier, and moves the damage die up the ladder, to a die with more faces.\n\n" +
-                "The dodge is the one thing a promotion doesn't change: a heavy piece will still be slow.\n\n" +
-                "Right-click a piece and ask for its information to see the level it is on.",
+                "The dodge is the one thing a promotion doesn't change: a heavy character will still be slow.\n\n" +
+                "Right-click a character and ask for its information to see the level it is on.",
             ptBR:
-                "Uma peça com o vigor cheio não tem vigor a recuperar, então o item a promove: ela sobe um nível.\n\n" +
+                "Uma personagem com o vigor cheio não tem vigor a recuperar, então o item a promove: ela sobe um nível.\n\n" +
                 "Cada nível acrescenta vigor e alcance, deixa o aparo mais fácil, e sobe o dado de dano na escada, para um dado de mais faces.\n\n" +
-                "A esquiva é a única coisa em que a promoção não mexe: uma peça pesada ainda será lenta.\n\n" +
-                "Clique com o botão direito em uma peça e peça a informação dela para ver em que nível ela está.",
+                "A esquiva é a única coisa em que a promoção não mexe: uma personagem pesada ainda será lenta.\n\n" +
+                "Clique com o botão direito em uma personagem e peça a informação dela para ver em que nível ela está.",
         },
     },
 
@@ -305,14 +305,14 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "An item that motivates an opponent's piece is a temptation over it. Using it on your turn flips a coin: on heads that enemy piece falls under your command for a single action. On tails, it resists.\n\n" +
-                "A manipulated piece does not attack its allies, but it may be led to attack the third team, or lured into a vulnerable position.\n\n" +
-                "Being manipulated is an abnormal action and the piece still has its own action when its turn comes, and a piece that has already acted can be manipulated all the same.\n\n" +
+                "An item that motivates an opponent's character is a temptation over it. Using it on your turn flips a coin: on heads that enemy character falls under your command for a single action. On tails, it resists.\n\n" +
+                "A manipulated character does not attack its allies, but it may be led to attack the third team, or lured into a vulnerable position.\n\n" +
+                "Being manipulated is an abnormal action and the character still has its own action when its turn comes, and a character that has already acted can be manipulated all the same.\n\n" +
                 "On tails, the item slips out of the manipulator's hands and falls back on the floor, on a random free cell, for whoever reaches it first.",
             ptBR:
-                "Um item que motiva a peça de um oponente é uma tentação sobre ela. Usá-lo no seu turno joga uma moeda: dando cara, aquela peça inimiga cai sob o seu comando por uma única ação. Se der coroa, ela resiste.\n\n" +
-                "Uma peça manipulada não ataca as próprias aliadas, mas pode ser levada a atacar o terceiro time, ou induzida a uma posição vulnerável.\n\n" +
-                "Ser manipulada é uma ação anormal e a peça continua com sua ação quando chegar a vez dela, e uma peça que já agiu pode ser manipulada do mesmo jeito.\n\n" +
+                "Um item que motiva a personagem de um oponente é uma tentação sobre ela. Usá-lo no seu turno joga uma moeda: dando cara, aquela personagem inimiga cai sob o seu comando por uma única ação. Se der coroa, ela resiste.\n\n" +
+                "Uma personagem manipulada não ataca as próprias aliadas, mas pode ser levada a atacar o terceiro time, ou induzida a uma posição vulnerável.\n\n" +
+                "Ser manipulada é uma ação anormal e a personagem continua com sua ação quando chegar a vez dela, e uma personagem que já agiu pode ser manipulada do mesmo jeito.\n\n" +
                 "Dando coroa, o item escapa das mãos de quem tentou uma manipulação e cai de volta no chão, em uma casa livre sorteada, para quem chegar primeiro.",
         },
     },
@@ -324,9 +324,9 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "The mansion will be conquered by one team only. When two of the three sides have seen all their pieces flee the mansion, the last one still around wins, however few pieces it has left.\n\n",
+                "The mansion will be conquered by one team only. When two of the three sides have seen all their characters flee the mansion, the last one still around wins, however few characters it has left.\n\n",
             ptBR:
-                "A mansão será conquistada por um time só. Quando dois dos três lados veem todas as suas peças fugirem da mansão, o último presente vence, por menos peças que ainda tenha.\n\n",
+                "A mansão será conquistada por um time só. Quando dois dos três lados veem todas as suas personagens fugirem da mansão, o último presente vence, por menos personagens que ainda tenha.\n\n",
         },
     },
 }

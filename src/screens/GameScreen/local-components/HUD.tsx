@@ -7,18 +7,18 @@ import { ManipulationBanner } from "./ManipulationBanner"
 import { SkillBanner } from "./SkillBanner"
 import { TurnStatus } from "./TurnStatus"
 import { TurnOrderBar } from "./TurnOrderBar"
-import type { PieceAuras, PieceDefinition, MotivationItemKey } from "../../../logic/types"
+import type { CharacterAuras, CharacterDefinition, MotivationItemKey } from "../../../logic/types"
 import type { ActiveSkill } from "../../../logic/skills"
 import { usePalette } from "../../../hooks/usePalette"
 import { HUD_BAND_HEIGHT, HUD_TURN_ORDER_WIDTH } from "../../../constants/rules"
 
 interface HUDProps {
-    // Peça da vez na ordem de iniciativa (null só enquanto a partida está terminando)
-    activePiece: PieceDefinition | null
-    // Peças ainda em jogo, na ordem de iniciativa, para a faixa de turnos
-    turnOrder: PieceDefinition[]
-    // Destaques das peças, os mesmos do tabuleiro
-    auras: PieceAuras
+    // Personagem da vez na ordem de iniciativa (null só enquanto a partida está terminando)
+    activeCharacter: CharacterDefinition | null
+    // Personagens ainda em jogo, na ordem de iniciativa, para a faixa de turnos
+    turnOrder: CharacterDefinition[]
+    // Destaques das personagens, os mesmos do tabuleiro
+    auras: CharacterAuras
     round: number
     isPlayerTurn: boolean
     // Uma rolagem em andamento trava os controles até o resultado sair
@@ -35,16 +35,16 @@ interface HUDProps {
     log: string[]
     manipulationKey: MotivationItemKey | null
     onCancelManipulation: () => void
-    onFocusActivePiece: () => void
+    onFocusActiveCharacter: () => void
     hintVisible: boolean
     onDismissHint: () => void
     activeSkill: ActiveSkill | null
-    skillChargesLeft: number
+    skillUsesLeft: number
     onCancelSkill: () => void
 }
 
 export const HUD: React.FC<HUDProps> = ({
-    activePiece,
+    activeCharacter,
     turnOrder,
     auras,
     round,
@@ -60,11 +60,11 @@ export const HUD: React.FC<HUDProps> = ({
     log,
     manipulationKey,
     onCancelManipulation,
-    onFocusActivePiece,
+    onFocusActiveCharacter,
     hintVisible,
     onDismissHint,
     activeSkill,
-    skillChargesLeft,
+    skillUsesLeft,
     onCancelSkill,
 }) => {
     const palette = usePalette()
@@ -74,7 +74,7 @@ export const HUD: React.FC<HUDProps> = ({
             {/* Banners sempre montados: cada um "decide sozinho" quando entrar e sair,
                 e precisa continuar na árvore para conseguir deslizar de volta. */}
             <ManipulationBanner itemKey={manipulationKey} onCancel={onCancelManipulation} />
-            <SkillBanner active={activeSkill} piece={activePiece} chargesLeft={skillChargesLeft} onCancel={onCancelSkill} />
+            <SkillBanner active={activeSkill} character={activeCharacter} usesLeft={skillUsesLeft} onCancel={onCancelSkill} />
             <HintBanner open={hintVisible} onDismiss={onDismissHint} />
 
             {/* Faixa de cima: ordem dos turnos à esquerda, log de jogadas à direita */}
@@ -83,8 +83,8 @@ export const HUD: React.FC<HUDProps> = ({
                     <TurnOrderBar
                         order={turnOrder}
                         auras={auras}
-                        activeId={activePiece?.id ?? null}
-                        onActivate={isPlayerTurn ? onFocusActivePiece : undefined}
+                        activeId={activeCharacter?.id ?? null}
+                        onActivate={isPlayerTurn ? onFocusActiveCharacter : undefined}
                         round={round}
                     />
                 </Box>
@@ -92,7 +92,7 @@ export const HUD: React.FC<HUDProps> = ({
                 <GameLogPanel entries={log} />
             </Box>
 
-            {/* Faixa de baixo: peça da vez e botões */}
+            {/* Faixa de baixo: personagem da vez e botões */}
             <Box
                 sx={{
                     display: "flex",
@@ -104,7 +104,7 @@ export const HUD: React.FC<HUDProps> = ({
                     overflowX: "auto",
                 }}
             >
-                <TurnStatus activePiece={activePiece} isPlayerTurn={isPlayerTurn} spectating={spectating} />
+                <TurnStatus activeCharacter={activeCharacter} isPlayerTurn={isPlayerTurn} spectating={spectating} />
                 <HudActions
                     isPlayerTurn={isPlayerTurn}
                     busy={busy}

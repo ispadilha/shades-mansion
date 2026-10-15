@@ -3,7 +3,7 @@ import { Box, Button, Menu, MenuItem, Stack, Typography } from "@mui/material"
 import { InventoryItemRow } from "./InventoryItemRow"
 import { ItemInfoModal } from "./ItemInfoModal"
 import { ModalCard } from "../../../components/ui"
-import type { PieceColor, PieceDefinition, MotivationItemKey, TeamInventory } from "../../../logic/types"
+import type { CharacterColor, CharacterDefinition, MotivationItemKey, TeamInventory } from "../../../logic/types"
 import { itemUseFor } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
@@ -12,8 +12,8 @@ interface InventoryModalProps {
     open: boolean
     onClose: () => void
     inventory: TeamInventory
-    pieces: PieceDefinition[]
-    playerColor: PieceColor
+    characters: CharacterDefinition[]
+    playerColor: CharacterColor
     // Gastar item é jogada: só na vez de quem comanda, e não no meio de uma rolagem.
     // Fora disso o modal abre igual, mas só para consulta, com os botões desabilitados.
     canUse: boolean
@@ -25,7 +25,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
     open,
     onClose,
     inventory,
-    pieces,
+    characters,
     playerColor,
     canUse,
     onUseOwnItem,
@@ -44,9 +44,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
         return acc
     }, [])
 
-    // Item do próprio time revigora a peça atingida ou promove a que está inteira.
-    // Item de outro time serve para tentar manipular a peça.
-    const actionFor = (key: MotivationItemKey) => itemUseFor(key, pieces.find((p) => p.id === key), playerColor)
+    // Item do próprio time revigora a personagem atingida ou promove a que está inteira.
+    // Item de outro time serve para tentar manipular a personagem.
+    const actionFor = (key: MotivationItemKey) => itemUseFor(key, characters.find((p) => p.id === key), playerColor)
 
     const handleUse = (key: MotivationItemKey) => {
         if (!canUse) return

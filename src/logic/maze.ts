@@ -1,4 +1,4 @@
-import type { PiecePosition } from "./types"
+import type { CharacterPosition } from "./types"
 import { ORTHOGONAL_STEPS, manhattan } from "./grid"
 import { randomInt } from "./random"
 import { EXTRA_CORRIDOR_RATIO, LAYOUT_CANDIDATES, ROOM_PLACEMENT_ATTEMPTS_PER_CELL } from "../constants/rules"
@@ -24,7 +24,7 @@ export const isWall = (maze: Maze, x: number, y: number) => !inside(maze, x, y) 
 
 export const isWalkable = (maze: Maze, x: number, y: number) => inside(maze, x, y) && !maze.walls[y][x]
 
-export const roomCenter = (room: MazeRoom): PiecePosition => ({
+export const roomCenter = (room: MazeRoom): CharacterPosition => ({
     x: room.x + Math.floor(room.size / 2),
     y: room.y + Math.floor(room.size / 2),
 })
@@ -43,7 +43,7 @@ const carveRoom = (walls: boolean[][], room: MazeRoom) => {
 
 // Corredor de largura 1 em "L" entre dois pontos; o cotovelo cai no eixo X ou no Y
 // (sorteado) para variar o traçado.
-const carveCorridor = (walls: boolean[][], from: PiecePosition, to: PiecePosition) => {
+const carveCorridor = (walls: boolean[][], from: CharacterPosition, to: CharacterPosition) => {
     const horizontalFirst = Math.random() < 0.5
     let { x, y } = from
     walls[y][x] = false
@@ -149,16 +149,16 @@ const connectRooms = (walls: boolean[][], rooms: MazeRoom[]) => {
 }
 
 // Agrupa as casas livres em componentes conexos (vizinhança ortogonal)
-const findComponents = (walls: boolean[][], size: number): PiecePosition[][] => {
+const findComponents = (walls: boolean[][], size: number): CharacterPosition[][] => {
     const seen = walls.map((row) => row.map(() => false))
-    const components: PiecePosition[][] = []
+    const components: CharacterPosition[][] = []
 
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
             if (walls[y][x] || seen[y][x]) continue
 
-            const component: PiecePosition[] = []
-            const queue: PiecePosition[] = [{ x, y }]
+            const component: CharacterPosition[] = []
+            const queue: CharacterPosition[] = [{ x, y }]
             seen[y][x] = true
 
             while (queue.length > 0) {
@@ -192,7 +192,7 @@ const ensureConnectivity = (walls: boolean[][], size: number) => {
         components.sort((a, b) => b.length - a.length)
         const [main, other] = components
 
-        let best: { from: PiecePosition; to: PiecePosition; distance: number } | null = null
+        let best: { from: CharacterPosition; to: CharacterPosition; distance: number } | null = null
         for (const from of other) {
             for (const to of main) {
                 const distance = manhattan(from, to)

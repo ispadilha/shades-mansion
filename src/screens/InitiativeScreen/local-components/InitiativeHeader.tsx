@@ -2,13 +2,13 @@ import React from "react"
 import { Box } from "@mui/material"
 import { InitiativeLineup } from "./InitiativeLineup"
 import { ScreenSubtitle, ScreenTitle } from "../../../components/ui"
-import type { PieceSlot } from "../../../logic/setup"
+import type { CharacterSlot } from "../../../logic/setup"
 import { useLanguage } from "../../../hooks/useLanguage"
 
 interface InitiativeHeaderProps {
-    // Peças na ordem em que devem aparecer na fila
-    slots: PieceSlot[]
-    // Peça que está rolando o dado agora
+    // Personagens na ordem em que devem aparecer na fila
+    slots: CharacterSlot[]
+    // Personagem que está rolando o dado agora
     activeId: string | null
     values: Record<string, number>
     // As rolagens acabaram: a fila passa a mostrar a ordem sorteada

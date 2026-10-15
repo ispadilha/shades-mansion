@@ -1,12 +1,12 @@
 import React from "react"
 import { Button, type SxProps, type Theme } from "@mui/material"
-import type { PieceColor } from "../../logic/types"
+import type { CharacterColor } from "../../logic/types"
 import { TEAM_BUTTON_PALETTE } from "../../constants/palette"
 
 interface TeamButtonProps {
     children: React.ReactNode
     // O time do botão: é dele que saem as cores
-    color: PieceColor
+    color: CharacterColor
     onClick: () => void
     sx?: SxProps<Theme>
 }

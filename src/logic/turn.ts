@@ -1,4 +1,4 @@
-import type { PieceDefinition } from "./types"
+import type { CharacterDefinition } from "./types"
 
 export type TurnStage =
     // Ainda tem a ação comum
@@ -8,11 +8,11 @@ export type TurnStage =
     // Não sobrou nada: só encerrar o turno
     | "spent"
 
-export const hasSkillLeft = (piece: PieceDefinition) => !piece.usedSkillThisTurn
+export const hasSkillLeft = (character: CharacterDefinition) => !character.usedSkillThisTurn
 
-export const turnStageOf = (piece: PieceDefinition): TurnStage => {
-    if (!piece.movedThisTurn) return "idle"
-    return hasSkillLeft(piece) ? "moved" : "spent"
+export const turnStageOf = (character: CharacterDefinition): TurnStage => {
+    if (!character.movedThisTurn) return "idle"
+    return hasSkillLeft(character) ? "moved" : "spent"
 }
 
-export const isSpent = (piece: PieceDefinition) => turnStageOf(piece) === "spent"
+export const isSpent = (character: CharacterDefinition) => turnStageOf(character) === "spent"

@@ -1,4 +1,4 @@
-import type { Barrier, LineBlockers, MotivationItem, PiecePosition, PieceDefinition } from "./types"
+import type { Barrier, LineBlockers, MotivationItem, CharacterPosition, CharacterDefinition } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import {
@@ -13,17 +13,17 @@ import {
 import { statsFor } from "../constants/rules"
 
 interface WalkNode {
-    position: PiecePosition
+    position: CharacterPosition
     distance: number
     previous: string | null
 }
 
 // Busca em largura pelas casas por onde se anda. As paredes bloqueiam sempre, o que
-// mais bloqueia vem em `blocked` e muda a cada time: peças e barreiras adversárias.
+// mais bloqueia vem em `blocked` e muda a cada time: personagens e barreiras adversárias.
 // O resultado guarda a distância em passos e a casa anterior, o que
 // permite reconstruir o caminho andado.
 function walkFrom(
-    origin: PiecePosition,
+    origin: CharacterPosition,
     maze: Maze,
     maxSteps = Infinity,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
@@ -56,8 +56,8 @@ function walkFrom(
 
 // Distância andando (contornando paredes) entre duas casas. Infinity se não houver caminho.
 export function pathLength(
-    from: PiecePosition,
-    to: PiecePosition,
+    from: CharacterPosition,
+    to: CharacterPosition,
     maze: Maze,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): number {
@@ -67,7 +67,7 @@ export function pathLength(
 
 // Distância andando de "origin" até cada casa livre alcançável, indexada por "positionKey".
 export function distanceMap(
-    origin: PiecePosition,
+    origin: CharacterPosition,
     maze: Maze,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
 ): Map<string, number> {
@@ -78,16 +78,16 @@ export function distanceMap(
 
 // Caminho casa-a-casa entre duas posições (sem incluir a origem). Vazio se não houver caminho.
 export function findPath(
-    from: PiecePosition,
-    to: PiecePosition,
+    from: CharacterPosition,
+    to: CharacterPosition,
     maze: Maze,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
-): PiecePosition[] {
+): CharacterPosition[] {
     const visited = walkFrom(from, maze, Infinity, blocked)
     const destination = visited.get(positionKey(to))
     if (!destination) return []
 
-    const path: PiecePosition[] = []
+    const path: CharacterPosition[] = []
     let current: WalkNode | undefined = destination
     while (current && current.previous !== null) {
         path.unshift(current.position)
@@ -96,19 +96,19 @@ export function findPath(
     return path
 }
 
-// Casas em que a peça pode terminar o movimento:
-// Dentro do alcance andando pelo labirinto e livres de outras peças.
+// Casas em que a personagem pode terminar o movimento:
+// Dentro do alcance andando pelo labirinto e livres de outras personagens.
 export function reachableCells(
-    piece: PieceDefinition,
-    pieces: PieceDefinition[],
+    character: CharacterDefinition,
+    characters: CharacterDefinition[],
     maze: Maze,
     range = 5,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
 ) {
-    const occupied = new Set(pieces.filter((p) => p.id !== piece.id).map((p) => positionKey(p.position)))
-    const res: PiecePosition[] = []
+    const occupied = new Set(characters.filter((p) => p.id !== character.id).map((p) => positionKey(p.position)))
+    const res: CharacterPosition[] = []
 
-    for (const [key, node] of walkFrom(piece.position, maze, range, blocked)) {
+    for (const [key, node] of walkFrom(character.position, maze, range, blocked)) {
         if (node.distance === 0 || occupied.has(key)) continue
         res.push(node.position)
     }
@@ -119,19 +119,19 @@ export function reachableCells(
 // Encontra a casa adjacente ao alvo (8 vizinhas, com diagonais) livre e mais barata de
 // alcançar andando. Se o atacante já está adjacente, retorna sua própria posição.
 // Retorna null se nenhuma casa em volta do alvo estiver ao alcance.
-// O alvo pode ser uma peça ou uma barreira: só a casa dele importa.
+// O alvo pode ser uma personagem ou uma barreira: só a casa dele importa.
 //
 // Casa com item não está livre para quem vai golpear: parar nela é coletar, e coletar é
 // outra ação. O item precisa sair antes para a casa ficar vaga.
 export function findApproachCell(
-    attacker: PieceDefinition,
-    target: { position: PiecePosition },
-    pieces: PieceDefinition[],
+    attacker: CharacterDefinition,
+    target: { position: CharacterPosition },
+    characters: CharacterDefinition[],
     items: MotivationItem[],
     maze: Maze,
     walkRange: number,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
-): PiecePosition | null {
+): CharacterPosition | null {
     if (touching(attacker.position, target.position)) return attacker.position
 
     const candidates = SURROUNDING_STEPS.map(([dx, dy]) => ({
@@ -140,11 +140,11 @@ export function findApproachCell(
     }))
 
     const visited = walkFrom(attacker.position, maze, walkRange, blocked)
-    let best: { cell: PiecePosition; distance: number } | null = null
+    let best: { cell: CharacterPosition; distance: number } | null = null
 
     for (const candidate of candidates) {
         if (!isWalkable(maze, candidate.x, candidate.y)) continue
-        const occupant = atPosition(pieces, candidate)
+        const occupant = atPosition(characters, candidate)
         if (occupant && occupant.id !== attacker.id) continue
         if (atPosition(items, candidate)) continue
 
@@ -157,42 +157,42 @@ export function findApproachCell(
 }
 
 export function meleeAttackCells(
-    piece: PieceDefinition,
-    pieces: PieceDefinition[],
+    character: CharacterDefinition,
+    characters: CharacterDefinition[],
     items: MotivationItem[],
     maze: Maze,
     walkRange: number,
     blocked: BlockedCells = NO_BLOCKED_CELLS,
-): PiecePosition[] {
-    const cells = new Map<string, PiecePosition>()
-    const add = (cell: PiecePosition) => {
+): CharacterPosition[] {
+    const cells = new Map<string, CharacterPosition>()
+    const add = (cell: CharacterPosition) => {
         if (!isWalkable(maze, cell.x, cell.y)) return
         cells.set(positionKey(cell), cell)
     }
 
-    // Casas de onde ela não golpeia: as de outras peças (a própria fica de fora)
+    // Casas de onde ela não golpeia: as de outras personagens (a própria fica de fora)
     // e as que têm item, que para quem vai golpear não estão vagas
     const occupied = new Set([
-        ...pieces.filter((p) => p.id !== piece.id).map((p) => positionKey(p.position)),
+        ...characters.filter((p) => p.id !== character.id).map((p) => positionKey(p.position)),
         ...items.map((item) => positionKey(item.position)),
     ])
 
-    for (const [key, node] of walkFrom(piece.position, maze, walkRange, blocked)) {
+    for (const [key, node] of walkFrom(character.position, maze, walkRange, blocked)) {
         add(node.position)
-        // O ataque melee só parte de onde a peça consegue ficar parada.
+        // O ataque melee só parte de onde a personagem consegue ficar parada.
         // Casa de uma aliada se passa, mas não se ocupa.
         if (occupied.has(key)) continue
         for (const [dx, dy] of SURROUNDING_STEPS) add({ x: node.position.x + dx, y: node.position.y + dy })
     }
-    cells.delete(positionKey(piece.position))
+    cells.delete(positionKey(character.position))
 
-    // Casa ocupada só entra se sobrar onde encostar na peça que está nela
+    // Casa ocupada só entra se sobrar onde encostar na personagem que está nela
     return [...cells.values()].filter((cell) => {
-        const occupant = atPosition(pieces, cell)
+        const occupant = atPosition(characters, cell)
         return (
             !occupant ||
-            occupant.id === piece.id ||
-            findApproachCell(piece, occupant, pieces, items, maze, walkRange, blocked) !== null
+            occupant.id === character.id ||
+            findApproachCell(character, occupant, characters, items, maze, walkRange, blocked) !== null
         )
     })
 }
@@ -214,12 +214,12 @@ function axisCells(origin: number, delta: number, step: number, steps: number): 
 // nem o destino. A linha é percorrida pelo eixo de maior variação — um passo por casa
 // andada nesse eixo — e cada passo devolve a casa em que ela caiu, ou o par de casas
 // quando ela passa bem na divisa entre duas.
-export function lineSteps(from: PiecePosition, to: PiecePosition): PiecePosition[][] {
+export function lineSteps(from: CharacterPosition, to: CharacterPosition): CharacterPosition[][] {
     const dx = to.x - from.x
     const dy = to.y - from.y
     const steps = Math.max(Math.abs(dx), Math.abs(dy))
 
-    const groups: PiecePosition[][] = []
+    const groups: CharacterPosition[][] = []
     for (let step = 1; step < steps; step++) {
         const xs = axisCells(from.x, dx, step, steps)
         const ys = axisCells(from.y, dy, step, steps)
@@ -231,7 +231,7 @@ export function lineSteps(from: PiecePosition, to: PiecePosition): PiecePosition
 // A linha só passa enquanto sobrar por onde passar: em cada passo basta uma das
 // casas do par estar livre. Quando a linha corre na divisa entre duas casas e as duas
 // estão bloqueadas, ela para ali.
-export function hasClearLine(from: PiecePosition, to: PiecePosition, blocked: (cell: PiecePosition) => boolean): boolean {
+export function hasClearLine(from: CharacterPosition, to: CharacterPosition, blocked: (cell: CharacterPosition) => boolean): boolean {
     return lineSteps(from, to).every((group) => group.some((cell) => !blocked(cell)))
 }
 
@@ -242,39 +242,39 @@ export interface LineSight {
     blockedBy: LineBlockers
 }
 
-// Ataque à distância: a peça acerta qualquer casa a até "range" passos (contados em
+// Ataque à distância: a personagem acerta qualquer casa a até "range" passos (contados em
 // linha reta, na diagonal inclusive) cuja linha de tiro chegue inteira até lá — não
 // precisa ser pela linha, pela coluna ou pela diagonal. Paredes sempre interrompem a
-// linha. Peças e barreiras podem interromper conforme a habilidade que dispara.
+// linha. Personagens e barreiras podem interromper conforme a habilidade que dispara.
 //
-// `cells` são as casas visadas (para destacar no tabuleiro) e `targets`, as peças que
+// `cells` são as casas visadas (para destacar no tabuleiro) e `targets`, as personagens que
 // estão nelas.
 export function lineOfFire(
-    piece: PieceDefinition,
-    pieces: PieceDefinition[],
+    character: CharacterDefinition,
+    characters: CharacterDefinition[],
     maze: Maze,
     range: number,
     sight: LineSight,
-): { cells: PiecePosition[]; targets: PieceDefinition[] } {
-    const others = pieces.filter((p) => p.id !== piece.id)
+): { cells: CharacterPosition[]; targets: CharacterDefinition[] } {
+    const others = characters.filter((p) => p.id !== character.id)
     const occupants = new Map(others.map((p) => [positionKey(p.position), p]))
     // Barreira só interrompe a linha de quem é de outro time
     const opponentBarriers = new Set(
         sight.blockedBy.barriers
-            ? sight.barriers.filter((b) => b.color !== piece.color).map((b) => positionKey(b.position))
+            ? sight.barriers.filter((b) => b.color !== character.color).map((b) => positionKey(b.position))
             : [],
     )
-    const stopsShot = (cell: PiecePosition) => {
+    const stopsShot = (cell: CharacterPosition) => {
         const key = positionKey(cell)
         return (
             !isWalkable(maze, cell.x, cell.y) ||
-            (sight.blockedBy.pieces && occupants.has(key)) ||
+            (sight.blockedBy.characters && occupants.has(key)) ||
             opponentBarriers.has(key)
         )
     }
 
-    const cells: PiecePosition[] = []
-    const targets: PieceDefinition[] = []
+    const cells: CharacterPosition[] = []
+    const targets: CharacterDefinition[] = []
 
     for (let dy = -range; dy <= range; dy++) {
         for (let dx = -range; dx <= range; dx++) {
@@ -282,9 +282,9 @@ export function lineOfFire(
 
             // A casa visada não passa por `stopsShot`:
             // Ali está o alvo. O que fecha o tiro são as casas no caminho.
-            const cell = { x: piece.position.x + dx, y: piece.position.y + dy }
+            const cell = { x: character.position.x + dx, y: character.position.y + dy }
             if (!isWalkable(maze, cell.x, cell.y)) continue
-            if (!hasClearLine(piece.position, cell, stopsShot)) continue
+            if (!hasClearLine(character.position, cell, stopsShot)) continue
 
             cells.push(cell)
             const occupant = occupants.get(positionKey(cell))
@@ -295,9 +295,9 @@ export function lineOfFire(
     return { cells, targets }
 }
 
-// O que a peça anda para golpear: o mesmo que ela anda para se mover. Encostar é que
+// O que a personagem anda para golpear: o mesmo que ela anda para se mover. Encostar é que
 // alcança a casa seguinte, e isso já está em `meleeAttackCells` e `findApproachCell`.
-export const strikeWalkRange = (piece: PieceDefinition) => statsFor(piece.type, piece.level).moveRange
+export const strikeWalkRange = (character: CharacterDefinition) => statsFor(character.type, character.level).moveRange
 
 // Como o golpe chega ao alvo: andando até encostar, ou por uma linha de tiro. Cada jeito
 // precisa de uma coisa diferente: quem anda, das casas fechadas para ele; quem atira, do
@@ -306,17 +306,17 @@ export type Strike =
     | { ranged: false; range: number; blocked: BlockedCells; items: MotivationItem[] }
     | { ranged: true; range: number; sight: LineSight }
 
-// A peça consegue acertar o alvo daqui? É a mesma pergunta que o destaque do tabuleiro
+// A personagem consegue acertar o alvo daqui? É a mesma pergunta que o destaque do tabuleiro
 // responde em cores. O alvo pode ser uma barreira, que só um golpe corpo a corpo alcança.
 export function canHitTarget(
-    attacker: PieceDefinition,
-    target: { id: string; position: PiecePosition },
-    pieces: PieceDefinition[],
+    attacker: CharacterDefinition,
+    target: { id: string; position: CharacterPosition },
+    characters: CharacterDefinition[],
     maze: Maze,
     strike: Strike,
 ): boolean {
     if (strike.ranged) {
-        return lineOfFire(attacker, pieces, maze, strike.range, strike.sight).targets.some((t) => t.id === target.id)
+        return lineOfFire(attacker, characters, maze, strike.range, strike.sight).targets.some((t) => t.id === target.id)
     }
-    return findApproachCell(attacker, target, pieces, strike.items, maze, strike.range, strike.blocked) !== null
+    return findApproachCell(attacker, target, characters, strike.items, maze, strike.range, strike.blocked) !== null
 }

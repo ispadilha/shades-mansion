@@ -38,7 +38,7 @@ export const HudActions: React.FC<HudActionsProps> = ({
             {/* Quem só assiste não tem inventário nem turno para encerrar */}
             {!spectating && (
                 <>
-                    {/* Habilidade é ação da peça da vez, então só o dono da vez abre a lista */}
+                    {/* Habilidade é ação da personagem da vez, então só o dono da vez abre a lista */}
                     <Button
                         onClick={onOpenSkills}
                         variant="outlined"

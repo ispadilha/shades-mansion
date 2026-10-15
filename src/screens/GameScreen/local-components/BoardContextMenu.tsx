@@ -7,7 +7,7 @@ import { useLanguage } from "../../../hooks/useLanguage"
 interface BoardContextMenuProps {
     menu: BoardMenuState | null
     onClose: () => void
-    onShowPieceInfo: () => void
+    onShowCharacterInfo: () => void
     onShowItemInfo: () => void
     onShowBarrierInfo: () => void
     // Andar até a casa, coletando o item que estiver nela
@@ -21,7 +21,7 @@ interface BoardContextMenuProps {
 export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
     menu,
     onClose,
-    onShowPieceInfo,
+    onShowCharacterInfo,
     onShowItemInfo,
     onShowBarrierInfo,
     onWalk,
@@ -40,7 +40,7 @@ export const BoardContextMenu: React.FC<BoardContextMenuProps> = ({
         dispel: { onClick: onDispel, label: "dispel" },
         // Cada habilidade traz o próprio rótulo ("atirar", "incendiar")
         skill: { onClick: onSkill, label: menu?.skillAction },
-        pieceInfo: { onClick: onShowPieceInfo, label: "pieceInfo" },
+        characterInfo: { onClick: onShowCharacterInfo, label: "characterInfo" },
         itemInfo: { onClick: onShowItemInfo, label: "itemInfo" },
         barrierInfo: { onClick: onShowBarrierInfo, label: "barrierInfo" },
     }

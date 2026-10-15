@@ -2,7 +2,7 @@ import React from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { BackButton, LibraryEntry, ScreenLayout, ScreenTitle } from "../../components/ui"
 import { characterKeys } from "../../constants/texts_characters"
-import { keyPieceType } from "../../logic/types"
+import { keyCharacterType } from "../../logic/types"
 import { skillFor } from "../../logic/skills"
 import { useLanguage } from "../../hooks/useLanguage"
 
@@ -17,7 +17,7 @@ export const CharacterScreen: React.FC<CharacterScreenProps> = ({}) => {
     const key = characterKeys.find((k) => k === characterKey)
     if (!key) return <Navigate to="/library/characters" replace />
 
-    const skill = skillFor(keyPieceType(key))
+    const skill = skillFor(keyCharacterType(key))
     const sections = [
         { title: t("type"), text: tCharacter(key, "type") },
         { title: t("description"), text: tCharacter(key, "description") },

@@ -1,8 +1,8 @@
 import React from "react"
 import { Box } from "@mui/material"
-import type { AuraKind, PieceColor, PieceType } from "../../logic/types"
-import { AURA_PALETTE, PIECE_DETAIL_PALETTE, PIECE_PALETTE, levelStarColors, rgba } from "../../constants/palette"
-import { LEVEL_STAR, TOKEN_LEVEL_STAR } from "../../constants/rules"
+import type { AuraKind, CharacterColor, CharacterType } from "../../logic/types"
+import { AURA_PALETTE, CHARACTER_DETAIL_PALETTE, CHARACTER_PALETTE, levelStarColors, rgba } from "../../constants/palette"
+import { LEVEL_STAR, ICON_LEVEL_STAR } from "../../constants/rules"
 
 // O desenho vive num `viewBox` de 64, o mesmo espaço da casa do tabuleiro: as medidas em
 // frações da casa valem aqui multiplicadas por 64, com o centro em 32.
@@ -17,18 +17,18 @@ const starPoints = (cx: number, cy: number, outer: number, inner: number, points
         return `${(cx + radius * Math.cos(angle)).toFixed(2)},${(cy + radius * Math.sin(angle)).toFixed(2)}`
     }).join(" ")
 
-interface PieceTokenProps {
-    color: PieceColor
-    type: PieceType
-    // Do nível 2 em diante a peça ganha a estrela de promoção no canto
+interface CharacterIconProps {
+    color: CharacterColor
+    type: CharacterType
+    // Do nível 2 em diante a personagem ganha a estrela de promoção no canto
     level?: number
     size?: number
     aura?: AuraKind | null
-    // Peça que já agiu na rodada: fica apagada
+    // Personagem que já agiu na rodada: fica apagada
     dimmed?: boolean
 }
 
-export const PieceToken: React.FC<PieceTokenProps> = ({
+export const CharacterIcon: React.FC<CharacterIconProps> = ({
     color,
     type,
     level = 1,
@@ -36,7 +36,7 @@ export const PieceToken: React.FC<PieceTokenProps> = ({
     aura = null,
     dimmed = false,
 }) => {
-    const palette = PIECE_PALETTE[color]
+    const palette = CHARACTER_PALETTE[color]
     const highlight = aura ? AURA_PALETTE[aura] : null
     const star = level >= 2 ? levelStarColors(level) : null
 
@@ -57,7 +57,7 @@ export const PieceToken: React.FC<PieceTokenProps> = ({
             }}
         >
             <svg viewBox="0 0 64 64" width="100%" height="100%">
-                <ellipse cx="32" cy="51.2" rx="13.4" ry="3.2" fill={PIECE_DETAIL_PALETTE.shadow} opacity="0.45" />
+                <ellipse cx="32" cy="51.2" rx="13.4" ry="3.2" fill={CHARACTER_DETAIL_PALETTE.shadow} opacity="0.45" />
 
                 {/* Pernas */}
                 <rect x="26.2" y="40.3" width="5.8" height="9" fill={palette.clothing} stroke={palette.outline} strokeWidth="1" />
@@ -72,8 +72,8 @@ export const PieceToken: React.FC<PieceTokenProps> = ({
 
                 {/* Cabeça e olhos */}
                 <circle cx="32" cy="17.9" r="8.3" fill={palette.skin} stroke={palette.outline} strokeWidth="1.5" />
-                <circle cx="29.4" cy="17.3" r="0.9" fill={PIECE_DETAIL_PALETTE.eyes} />
-                <circle cx="34.6" cy="17.3" r="0.9" fill={PIECE_DETAIL_PALETTE.eyes} />
+                <circle cx="29.4" cy="17.3" r="0.9" fill={CHARACTER_DETAIL_PALETTE.eyes} />
+                <circle cx="34.6" cy="17.3" r="0.9" fill={CHARACTER_DETAIL_PALETTE.eyes} />
 
                 <text
                     x="32"
@@ -93,8 +93,8 @@ export const PieceToken: React.FC<PieceTokenProps> = ({
                 {star && (
                     <polygon
                         points={starPoints(
-                            CENTER + TOKEN_LEVEL_STAR.x * VIEW,
-                            CENTER - TOKEN_LEVEL_STAR.y * VIEW,
+                            CENTER + ICON_LEVEL_STAR.x * VIEW,
+                            CENTER - ICON_LEVEL_STAR.y * VIEW,
                             LEVEL_STAR.outer * VIEW,
                             LEVEL_STAR.inner * VIEW,
                             LEVEL_STAR.points,

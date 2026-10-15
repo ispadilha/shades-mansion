@@ -32,7 +32,7 @@ export const HudBanner: React.FC<HudBannerProps> = ({ open, ...content }) => {
     const [mounted, setMounted] = useState(open)
 
     // E continua mostrando o que mostrava: quem fecha a faixa costuma zerar junto o dado
-    // que ela exibia (a peça manipulada, a habilidade), e a saída ficaria sem texto.
+    // que ela exibia (a personagem manipulada, a habilidade), e a saída ficaria sem texto.
     const shown = useRef(content)
     if (open) shown.current = content
 

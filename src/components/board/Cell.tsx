@@ -1,6 +1,6 @@
 import React from "react"
 import { Box } from "@mui/material"
-import type { PiecePosition, RangeKind } from "../../logic/types"
+import type { CharacterPosition, RangeKind } from "../../logic/types"
 import { usePalette } from "../../hooks/usePalette"
 
 interface CellProps {
@@ -11,8 +11,8 @@ interface CellProps {
     // O alcance destacado em que a casa está, quando está em algum
     range: RangeKind | null
     isSelected: boolean
-    onCellClick: (pos: PiecePosition) => void
-    onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
+    onCellClick: (pos: CharacterPosition) => void
+    onCellContextMenu: (event: React.MouseEvent, pos: CharacterPosition) => void
 }
 
 export const Cell: React.FC<CellProps> = ({

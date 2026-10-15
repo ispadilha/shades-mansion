@@ -1,5 +1,5 @@
 import Phaser from "phaser"
-import type { AuraKind, Barrier, PieceAuras, PiecePosition, PieceDefinition, MotivationItem } from "../logic/types"
+import type { AuraKind, Barrier, CharacterAuras, CharacterPosition, CharacterDefinition, MotivationItem } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
@@ -16,8 +16,8 @@ import {
     VIGOR_PALETTE,
     levelStarColors,
     ITEM_PALETTE,
-    PIECE_DETAIL_PALETTE,
-    PIECE_PALETTE,
+    CHARACTER_DETAIL_PALETTE,
+    CHARACTER_PALETTE,
     hex,
     rgba,
 } from "../constants/palette"
@@ -38,8 +38,8 @@ import {
     FIRE_BURST_MS,
     FLAMES_PER_CELL,
     ITEM_FADE_MS,
-    MOVED_PIECE_ALPHA,
-    PIECE_FADE_MS,
+    MOVED_CHARACTER_ALPHA,
+    CHARACTER_FADE_MS,
     STEP_MS,
     VIGOR_BAR,
 } from "../constants/rules"
@@ -61,29 +61,29 @@ export class BoardScene extends Phaser.Scene {
     private maze: Maze
     private sprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private itemSprites: Map<string, Phaser.GameObjects.Container> = new Map()
-    private lastCells: Map<string, PiecePosition> = new Map()
-    // Auras em cena, por peça. O desenho fica dentro do container da peça, então acompanha
+    private lastCells: Map<string, CharacterPosition> = new Map()
+    // Auras em cena, por personagem. O desenho fica dentro do container da personagem, então acompanha
     // a caminhada dela sem precisar de sincronia nenhuma.
     private auras: Map<string, { kind: AuraKind; sprite: Phaser.GameObjects.Image }> = new Map()
     private vigorBars: Map<string, VigorBar> = new Map()
-    // A estrela de promoção de cada peça. Ela mora dentro do container da peça, então
+    // A estrela de promoção de cada personagem. Ela mora dentro do container da personagem, então
     // acompanha a caminhada sozinha. O que muda com o nível é a cor e se ela aparece.
     private levelStars: Map<string, Phaser.GameObjects.Star> = new Map()
     private barrierSprites: Map<string, Phaser.GameObjects.Container> = new Map()
-    // A última lista recebida: o caminho de uma peça contorna as barreiras dos oponentes,
+    // A última lista recebida: o caminho de uma personagem contorna as barreiras dos oponentes,
     // e é aqui que o passo-a-passo da caminhada consulta quais são.
     private barriers: Barrier[] = []
-    // Investidas anunciadas, por peça: na próxima troca de casa dela, ela corre em linha reta
+    // Investidas anunciadas, por personagem: na próxima troca de casa dela, ela corre em linha reta
     // até lá, em vez de caminhar pelo labirinto
     private charges: Map<string, ChargeRun> = new Map()
     // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
-    private pendingPieces: PieceDefinition[] | null = null
+    private pendingCharacters: CharacterDefinition[] | null = null
     private pendingItems: MotivationItem[] | null = null
     private pendingBarriers: Barrier[] | null = null
     private pendingBursts: FireBurst[] = []
     private pendingDamage: DamagePopup[] = []
     private pendingDrops: string[] = []
-    private pendingAuras: PieceAuras | null = null
+    private pendingAuras: CharacterAuras | null = null
     private isReady = false
 
     constructor(cellSize: number, maze: Maze) {
@@ -98,16 +98,16 @@ export class BoardScene extends Phaser.Scene {
             this.applyItems(this.pendingItems)
             this.pendingItems = null
         }
-        // Barreiras antes das peças porque aliadas caminham por cima do chão aceso
+        // Barreiras antes das personagens porque aliadas caminham por cima do chão aceso
         if (this.pendingBarriers) {
             this.applyBarriers(this.pendingBarriers)
             this.pendingBarriers = null
         }
-        if (this.pendingPieces) {
-            this.applyPieces(this.pendingPieces)
-            this.pendingPieces = null
+        if (this.pendingCharacters) {
+            this.applyCharacters(this.pendingCharacters)
+            this.pendingCharacters = null
         }
-        // Depois das peças: a aura é desenhada dentro do container de cada uma
+        // Depois das personagens: a aura é desenhada dentro do container de cada uma
         if (this.pendingAuras) {
             this.applyAuras(this.pendingAuras)
             this.pendingAuras = null
@@ -120,12 +120,12 @@ export class BoardScene extends Phaser.Scene {
         this.pendingDrops = []
     }
 
-    syncPieces(pieces: PieceDefinition[]) {
+    syncCharacters(characters: CharacterDefinition[]) {
         if (!this.isReady) {
-            this.pendingPieces = pieces
+            this.pendingCharacters = characters
             return
         }
-        this.applyPieces(pieces)
+        this.applyCharacters(characters)
     }
 
     syncBarriers(barriers: Barrier[]) {
@@ -156,7 +156,7 @@ export class BoardScene extends Phaser.Scene {
         this.spawnFireBurst(burst)
     }
 
-    // O número de dano que sobe acima da peça atingida. Como cada explosão, ele é tocado
+    // O número de dano que sobe acima da personagem atingida. Como cada explosão, ele é tocado
     // uma vez só, e é quem chama que controla isso.
     playDamage(popup: DamagePopup) {
         if (!this.isReady) {
@@ -166,9 +166,9 @@ export class BoardScene extends Phaser.Scene {
         this.spawnDamage(popup)
     }
 
-    // A investida que vem na próxima troca de casa da peça
+    // A investida que vem na próxima troca de casa da personagem
     playCharge(run: ChargeRun) {
-        this.charges.set(run.pieceId, run)
+        this.charges.set(run.characterId, run)
     }
 
     // A queda de um item que voltou ao tabuleiro.
@@ -181,7 +181,7 @@ export class BoardScene extends Phaser.Scene {
         this.dropItem(itemId)
     }
 
-    syncAuras(auras: PieceAuras) {
+    syncAuras(auras: CharacterAuras) {
         if (!this.isReady) {
             this.pendingAuras = auras
             return
@@ -215,36 +215,36 @@ export class BoardScene extends Phaser.Scene {
         }
     }
 
-    private applyPieces(pieces: PieceDefinition[]) {
+    private applyCharacters(characters: CharacterDefinition[]) {
         const seen = new Set<string>()
 
-        for (const piece of pieces) {
-            seen.add(piece.id)
-            const targetPx = this.cellToPixel(piece.position)
+        for (const character of characters) {
+            seen.add(character.id)
+            const targetPx = this.cellToPixel(character.position)
             // Quem esgotou o turno inteiro (movimento e/ou ataque básico e habilidade)
             // fica translúcido para indicar isso
-            const targetAlpha = isSpent(piece) ? MOVED_PIECE_ALPHA : 1
+            const targetAlpha = isSpent(character) ? MOVED_CHARACTER_ALPHA : 1
 
-            let sprite = this.sprites.get(piece.id)
+            let sprite = this.sprites.get(character.id)
             if (!sprite) {
-                sprite = this.buildPiece(piece)
+                sprite = this.buildCharacter(character)
                 sprite.setPosition(targetPx.x, targetPx.y)
                 sprite.setAlpha(targetAlpha)
-                this.sprites.set(piece.id, sprite)
-                this.lastCells.set(piece.id, { ...piece.position })
-                this.syncVigorBar(piece)
-                this.syncLevelStar(piece)
+                this.sprites.set(character.id, sprite)
+                this.lastCells.set(character.id, { ...character.position })
+                this.syncVigorBar(character)
+                this.syncLevelStar(character)
                 continue
             }
 
-            const last = this.lastCells.get(piece.id)
-            const cellChanged = !last || last.x !== piece.position.x || last.y !== piece.position.y
+            const last = this.lastCells.get(character.id)
+            const cellChanged = !last || last.x !== character.position.x || last.y !== character.position.y
             if (cellChanged) {
                 this.tweens.killTweensOf(sprite)
-                const charge = this.charges.get(piece.id)
-                this.charges.delete(piece.id)
-                if (charge && samePosition(charge.to, piece.position)) {
-                    // Investida: corre em linha reta, por cima das outras peças e abaixo do
+                const charge = this.charges.get(character.id)
+                this.charges.delete(character.id)
+                if (charge && samePosition(charge.to, character.position)) {
+                    // Investida: corre em linha reta, por cima das outras personagens e abaixo do
                     // fogo e dos números de dano
                     const runner = sprite.setDepth(5)
                     this.tweens.add({
@@ -257,8 +257,8 @@ export class BoardScene extends Phaser.Scene {
                     })
                 } else {
                     // Anima passo-a-passo (uma célula por vez, contornando as paredes) para criar o efeito de caminhada
-                    const blocked = blockedCellsFor(piece.color, this.barriers, pieces)
-                    const path = findPath(last ?? piece.position, piece.position, this.maze, blocked)
+                    const blocked = blockedCellsFor(character.color, this.barriers, characters)
+                    const path = findPath(last ?? character.position, character.position, this.maze, blocked)
                     if (path.length === 0) {
                         sprite.setPosition(targetPx.x, targetPx.y)
                     } else {
@@ -269,23 +269,23 @@ export class BoardScene extends Phaser.Scene {
                         this.tweens.chain({ targets: sprite, tweens: steps })
                     }
                 }
-                this.lastCells.set(piece.id, { ...piece.position })
+                this.lastCells.set(character.id, { ...character.position })
             }
 
             if (Math.abs(sprite.alpha - targetAlpha) > 0.01) {
                 this.tweens.add({ targets: sprite, alpha: targetAlpha, duration: ALPHA_TWEEN_MS })
             }
 
-            this.syncVigorBar(piece)
-            this.syncLevelStar(piece)
+            this.syncVigorBar(character)
+            this.syncLevelStar(character)
         }
 
-        // Peças removidas (eliminadas) somem com fade
+        // Personagens removidas (eliminadas) somem com fade
         for (const [id, sprite] of this.sprites) {
             if (seen.has(id)) continue
             this.sprites.delete(id)
             this.lastCells.delete(id)
-            // O brilho e a barra de vigor são filhos do container: somem junto com a peça,
+            // O brilho e a barra de vigor são filhos do container: somem junto com a personagem,
             // sem tween próprio
             this.auras.delete(id)
             this.vigorBars.delete(id)
@@ -295,7 +295,7 @@ export class BoardScene extends Phaser.Scene {
                 targets: sprite,
                 alpha: 0,
                 scale: 0.4,
-                duration: PIECE_FADE_MS,
+                duration: CHARACTER_FADE_MS,
                 onComplete: () => sprite.destroy(),
             })
         }
@@ -411,7 +411,7 @@ export class BoardScene extends Phaser.Scene {
         const cs = this.cellSize
         const colors = BARRIER_PALETTE[barrier.color]
         const { x, y } = this.cellToPixel(barrier.position)
-        // Chão aceso: abaixo das peças, dos itens, e de outros efeitos
+        // Chão aceso: abaixo das personagens, dos itens, e de outros efeitos
         const container = this.add.container(x, y).setDepth(-1)
 
         // A casa acesa: o brilho por dentro, pulsando, e a borda marcando onde ela começa
@@ -496,11 +496,11 @@ export class BoardScene extends Phaser.Scene {
         this.tweens.add({ targets: sprite, y, alpha: 1, duration: ITEM_DROP_MS, ease: "Cubic.easeIn" })
     }
 
-    private applyAuras(auras: PieceAuras) {
+    private applyAuras(auras: CharacterAuras) {
         // Sai quem perdeu o destaque (ou trocou de tipo de aura)
-        for (const [pieceId, current] of this.auras) {
-            if (auras[pieceId] === current.kind) continue
-            this.auras.delete(pieceId)
+        for (const [characterId, current] of this.auras) {
+            if (auras[characterId] === current.kind) continue
+            this.auras.delete(characterId)
             this.tweens.killTweensOf(current.sprite)
             this.tweens.add({
                 targets: current.sprite,
@@ -511,15 +511,15 @@ export class BoardScene extends Phaser.Scene {
         }
 
         // Entra quem ganhou
-        for (const [pieceId, kind] of Object.entries(auras)) {
-            if (this.auras.get(pieceId)?.kind === kind) continue
-            const container = this.sprites.get(pieceId)
+        for (const [characterId, kind] of Object.entries(auras)) {
+            if (this.auras.get(characterId)?.kind === kind) continue
+            const container = this.sprites.get(characterId)
             if (!container) continue
 
             const sprite = this.buildAura(kind)
-            // Na primeira posição do container: o brilho fica atrás do desenho da peça
+            // Na primeira posição do container: o brilho fica atrás do desenho da personagem
             container.addAt(sprite, 0)
-            this.auras.set(pieceId, { kind, sprite })
+            this.auras.set(characterId, { kind, sprite })
         }
     }
 
@@ -557,7 +557,7 @@ export class BoardScene extends Phaser.Scene {
         const half = AURA_TEXTURE_SIZE / 2
         const context = texture.getContext()
         const gradient = context.createRadialGradient(half, half, 0, half, half, half)
-        // Mais forte na altura da peça e sumindo para fora: vira um halo, não um disco chapado
+        // Mais forte na altura da personagem e sumindo para fora: vira um halo, não um disco chapado
         gradient.addColorStop(0, rgba(color, 0.45))
         gradient.addColorStop(0.45, rgba(color, 0.75))
         gradient.addColorStop(0.75, rgba(color, 0.3))
@@ -569,22 +569,22 @@ export class BoardScene extends Phaser.Scene {
         return key
     }
 
-    private cellToPixel(cell: PiecePosition): PiecePosition {
+    private cellToPixel(cell: CharacterPosition): CharacterPosition {
         return {
             x: cell.x * this.cellSize + this.cellSize / 2,
             y: cell.y * this.cellSize + this.cellSize / 2,
         }
     }
 
-    private buildPiece(piece: PieceDefinition): Phaser.GameObjects.Container {
+    private buildCharacter(character: CharacterDefinition): Phaser.GameObjects.Container {
         const cs = this.cellSize
-        const palette = PIECE_PALETTE[piece.color]
+        const palette = CHARACTER_PALETTE[character.color]
         const clothing = hex(palette.clothing)
         const outline = hex(palette.outline)
         const skin = hex(palette.skin)
 
         const container = this.add.container(0, 0)
-        const shadow = this.add.ellipse(0, cs * 0.3, cs * 0.42, cs * 0.1, hex(PIECE_DETAIL_PALETTE.shadow), 0.45)
+        const shadow = this.add.ellipse(0, cs * 0.3, cs * 0.42, cs * 0.1, hex(CHARACTER_DETAIL_PALETTE.shadow), 0.45)
 
         const legY = cs * 0.2
         const leftLeg = this.add.rectangle(-cs * 0.07, legY, cs * 0.09, cs * 0.14, clothing).setStrokeStyle(1, outline)
@@ -601,12 +601,12 @@ export class BoardScene extends Phaser.Scene {
 
         const eyeR = Math.max(1, cs * 0.014)
         const eyeY = headY - cs * 0.01
-        const eyeColor = hex(PIECE_DETAIL_PALETTE.eyes)
+        const eyeColor = hex(CHARACTER_DETAIL_PALETTE.eyes)
         const leftEye = this.add.circle(-cs * 0.04, eyeY, eyeR, eyeColor)
         const rightEye = this.add.circle(cs * 0.04, eyeY, eyeR, eyeColor)
 
         const letter = this.add
-            .text(0, 0, piece.type, {
+            .text(0, 0, character.type, {
                 fontFamily: "Arial Black",
                 fontSize: `${Math.max(10, Math.floor(cs * 0.18))}px`,
                 color: palette.letter,
@@ -616,14 +616,14 @@ export class BoardScene extends Phaser.Scene {
             .setOrigin(0.5, 0.5)
 
         container.add([shadow, leftLeg, rightLeg, leftArm, rightArm, body, head, leftEye, rightEye, letter])
-        container.add(this.buildVigorBar(piece.id))
-        container.add(this.buildLevelStar(piece.id))
+        container.add(this.buildVigorBar(character.id))
+        container.add(this.buildLevelStar(character.id))
         return container
     }
 
     // A barra nasce apagada: o tabuleiro só marca quem já foi atingido, e é `syncVigorBar`
-    // que a acende quando a peça perde vigor.
-    private buildVigorBar(pieceId: string): Phaser.GameObjects.Container {
+    // que a acende quando a personagem perde vigor.
+    private buildVigorBar(characterId: string): Phaser.GameObjects.Container {
         const cs = this.cellSize
         const width = cs * VIGOR_BAR.width
         const height = cs * VIGOR_BAR.height
@@ -637,13 +637,13 @@ export class BoardScene extends Phaser.Scene {
             .setOrigin(0, 0.5)
 
         const root = this.add.container(0, -cs * VIGOR_BAR.offsetY, [track, fill]).setAlpha(0)
-        this.vigorBars.set(pieceId, { root, fill, width: width - VIGOR_BAR.inset * 2 })
+        this.vigorBars.set(characterId, { root, fill, width: width - VIGOR_BAR.inset * 2 })
         return root
     }
 
     // A estrela nasce invisível: no nível 1 não há promoção para marcar, e é
-    // `syncLevelStar` que a acende quando a peça sobe.
-    private buildLevelStar(pieceId: string): Phaser.GameObjects.Star {
+    // `syncLevelStar` que a acende quando a personagem sobe.
+    private buildLevelStar(characterId: string): Phaser.GameObjects.Star {
         const cs = this.cellSize
         const star = this.add
             .star(
@@ -654,33 +654,33 @@ export class BoardScene extends Phaser.Scene {
                 cs * LEVEL_STAR.outer,
             )
             .setVisible(false)
-        this.levelStars.set(pieceId, star)
+        this.levelStars.set(characterId, star)
         return star
     }
 
-    // Prata no nível 2, dourada no 3, nenhuma no 1. A peça pode ser promovida no meio da
+    // Prata no nível 2, dourada no 3, nenhuma no 1. A personagem pode ser promovida no meio da
     // partida, então isto roda a cada sincronia, e não só na criação.
-    private syncLevelStar(piece: PieceDefinition) {
-        const star = this.levelStars.get(piece.id)
+    private syncLevelStar(character: CharacterDefinition) {
+        const star = this.levelStars.get(character.id)
         if (!star) return
 
-        if (piece.level < 2) {
+        if (character.level < 2) {
             star.setVisible(false)
             return
         }
-        const colors = levelStarColors(piece.level)
+        const colors = levelStarColors(character.level)
         star.setFillStyle(hex(colors.fill))
         star.setStrokeStyle(1.5, hex(colors.outline))
         star.setVisible(true)
     }
 
     // Comprimento e cor acompanham o vigor que restou.
-    // A barra some quando a peça está inteira.
-    private syncVigorBar(piece: PieceDefinition) {
-        const bar = this.vigorBars.get(piece.id)
+    // A barra some quando a personagem está inteira.
+    private syncVigorBar(character: CharacterDefinition) {
+        const bar = this.vigorBars.get(character.id)
         if (!bar) return
 
-        const ratio = Math.max(0, Math.min(1, piece.vigor / piece.maxVigor))
+        const ratio = Math.max(0, Math.min(1, character.vigor / character.maxVigor))
         bar.fill.setSize(Math.max(1, bar.width * ratio), bar.fill.height)
         bar.fill.setFillStyle(hex(vigorColor(ratio)))
 
@@ -695,7 +695,7 @@ export class BoardScene extends Phaser.Scene {
         const colors = ITEM_PALETTE[itemKeyColor(item.key)]
 
         const container = this.add.container(0, 0)
-        const ring = this.add.circle(0, 0, cs * 0.22, hex(PIECE_DETAIL_PALETTE.shadow), 0.25)
+        const ring = this.add.circle(0, 0, cs * 0.22, hex(CHARACTER_DETAIL_PALETTE.shadow), 0.25)
         const circle = this.add.circle(0, 0, cs * 0.18, hex(colors.bg)).setStrokeStyle(2, hex(colors.outline))
         const letter = this.add
             .text(0, 0, item.key[1], {

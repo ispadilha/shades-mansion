@@ -1,21 +1,21 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import { PieceToken } from "../../../components/pieces"
-import type { PieceSlot } from "../../../logic/setup"
+import { CharacterIcon } from "../../../components/characters"
+import type { CharacterSlot } from "../../../logic/setup"
 import { usePalette } from "../../../hooks/usePalette"
 import { LINEUP_RANK_LINE } from "../../../constants/rules"
 
 interface LineupSlotProps {
-    slot: PieceSlot
-    // Posição da peça na ordem sorteada (vazio enquanto a ordem não foi revelada)
+    slot: CharacterSlot
+    // Posição da personagem na ordem sorteada (vazio enquanto a ordem não foi revelada)
     rank?: string
-    // Valor já travado da peça (undefined enquanto ela não rolou)
+    // Valor já travado da personagem (undefined enquanto ela não rolou)
     value?: number
-    // Peça que está rolando o dado agora
+    // Personagem que está rolando o dado agora
     active: boolean
 }
 
-// Uma peça na fila da iniciativa: a colocação, o boneco, o id e o número que ela tirou
+// Uma personagem na fila da iniciativa: a colocação, o boneco, o id e o número que ela tirou
 export const LineupSlot: React.FC<LineupSlotProps> = ({ slot, rank = "", value, active }) => {
     const palette = usePalette()
     const rolled = value !== undefined
@@ -28,9 +28,9 @@ export const LineupSlot: React.FC<LineupSlotProps> = ({ slot, rank = "", value, 
             Trocar o texto invalida o layout, que o navegador é obrigado a refazer. */}
             <Typography sx={{ ...LINEUP_RANK_LINE, color: palette.initiative.rank }}>{rank}</Typography>
 
-            <PieceToken color={slot.color} type={slot.type} aura={active ? "active" : null} dimmed={!rolled && !active} />
+            <CharacterIcon color={slot.color} type={slot.type} aura={active ? "active" : null} dimmed={!rolled && !active} />
 
-            <Typography sx={{ color: palette.initiative.pieceId, fontSize: 12 }}>{slot.id}</Typography>
+            <Typography sx={{ color: palette.initiative.characterId, fontSize: 12 }}>{slot.id}</Typography>
 
             <Typography
                 sx={{

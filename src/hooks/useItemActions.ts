@@ -1,29 +1,29 @@
 import type { Dispatch, SetStateAction } from "react"
-import type { Inventories, MotivationItemKey, PieceColor, PieceDefinition } from "../logic/types"
+import type { Inventories, MotivationItemKey, CharacterColor, CharacterDefinition } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
 import { itemUseFor, promoted, reinvigorated } from "../logic/items"
 import type { CombatResolution } from "./useCombatResolution"
 import type { RollQueue } from "./useRolls"
 import type { GameLog } from "./useGameLog"
 
-// A tentativa de manipular uma peça de outro time, enquanto ela dura
+// A tentativa de manipular uma personagem de outro time, enquanto ela dura
 export interface Manipulation {
-    // O item gasto na tentativa. A chave dele é o id da peça que ele comanda.
+    // O item gasto na tentativa. A chave dele é o id da personagem que ele comanda.
     itemKey: MotivationItemKey
     // Quem está comandando
-    color: PieceColor
+    color: CharacterColor
 }
 
 interface ItemActionsOptions {
-    pieces: PieceDefinition[]
-    setPieces: Dispatch<SetStateAction<PieceDefinition[]>>
+    characters: CharacterDefinition[]
+    setCharacters: Dispatch<SetStateAction<CharacterDefinition[]>>
     // Cor de quem age agora. Null quando a vez não é do jogador.
-    activeColor: PieceColor | null
+    activeColor: CharacterColor | null
     // Time cujo inventário o HUD mostra: nem sempre é o da vez
-    inventoryColor: PieceColor | null
+    inventoryColor: CharacterColor | null
     inventories: Inventories
-    removeFromInventory: (color: PieceColor, key: MotivationItemKey) => void
-    returnToInventory: (color: PieceColor, key: MotivationItemKey) => void
+    removeFromInventory: (color: CharacterColor, key: MotivationItemKey) => void
+    returnToInventory: (color: CharacterColor, key: MotivationItemKey) => void
     setSelectedId: (id: string | null) => void
     closeInventory: () => void
     setManipulation: (manipulation: Manipulation | null) => void
@@ -35,9 +35,9 @@ interface ItemActionsOptions {
 }
 
 export interface ItemActions {
-    // Item do próprio time: revigora a peça atingida, ou promove a que está inteira
+    // Item do próprio time: revigora a personagem atingida, ou promove a que está inteira
     useOwnItem: (key: MotivationItemKey) => void
-    // Item de outro time: serve para tentar manipular a peça
+    // Item de outro time: serve para tentar manipular a personagem
     useManipulationItem: (key: MotivationItemKey) => void
     // Desistir da manipulação. O item volta para o inventário.
     cancelManipulation: (manipulation: Manipulation | null) => void
@@ -45,8 +45,8 @@ export interface ItemActions {
 
 // O que o jogador faz com os itens no inventário.
 export const useItemActions = ({
-    pieces,
-    setPieces,
+    characters,
+    setCharacters,
     activeColor,
     inventoryColor,
     inventories,
@@ -65,12 +65,12 @@ export const useItemActions = ({
         // nem de outra jogada. O HUD já fica desabilitado fora disso. Aqui é a regra em si.
         if (!activeColor || rolls.resolving || locked) return
         if (!inventoryColor || !inventories[inventoryColor].includes(key)) return
-        const target = pieces.find((p) => p.id === key)
+        const target = characters.find((p) => p.id === key)
         const use = itemUseFor(key, target, inventoryColor)
         if (!target || (use !== "reinvigorate" && use !== "promote")) return
 
         const after = use === "reinvigorate" ? reinvigorated(target) : promoted(target)
-        setPieces((prev) => prev.map((p) => (p.id === key ? after : p)))
+        setCharacters((prev) => prev.map((p) => (p.id === key ? after : p)))
         removeFromInventory(inventoryColor, key)
         if (use === "reinvigorate") log.reinvigorated(inventoryColor, key)
         else log.promoted(inventoryColor, key, after.level)
@@ -80,9 +80,9 @@ export const useItemActions = ({
         if (!activeColor || rolls.resolving || locked) return
         if (itemKeyColor(key) === activeColor) return
         if (!inventories[activeColor].includes(key)) return
-        if (!pieces.some((p) => p.id === key)) return
+        if (!characters.some((p) => p.id === key)) return
 
-        // O item sai do inventário na tentativa. A moeda decide se a peça obedece:
+        // O item sai do inventário na tentativa. A moeda decide se a personagem obedece:
         // dando certo, ela fica selecionada e o próximo mover/atacar é a ação forçada.
         // Falhando, o item cai de volta no tabuleiro.
         const color = activeColor

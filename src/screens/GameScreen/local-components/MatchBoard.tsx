@@ -13,7 +13,7 @@ export const MatchBoard: React.FC<MatchBoardProps> = ({}) => {
         <BoardArea
             scrollRef={board.scrollRef}
             maze={board.maze}
-            pieces={board.pieces}
+            characters={board.characters}
             items={board.items}
             ranges={board.ranges}
             barriers={board.barriers}
@@ -21,7 +21,7 @@ export const MatchBoard: React.FC<MatchBoardProps> = ({}) => {
             damagePopups={board.damagePopups}
             chargeRuns={board.chargeRuns}
             auras={board.auras}
-            selectedPieceId={board.selectedId}
+            selectedCharacterId={board.selectedId}
             droppedItemId={board.droppedItemId}
             onCellClick={board.onCellClick}
             onCellContextMenu={board.onCellContextMenu}

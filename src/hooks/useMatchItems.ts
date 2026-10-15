@@ -1,25 +1,25 @@
 import { useEffect, useRef, useState } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { Inventories, PieceColor, PieceDefinition, PiecePosition, MotivationItem, MotivationItemKey } from "../logic/types"
+import type { Inventories, CharacterColor, CharacterDefinition, CharacterPosition, MotivationItem, MotivationItemKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { atPosition } from "../logic/grid"
 import { randomFreeCell } from "../logic/setup"
 
 // Os itens espalhados pelo labirinto e os inventários dos três times. Um item sai do
-// tabuleiro e entra no inventário quando a peça termina de caminhar até a casa dele.
+// tabuleiro e entra no inventário quando a personagem termina de caminhar até a casa dele.
 export interface MatchItems {
     items: MotivationItem[]
     inventories: Inventories
     setInventories: Dispatch<SetStateAction<Inventories>>
     // O item que está em uma casa agora
-    itemAt: (position: PiecePosition) => MotivationItem | undefined
-    // Coleta agendada para quando a peça chegar na casa (delay = nº de passos × STEP_MS)
-    schedulePickup: (color: PieceColor, position: PiecePosition, delayMs: number) => void
-    removeFromInventory: (color: PieceColor, key: MotivationItemKey) => void
+    itemAt: (position: CharacterPosition) => MotivationItem | undefined
+    // Coleta agendada para quando a personagem chegar na casa (delay = nº de passos × STEP_MS)
+    schedulePickup: (color: CharacterColor, position: CharacterPosition, delayMs: number) => void
+    removeFromInventory: (color: CharacterColor, key: MotivationItemKey) => void
     // Desfaz a saída do item: por exemplo em manipulação cancelada
-    returnToInventory: (color: PieceColor, key: MotivationItemKey) => void
+    returnToInventory: (color: CharacterColor, key: MotivationItemKey) => void
     // Devolve um item ao labirinto, em uma casa livre sorteada. Null se não sobrou casa.
-    dropOnBoard: (key: MotivationItemKey, maze: Maze, pieces: PieceDefinition[]) => MotivationItem | null
+    dropOnBoard: (key: MotivationItemKey, maze: Maze, characters: CharacterDefinition[]) => MotivationItem | null
 }
 
 export const useMatchItems = (initialItems: MotivationItem[]): MatchItems => {
@@ -33,9 +33,9 @@ export const useMatchItems = (initialItems: MotivationItem[]): MatchItems => {
         itemsRef.current = items
     }, [items])
 
-    const itemAt = (position: PiecePosition) => atPosition(itemsRef.current, position)
+    const itemAt = (position: CharacterPosition) => atPosition(itemsRef.current, position)
 
-    const schedulePickup = (color: PieceColor, position: PiecePosition, delayMs: number) => {
+    const schedulePickup = (color: CharacterColor, position: CharacterPosition, delayMs: number) => {
         const item = itemAt(position)
         if (!item) return
         window.setTimeout(() => {
@@ -44,7 +44,7 @@ export const useMatchItems = (initialItems: MotivationItem[]): MatchItems => {
         }, delayMs)
     }
 
-    const removeFromInventory = (color: PieceColor, key: MotivationItemKey) => {
+    const removeFromInventory = (color: CharacterColor, key: MotivationItemKey) => {
         setInventories((prev) => {
             const inv = [...prev[color]]
             const idx = inv.indexOf(key)
@@ -53,12 +53,12 @@ export const useMatchItems = (initialItems: MotivationItem[]): MatchItems => {
         })
     }
 
-    const returnToInventory = (color: PieceColor, key: MotivationItemKey) => {
+    const returnToInventory = (color: CharacterColor, key: MotivationItemKey) => {
         setInventories((prev) => ({ ...prev, [color]: [...prev[color], key] }))
     }
 
-    const dropOnBoard = (key: MotivationItemKey, maze: Maze, pieces: PieceDefinition[]): MotivationItem | null => {
-        const position = randomFreeCell(maze, pieces, itemsRef.current)
+    const dropOnBoard = (key: MotivationItemKey, maze: Maze, characters: CharacterDefinition[]): MotivationItem | null => {
+        const position = randomFreeCell(maze, characters, itemsRef.current)
         if (!position) return null
 
         const item: MotivationItem = { id: `item-${key}-drop-${Date.now()}`, key, position }

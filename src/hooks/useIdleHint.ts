@@ -5,7 +5,7 @@ interface IdleHintOptions {
     // A dica aparece quando é a vez do jogador e não há nada em cena
     enabled: boolean
     // "Fases" para a dica aparecer:
-    // Se ainda não selecionou peça, ou se ainda não escolheu ação
+    // Se ainda não selecionou personagem, ou se ainda não escolheu ação
     phase: string
 }
 

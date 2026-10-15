@@ -1,17 +1,17 @@
 import React from "react"
 import { Box } from "@mui/material"
 import { LineupSlot } from "./LineupSlot"
-import type { PieceSlot } from "../../../logic/setup"
+import type { CharacterSlot } from "../../../logic/setup"
 import { INITIATIVE_FADE_MS } from "../../../constants/rules"
 
 interface InitiativeLineupProps {
-    // Todas as peças, na ordem em que devem aparecer na fila
-    slots: PieceSlot[]
-    // Peça que está rolando o dado agora
+    // Todas as personagens, na ordem em que devem aparecer na fila
+    slots: CharacterSlot[]
+    // Personagem que está rolando o dado agora
     activeId: string | null
-    // Valor já travado de cada peça (as que ainda não rolaram estão sem número)
+    // Valor já travado de cada personagem (as que ainda não rolaram estão sem número)
     values: Record<string, number>
-    // Numera as peças da primeira à última. Usado quando a ordem final já está definida
+    // Numera as personagens da primeira à última. Usado quando a ordem final já está definida
     showRank?: boolean
     // Fila apagada: é durante esse intervalo que a troca de ordem acontece, fora da vista
     faded?: boolean

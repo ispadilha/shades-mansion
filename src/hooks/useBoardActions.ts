@@ -1,5 +1,5 @@
 import type { Dispatch, SetStateAction } from "react"
-import type { PieceColor, PieceDefinition, PiecePosition, TextKey } from "../logic/types"
+import type { CharacterColor, CharacterDefinition, CharacterPosition, TextKey } from "../logic/types"
 import type { Barrier, MotivationItem } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import type { BoardMenuState } from "../logic/boardMenu"
@@ -14,25 +14,25 @@ import type { GameLog } from "./useGameLog"
 import { ACTION_SETTLE_MS, STEP_MS } from "../constants/rules"
 
 interface BoardActionsOptions {
-    pieces: PieceDefinition[]
-    setPieces: Dispatch<SetStateAction<PieceDefinition[]>>
+    characters: CharacterDefinition[]
+    setCharacters: Dispatch<SetStateAction<CharacterDefinition[]>>
     maze: Maze
     // Cor de quem comanda a jogada. Null quando não é a vez do jogador.
-    activeColor: PieceColor | null
+    activeColor: CharacterColor | null
     selectedId: string | null
     setSelectedId: (id: string | null) => void
     skill: SkillFlow
     // A casa em que o jogador clicou com o botão direito
     menu: BoardMenuState | null
     closeMenu: () => void
-    // Há manipulação em curso? A ação então é anormal e não gasta a vez da peça.
+    // Há manipulação em curso? A ação então é anormal e não gasta a vez da personagem.
     manipulating: boolean
     endManipulation: () => void
-    // Segura a câmera na peça manipulada enquanto ela ainda caminha até o destino
+    // Segura a câmera na personagem manipulada enquanto ela ainda caminha até o destino
     holdFocus: (delayMs: number) => void
-    schedulePickup: (color: PieceColor, position: PiecePosition, delayMs: number) => void
+    schedulePickup: (color: CharacterColor, position: CharacterPosition, delayMs: number) => void
     // Andar para uma casa com item é coletar: o histórico diz uma coisa ou outra
-    moveActionFor: (position: PiecePosition) => { actionKey: TextKey; target?: string }
+    moveActionFor: (position: CharacterPosition) => { actionKey: TextKey; target?: string }
     combat: CombatResolution
     log: GameLog
     // Barreiras acesas: elas fecham caminho para os times rivais
@@ -41,11 +41,11 @@ interface BoardActionsOptions {
     items: MotivationItem[]
 
     // O que a habilidade em uso faz quando cria algo numa casa
-    placeSkill: (position: PiecePosition) => void
+    placeSkill: (position: CharacterPosition) => void
 }
 
 export interface BoardActions {
-    // Andar até a casa escolhida. Se houver item nela, a peça o coleta ao chegar.
+    // Andar até a casa escolhida. Se houver item nela, a personagem o coleta ao chegar.
     walk: () => void
     // Atacar a casa escolhida com o ataque comum
     attack: () => void
@@ -55,12 +55,12 @@ export interface BoardActions {
     useSkill: () => void
 }
 
-// O que o menu de contexto executa: os caminhos pelos quais uma peça age no tabuleiro.
-// Terminam da mesma forma: a peça sai de seleção, a habilidade sai de uso,
+// O que o menu de contexto executa: os caminhos pelos quais uma personagem age no tabuleiro.
+// Terminam da mesma forma: a personagem sai de seleção, a habilidade sai de uso,
 // o menu fecha, e o histórico registra quem fez o quê.
 export const useBoardActions = ({
-    pieces,
-    setPieces,
+    characters,
+    setCharacters,
     maze,
     activeColor,
     selectedId,
@@ -79,10 +79,10 @@ export const useBoardActions = ({
     items,
     placeSkill,
 }: BoardActionsOptions): BoardActions => {
-    // Quanto a peça demora para chegar lá,
+    // Quanto a personagem demora para chegar lá,
     // andando casa a casa e contornando o que estiver fechado para o time dela
-    const travelTime = (piece: PieceDefinition, to: PiecePosition) =>
-        pathLength(piece.position, to, maze, blockedCellsFor(piece.color, barriers, pieces)) * STEP_MS + ACTION_SETTLE_MS
+    const travelTime = (character: CharacterDefinition, to: CharacterPosition) =>
+        pathLength(character.position, to, maze, blockedCellsFor(character.color, barriers, characters)) * STEP_MS + ACTION_SETTLE_MS
 
     const finishAction = () => {
         setSelectedId(null)
@@ -92,29 +92,29 @@ export const useBoardActions = ({
 
     // Ação forçada por uma manipulação sai no histórico em nome de quem manipulou,
     // e encerra a manipulação
-    const record = (color: PieceColor, pieceId: string, actionKey: TextKey, target?: string) => {
+    const record = (color: CharacterColor, characterId: string, actionKey: TextKey, target?: string) => {
         if (!manipulating) {
-            log.usedTo(color, pieceId, actionKey, target)
+            log.usedTo(color, characterId, actionKey, target)
             return
         }
-        log.manipulatedTo(color, pieceId, actionKey, target)
+        log.manipulatedTo(color, characterId, actionKey, target)
         endManipulation()
     }
 
     const walk = () => {
         const destination = menu?.position
         if (!destination || !selectedId || !activeColor) return
-        const piece = pieces.find((p) => p.id === selectedId)
-        if (!piece) return
+        const character = characters.find((p) => p.id === selectedId)
+        if (!character) return
 
         // Com uma habilidade de movimento extra em uso, o passo sai da habilidade
         const viaSkill = skill.reach !== null && skill.reach.move > 0
-        const delayMs = travelTime(piece, destination)
+        const delayMs = travelTime(character, destination)
         const { actionKey, target } = moveActionFor(destination)
 
-        // Ação forçada por manipulação não gasta a ação que a peça tem no próprio turno
+        // Ação forçada por manipulação não gasta a ação que a personagem tem no próprio turno
         const spendsAction = !manipulating && !viaSkill
-        setPieces((prev) =>
+        setCharacters((prev) =>
             prev.map((p) =>
                 p.id === selectedId
                     ? {
@@ -126,28 +126,28 @@ export const useBoardActions = ({
                     : p,
             ),
         )
-        schedulePickup(piece.color, destination, delayMs)
+        schedulePickup(character.color, destination, delayMs)
         finishAction()
-        record(activeColor, piece.id, actionKey, target)
-        // A peça manipulada ainda vai caminhar até o destino: a câmera vai com ela
+        record(activeColor, character.id, actionKey, target)
+        // A personagem manipulada ainda vai caminhar até o destino: a câmera vai com ela
         if (manipulating) holdFocus(delayMs)
     }
 
     const strike = (viaSkill: boolean) => {
         if (!selectedId || !menu || !activeColor) return
-        const attacker = pieces.find((p) => p.id === selectedId)
+        const attacker = characters.find((p) => p.id === selectedId)
         if (!attacker) return
 
         const active = viaSkill ? skill.active : null
         const reach = viaSkill ? skill.reach : null
 
-        // O ataque cai em uma casa, que pode ou não ter uma peça em cima.
+        // O ataque cai em uma casa, que pode ou não ter uma personagem em cima.
         // Mirar o chão é só para habilidade que atinge área.
-        const target = menu.targetPiece
+        const target = menu.targetCharacter
         const area = active ? attackArea(attacker, active.skill, target?.position ?? menu.position) : undefined
         if (!target && !area) return
 
-        // Habilidade de alcance acerta de onde a peça está. Para golpe comum, se aproxima antes.
+        // Habilidade de alcance acerta de onde a personagem está. Para golpe comum, se aproxima antes.
         const ranged = reach?.ranged === true
         const walkRange = reach ? reach.attack : strikeWalkRange(attacker)
         const newPos =
@@ -156,16 +156,16 @@ export const useBoardActions = ({
                 : (findApproachCell(
                       attacker,
                       target,
-                      pieces,
+                      characters,
                       items,
                       maze,
                       walkRange,
-                      blockedCellsFor(attacker.color, barriers, pieces),
+                      blockedCellsFor(attacker.color, barriers, characters),
                   ) ?? attacker.position)
         const delayMs = travelTime(attacker, newPos)
 
         const forcedBy = manipulating ? activeColor : null
-        setPieces((prev) =>
+        setCharacters((prev) =>
             prev.map((p) =>
                 p.id === attacker.id
                     ? {
@@ -180,7 +180,7 @@ export const useBoardActions = ({
         if (!ranged) schedulePickup(attacker.color, newPos, delayMs)
         finishAction()
 
-        // Sem peça mirada não há alvo para nomear no histórico
+        // Sem personagem mirada não há alvo para nomear no histórico
         record(activeColor, attacker.id, target ? "toAttack" : "toBurnArea", target?.id)
 
         // Os dados são jogados quando o atacante termina de se aproximar
@@ -195,25 +195,25 @@ export const useBoardActions = ({
         })
     }
 
-    // Dissipar é golpear a barreira corpo a corpo: a peça anda até a casa ao lado dela, e
+    // Dissipar é golpear a barreira corpo a corpo: a personagem anda até a casa ao lado dela, e
     // o dado é jogado quando ela chega. Gasta a ação comum, a não ser sob manipulação.
     // Pelo movimento extra, anda o alcance sorteado e gasta a habilidade no lugar da ação.
     const dispel = () => {
         const barrier = menu?.barrierAtPos
         if (!barrier || !selectedId || !activeColor) return
-        const piece = pieces.find((p) => p.id === selectedId)
-        if (!piece) return
+        const character = characters.find((p) => p.id === selectedId)
+        if (!character) return
 
         const viaSkill = skill.reach !== null && skill.reach.move > 0
-        const walkRange = viaSkill ? skill.reach!.attack : strikeWalkRange(piece)
-        const blocked = blockedCellsFor(piece.color, barriers, pieces)
-        const approach = findApproachCell(piece, barrier, pieces, items, maze, walkRange, blocked) ?? piece.position
-        const delayMs = travelTime(piece, approach)
+        const walkRange = viaSkill ? skill.reach!.attack : strikeWalkRange(character)
+        const blocked = blockedCellsFor(character.color, barriers, characters)
+        const approach = findApproachCell(character, barrier, characters, items, maze, walkRange, blocked) ?? character.position
+        const delayMs = travelTime(character, approach)
 
         const forcedBy = manipulating ? activeColor : null
-        setPieces((prev) =>
+        setCharacters((prev) =>
             prev.map((p) =>
-                p.id === piece.id
+                p.id === character.id
                     ? {
                           ...p,
                           position: approach,
@@ -224,51 +224,51 @@ export const useBoardActions = ({
             ),
         )
         finishAction()
-        record(activeColor, piece.id, "toDispelBarrierOf", barrier.ownerId)
+        record(activeColor, character.id, "toDispelBarrierOf", barrier.ownerId)
 
         combat.resolveDispel({
-            pieceId: piece.id,
+            characterId: character.id,
             barrier,
             delayMs,
             ...(forcedBy ? { manipulatedBy: forcedBy } : {}),
         })
     }
 
-    // Investida: a peça corre em linha reta até a casa escolhida, por cima de quem estiver no
-    // caminho, e cada peça atravessada leva o dano já sorteado, no instante em que ela passa
+    // Investida: a personagem corre em linha reta até a casa escolhida, por cima de quem estiver no
+    // caminho, e cada personagem atravessada leva o dano já sorteado, no instante em que ela passa
     // por cima. Gasta a habilidade, e não a ação comum.
-    const charge = (destination: PiecePosition) => {
+    const charge = (destination: CharacterPosition) => {
         const active = skill.active
         if (!active || active.damage === undefined || !activeColor) return
-        const runner = pieces.find((p) => p.id === active.pieceId)
+        const runner = characters.find((p) => p.id === active.characterId)
         if (!runner) return
 
-        const victims = chargeVictims(runner, destination, pieces, maze, barriers)
+        const victims = chargeVictims(runner, destination, characters, maze, barriers)
         const durationMs = chargeDurationMs(runner.position, destination)
 
-        setPieces((prev) =>
+        setCharacters((prev) =>
             prev.map((p) => (p.id === runner.id ? { ...p, position: destination, usedSkillThisTurn: true } : p)),
         )
         finishAction()
         record(activeColor, runner.id, "toCharge")
 
         combat.resolveCharge({
-            pieceId: runner.id,
+            characterId: runner.id,
             to: destination,
             damage: active.damage,
             durationMs,
-            hits: victims.map(({ piece, at }) => ({ pieceId: piece.id, atMs: Math.round(at * durationMs) })),
+            hits: victims.map(({ character, at }) => ({ characterId: character.id, atMs: Math.round(at * durationMs) })),
         })
     }
 
-    // Imitação: a peça passa a usar a habilidade de outra peça escolhida.
+    // Imitação: a personagem passa a usar a habilidade de outra personagem escolhida.
     // Ela continua selecionada e com uma habilidade em uso, agora a imitada.
     // Só o menu se fecha.
     const imitate = () => {
-        const model = menu?.targetPiece
+        const model = menu?.targetCharacter
         const active = skill.active
         if (!model || !active || !activeColor) return
-        log.usedTo(activeColor, active.pieceId, "toMimic", model.id)
+        log.usedTo(activeColor, active.characterId, "toMimic", model.id)
         skill.imitate(model)
         closeMenu()
     }
@@ -278,7 +278,7 @@ export const useBoardActions = ({
         if (skill.active.skill.effect === "place") {
             placeSkill(menu.position)
             // Ao usar habilidade em uma casa, a habilidade continua em uso
-            // e a peça, selecionada: só o menu se fecha, e pode
+            // e a personagem, selecionada: só o menu se fecha, e pode
             // voltar a abrir num próximo clique direito em outra casa.
             closeMenu()
             return

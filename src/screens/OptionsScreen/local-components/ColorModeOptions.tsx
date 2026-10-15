@@ -1,6 +1,6 @@
 import React from "react"
 import { Box, Button } from "@mui/material"
-import type { ColorModeSetting, PieceColor, TextKey } from "../../../logic/types"
+import type { ColorModeSetting, CharacterColor, TextKey } from "../../../logic/types"
 import { useColorMode } from "../../../hooks/useColorMode"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
@@ -8,7 +8,7 @@ import { TEAM_BUTTON_PALETTE } from "../../../constants/palette"
 
 interface ColorModeOptionsProps {}
 
-const MODE_BUTTONS: Array<{ setting: ColorModeSetting; label: TextKey; team: PieceColor }> = [
+const MODE_BUTTONS: Array<{ setting: ColorModeSetting; label: TextKey; team: CharacterColor }> = [
     { setting: "light", label: "modeLight", team: "light" },
     { setting: "gray", label: "modeGray", team: "gray" },
     { setting: "dark", label: "modeDark", team: "dark" },

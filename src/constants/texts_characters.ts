@@ -5,8 +5,8 @@ export const texts_characters = {
             ptBR: "Umbra, o Ágil",
         },
         type: {
-            enUS: "Agile (A): the fastest piece of the Dark team.",
-            ptBR: "Ágil (A): a peça mais rápida do time escuro.",
+            enUS: "Agile (A): the fastest character of the Dark team.",
+            ptBR: "Ágil (A): a personagem mais rápida do time escuro.",
         },
         description: {
             enUS:
@@ -32,8 +32,8 @@ export const texts_characters = {
             ptBR: "Nyx, a Barreira",
         },
         type: {
-            enUS: "Barrier (B): the piece that holds the passages for the Dark team.",
-            ptBR: "Barreira (B): a peça que segura as passagens para o time escuro.",
+            enUS: "Barrier (B): the character that holds the passages for the Dark team.",
+            ptBR: "Barreira (B): a personagem que segura as passagens para o time escuro.",
         },
         description: {
             enUS:
@@ -62,7 +62,7 @@ export const texts_characters = {
         },
         type: {
             enUS: "Champion (C): the heaviest hitter of the Dark team.",
-            ptBR: "Campeão (C): a peça mais forte do time escuro.",
+            ptBR: "Campeão (C): a personagem mais forte do time escuro.",
         },
         description: {
             enUS:
@@ -72,9 +72,9 @@ export const texts_characters = {
         },
         skill: {
             enUS:
-                "runs in a straight line over every piece in the way, and each of them takes the damage, allies included. It calls for care and strategy.",
+                "runs in a straight line over every character in the way, and each of them takes the damage, allies included. It calls for care and strategy.",
             ptBR:
-                "corre em linha reta por cima de toda peça no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
+                "corre em linha reta por cima de toda personagem no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
         },
         affinity: {
             enUS:
@@ -91,7 +91,7 @@ export const texts_characters = {
         },
         type: {
             enUS: "Distance shooter (D): the long-range shooter of the Dark team.",
-            ptBR: "Atirador à Distância (D): a peça de tiro longo do time escuro.",
+            ptBR: "Atirador à Distância (D): a personagem de tiro longo do time escuro.",
         },
         description: {
             enUS:
@@ -101,9 +101,9 @@ export const texts_characters = {
         },
         skill: {
             enUS:
-                "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other pieces interrupt the line of fire.",
+                "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other characters interrupt the line of fire.",
             ptBR:
-                "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras peças interrompem a linha de tiro.",
+                "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras personagens interrompem a linha de tiro.",
         },
         affinity: {
             enUS: "With Corvus, the Champion: when one of them starts its turn next to the other, both recover vigor.",
@@ -117,8 +117,8 @@ export const texts_characters = {
             ptBR: "Noctua, a Exótica",
         },
         type: {
-            enUS: "Exotic (E): the strangest piece of the Dark team.",
-            ptBR: "Exótica (E): a peça mais estranha do time escuro.",
+            enUS: "Exotic (E): the strangest character of the Dark team.",
+            ptBR: "Exótica (E): a personagem mais estranha do time escuro.",
         },
         description: {
             enUS: "Nobody on the Dark side is quite sure what Noctua is. Noctua does not seem to mind.",
@@ -126,9 +126,9 @@ export const texts_characters = {
         },
         skill: {
             enUS:
-                "copies the skill of another piece within its line of sight, ally or opponent, and uses it as its own for that turn.",
+                "copies the skill of another character within its line of sight, ally or opponent, and uses it as its own for that turn.",
             ptBR:
-                "copia a habilidade de outra peça na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
+                "copia a habilidade de outra personagem na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
         },
         affinity: {
             enUS:
@@ -143,8 +143,8 @@ export const texts_characters = {
             ptBR: "Pyrrha, a Incendiária",
         },
         type: {
-            enUS: "Firestarter (F): the most dangerous piece of the Dark team, for friend and foe alike.",
-            ptBR: "Incendiária (F): a peça mais perigosa do time escuro, para amigos e inimigos.",
+            enUS: "Firestarter (F): the most dangerous character of the Dark team, for friend and foe alike.",
+            ptBR: "Incendiária (F): a personagem mais perigosa do time escuro, para amigos e inimigos.",
         },
         description: {
             enUS:
@@ -169,8 +169,8 @@ export const texts_characters = {
             ptBR: "Cinis, o Ágil",
         },
         type: {
-            enUS: "Agile (A): the fastest piece of the Gray team.",
-            ptBR: "Ágil (A): a peça mais rápida do time cinza.",
+            enUS: "Agile (A): the fastest character of the Gray team.",
+            ptBR: "Ágil (A): a personagem mais rápida do time cinza.",
         },
         description: {
             enUS:
@@ -196,8 +196,8 @@ export const texts_characters = {
             ptBR: "Limen, a Barreira",
         },
         type: {
-            enUS: "Barrier (B): the piece that holds the passages for the Gray team.",
-            ptBR: "Barreira (B): a peça que segura as passagens para o time cinza.",
+            enUS: "Barrier (B): the character that holds the passages for the Gray team.",
+            ptBR: "Barreira (B): a personagem que segura as passagens para o time cinza.",
         },
         description: {
             enUS:
@@ -226,19 +226,19 @@ export const texts_characters = {
         },
         type: {
             enUS: "Champion (C): the heaviest hitter of the Gray team.",
-            ptBR: "Campeão (C): a peça mais forte do time cinza.",
+            ptBR: "Campeão (C): a personagem mais forte do time cinza.",
         },
         description: {
             enUS:
                 "Nimbus arrives the way weather arrives: late, and all at once. The Gray team sends this one down the corridor when the corridor is no longer worth negotiating for.",
             ptBR:
-                "Nimbus chega como o tempo chega: tarde e de uma vez só. O time cinza manda essa peça corredor abaixo quando o corredor deixa de valer uma negociação.",
+                "Nimbus chega como o tempo chega: tarde e de uma vez só. O time cinza manda essa personagem corredor abaixo quando o corredor deixa de valer uma negociação.",
         },
         skill: {
             enUS:
-                "runs in a straight line over every piece in the way, and each of them takes the damage, allies included. It calls for care and strategy.",
+                "runs in a straight line over every character in the way, and each of them takes the damage, allies included. It calls for care and strategy.",
             ptBR:
-                "corre em linha reta por cima de toda peça no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
+                "corre em linha reta por cima de toda personagem no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
         },
         affinity: {
             enUS:
@@ -255,7 +255,7 @@ export const texts_characters = {
         },
         type: {
             enUS: "Distance shooter (D): the long-range shooter of the Gray team.",
-            ptBR: "Atirador à Distância (D): a peça de tiro longo do time cinza.",
+            ptBR: "Atirador à Distância (D): a personagem de tiro longo do time cinza.",
         },
         description: {
             enUS:
@@ -265,9 +265,9 @@ export const texts_characters = {
         },
         skill: {
             enUS:
-                "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other pieces interrupt the line of fire.",
+                "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other characters interrupt the line of fire.",
             ptBR:
-                "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras peças interrompem a linha de tiro.",
+                "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras personagens interrompem a linha de tiro.",
         },
         affinity: {
             enUS: "With Nimbus, the Champion: when one of them starts its turn next to the other, both recover vigor.",
@@ -281,8 +281,8 @@ export const texts_characters = {
             ptBR: "Aenigma, a Exótica",
         },
         type: {
-            enUS: "Exotic (E): the strangest piece of the Gray team.",
-            ptBR: "Exótica (E): a peça mais estranha do time cinza.",
+            enUS: "Exotic (E): the strangest character of the Gray team.",
+            ptBR: "Exótica (E): a personagem mais estranha do time cinza.",
         },
         description: {
             enUS:
@@ -292,9 +292,9 @@ export const texts_characters = {
         },
         skill: {
             enUS:
-                "copies the skill of another piece within its line of sight, ally or opponent, and uses it as its own for that turn.",
+                "copies the skill of another character within its line of sight, ally or opponent, and uses it as its own for that turn.",
             ptBR:
-                "copia a habilidade de outra peça na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
+                "copia a habilidade de outra personagem na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
         },
         affinity: {
             enUS:
@@ -309,8 +309,8 @@ export const texts_characters = {
             ptBR: "Favilla, a Incendiária",
         },
         type: {
-            enUS: "Firestarter (F): the most dangerous piece of the Gray team, for friend and foe alike.",
-            ptBR: "Incendiária (F): a peça mais perigosa do time cinza, para amigos e inimigos.",
+            enUS: "Firestarter (F): the most dangerous character of the Gray team, for friend and foe alike.",
+            ptBR: "Incendiária (F): a personagem mais perigosa do time cinza, para amigos e inimigos.",
         },
         description: {
             enUS:
@@ -335,8 +335,8 @@ export const texts_characters = {
             ptBR: "Scintilla, o Ágil",
         },
         type: {
-            enUS: "Agile (A): the fastest piece of the Light team.",
-            ptBR: "Ágil (A): a peça mais rápida do time claro.",
+            enUS: "Agile (A): the fastest character of the Light team.",
+            ptBR: "Ágil (A): a personagem mais rápida do time claro.",
         },
         description: {
             enUS:
@@ -362,8 +362,8 @@ export const texts_characters = {
             ptBR: "Aurora, a Barreira",
         },
         type: {
-            enUS: "Barrier (B): the piece that holds the passages for the Light team.",
-            ptBR: "Barreira (B): a peça que segura as passagens para o time claro.",
+            enUS: "Barrier (B): the character that holds the passages for the Light team.",
+            ptBR: "Barreira (B): a personagem que segura as passagens para o time claro.",
         },
         description: {
             enUS:
@@ -390,19 +390,19 @@ export const texts_characters = {
         },
         type: {
             enUS: "Champion (C): the heaviest hitter of the Light team.",
-            ptBR: "Campeão (C): a peça mais forte do time claro.",
+            ptBR: "Campeão (C): a personagem mais forte do time claro.",
         },
         description: {
             enUS:
                 "Lumen moves slowly because there is nothing in the mansion worth arriving early for. What Lumen reaches, Lumen breaks — the Light side keeps this one for the doors and the shades that refuse to give way.",
             ptBR:
-                "Lumen anda devagar porque não há nada na mansão que valha a pena alcançar cedo. O que Lumen alcança, Lumen quebra — o lado claro guarda essa peça para as portas e para as sombras que se recusam a sair do caminho.",
+                "Lumen anda devagar porque não há nada na mansão que valha a pena alcançar cedo. O que Lumen alcança, Lumen quebra — o lado claro guarda essa personagem para as portas e para as sombras que se recusam a sair do caminho.",
         },
         skill: {
             enUS:
-                "runs in a straight line over every piece in the way, and each of them takes the damage, allies included. It calls for care and strategy.",
+                "runs in a straight line over every character in the way, and each of them takes the damage, allies included. It calls for care and strategy.",
             ptBR:
-                "corre em linha reta por cima de toda peça no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
+                "corre em linha reta por cima de toda personagem no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
         },
         affinity: {
             enUS:
@@ -419,7 +419,7 @@ export const texts_characters = {
         },
         type: {
             enUS: "Distance shooter (D): the long-range shooter of the Light team.",
-            ptBR: "Atirador à Distância (D): a peça de tiro longo do time claro.",
+            ptBR: "Atirador à Distância (D): a personagem de tiro longo do time claro.",
         },
         description: {
             enUS:
@@ -429,9 +429,9 @@ export const texts_characters = {
         },
         skill: {
             enUS:
-                "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other pieces interrupt the line of fire.",
+                "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other characters interrupt the line of fire.",
             ptBR:
-                "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras peças interrompem a linha de tiro.",
+                "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras personagens interrompem a linha de tiro.",
         },
         affinity: {
             enUS: "With Lumen, the Champion: when one of them starts its turn next to the other, both recover vigor.",
@@ -445,8 +445,8 @@ export const texts_characters = {
             ptBR: "Iris, a Exótica",
         },
         type: {
-            enUS: "Exotic (E): the strangest piece of the Light team.",
-            ptBR: "Exótica (E): a peça mais estranha do time claro.",
+            enUS: "Exotic (E): the strangest character of the Light team.",
+            ptBR: "Exótica (E): a personagem mais estranha do time claro.",
         },
         description: {
             enUS:
@@ -456,9 +456,9 @@ export const texts_characters = {
         },
         skill: {
             enUS:
-                "copies the skill of another piece within its line of sight, ally or opponent, and uses it as its own for that turn.",
+                "copies the skill of another character within its line of sight, ally or opponent, and uses it as its own for that turn.",
             ptBR:
-                "copia a habilidade de outra peça na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
+                "copia a habilidade de outra personagem na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
         },
         affinity: {
             enUS:
@@ -473,8 +473,8 @@ export const texts_characters = {
             ptBR: "Ignis, a Incendiária",
         },
         type: {
-            enUS: "Firestarter (F): the most dangerous piece of the Light team, for friend and foe alike.",
-            ptBR: "Incendiária (F): a peça mais perigosa do time claro, para amigos e inimigos.",
+            enUS: "Firestarter (F): the most dangerous character of the Light team, for friend and foe alike.",
+            ptBR: "Incendiária (F): a personagem mais perigosa do time claro, para amigos e inimigos.",
         },
         description: {
             enUS:

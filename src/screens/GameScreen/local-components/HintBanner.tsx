@@ -18,7 +18,7 @@ export const HintBanner: React.FC<HintBannerProps> = ({ open, onDismiss }) => {
             bg={palette.hud.bandBg}
             outline={palette.hud.bandBorder}
             textColor={palette.hud.logText}
-            message={t("hintSelectPiece")}
+            message={t("hintSelectCharacter")}
             actionLabel={t("gotIt")}
             onAction={onDismiss}
         />

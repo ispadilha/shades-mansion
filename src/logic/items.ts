@@ -1,30 +1,30 @@
-import type { PieceColor, PieceDefinition, MotivationItemKey } from "./types"
+import type { CharacterColor, CharacterDefinition, MotivationItemKey } from "./types"
 import { itemKeyColor } from "./types"
 import { MAX_LEVEL, statsFor } from "../constants/rules"
 
 export type ItemUse = "reinvigorate" | "promote" | "manipulate"
 
-export const canPromote = (piece: PieceDefinition) => piece.level < MAX_LEVEL && piece.vigor >= piece.maxVigor
+export const canPromote = (character: CharacterDefinition) => character.level < MAX_LEVEL && character.vigor >= character.maxVigor
 
-// Para o que este item serve agora. Null quando não serve para nada: a peça já saiu do
+// Para o que este item serve agora. Null quando não serve para nada: a personagem já saiu do
 // tabuleiro, ou está inteira e no último nível.
 export const itemUseFor = (
     key: MotivationItemKey,
-    piece: PieceDefinition | undefined,
-    holder: PieceColor,
+    character: CharacterDefinition | undefined,
+    holder: CharacterColor,
 ): ItemUse | null => {
-    if (!piece) return null
+    if (!character) return null
     if (itemKeyColor(key) !== holder) return "manipulate"
-    if (piece.vigor < piece.maxVigor) return "reinvigorate"
-    return canPromote(piece) ? "promote" : null
+    if (character.vigor < character.maxVigor) return "reinvigorate"
+    return canPromote(character) ? "promote" : null
 }
 
-// A peça promovida entra no nível novo com o vigor cheio
-export const promoted = (piece: PieceDefinition): PieceDefinition => {
-    const level = piece.level + 1
-    const { maxVigor } = statsFor(piece.type, level)
-    return { ...piece, level, vigor: maxVigor, maxVigor }
+// A personagem promovida entra no nível novo com o vigor cheio
+export const promoted = (character: CharacterDefinition): CharacterDefinition => {
+    const level = character.level + 1
+    const { maxVigor } = statsFor(character.type, level)
+    return { ...character, level, vigor: maxVigor, maxVigor }
 }
 
-// A peça revigorada volta ao vigor cheio do nível em que está
-export const reinvigorated = (piece: PieceDefinition): PieceDefinition => ({ ...piece, vigor: piece.maxVigor })
+// A personagem revigorada volta ao vigor cheio do nível em que está
+export const reinvigorated = (character: CharacterDefinition): CharacterDefinition => ({ ...character, vigor: character.maxVigor })

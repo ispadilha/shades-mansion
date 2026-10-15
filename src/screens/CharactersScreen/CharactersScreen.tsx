@@ -2,11 +2,11 @@ import React from "react"
 import { useNavigate } from "react-router-dom"
 import { TeamCharacterSection } from "./local-components/TeamCharacterSection"
 import { BackButton, ScreenLayout, ScreenTitle } from "../../components/ui"
-import type { PieceColor } from "../../logic/types"
+import type { CharacterColor } from "../../logic/types"
 import { useLanguage } from "../../hooks/useLanguage"
 
 // Ordem em que os times aparecem na biblioteca
-const SECTION_COLORS: PieceColor[] = ["dark", "gray", "light"]
+const SECTION_COLORS: CharacterColor[] = ["dark", "gray", "light"]
 
 interface CharactersScreenProps {}
 

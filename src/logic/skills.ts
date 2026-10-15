@@ -1,4 +1,4 @@
-import type { LineBlockers, PieceDefinition, PieceType, SkillId, TextKey } from "./types"
+import type { LineBlockers, CharacterDefinition, CharacterType, SkillId, TextKey } from "./types"
 import { diceMax, type DiceSpec } from "./rolls"
 import { SKILL_LEVELS, statsFor } from "../constants/rules"
 
@@ -6,7 +6,7 @@ import { SKILL_LEVELS, statsFor } from "../constants/rules"
 // - "strike": vira um ataque, de perto ou de longe
 // - "place": cria algo em uma casa livre, à distância
 // - "charge": investida em linha reta até uma casa vazia, por cima de quem estiver no caminho
-// - "mimic": copia a habilidade de outra peça, e passa a usá-la como se fosse proṕria
+// - "mimic": copia a habilidade de outra personagem, e passa a usá-la como se fosse proṕria
 export type SkillEffect = "strike" | "place" | "charge" | "mimic"
 
 export interface Skill {
@@ -30,7 +30,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         effect: "strike",
         moves: true,
         ranged: false,
-        blockedBy: { pieces: true, barriers: true },
+        blockedBy: { characters: true, barriers: true },
     },
     barrier: {
         id: "barrier",
@@ -39,7 +39,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         effect: "place",
         moves: false,
         ranged: true,
-        blockedBy: { pieces: false, barriers: true },
+        blockedBy: { characters: false, barriers: true },
     },
     charge: {
         id: "charge",
@@ -48,7 +48,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         effect: "charge",
         moves: false,
         ranged: false,
-        blockedBy: { pieces: false, barriers: true },
+        blockedBy: { characters: false, barriers: true },
     },
     longShot: {
         id: "longShot",
@@ -57,7 +57,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         effect: "strike",
         moves: false,
         ranged: true,
-        blockedBy: { pieces: true, barriers: true },
+        blockedBy: { characters: true, barriers: true },
     },
     mimic: {
         id: "mimic",
@@ -66,7 +66,7 @@ export const SKILLS: Record<SkillId, Skill> = {
         effect: "mimic",
         moves: false,
         ranged: true,
-        blockedBy: { pieces: false, barriers: true },
+        blockedBy: { characters: false, barriers: true },
     },
     fire: {
         id: "fire",
@@ -75,11 +75,11 @@ export const SKILLS: Record<SkillId, Skill> = {
         effect: "strike",
         moves: false,
         ranged: true,
-        blockedBy: { pieces: false, barriers: true },
+        blockedBy: { characters: false, barriers: true },
     },
 }
 
-const SKILL_BY_TYPE: Record<PieceType, SkillId> = {
+const SKILL_BY_TYPE: Record<CharacterType, SkillId> = {
     A: "extraMove",
     B: "barrier",
     C: "charge",
@@ -88,60 +88,60 @@ const SKILL_BY_TYPE: Record<PieceType, SkillId> = {
     F: "fire",
 }
 
-export const skillFor = (type: PieceType): Skill => SKILLS[SKILL_BY_TYPE[type]]
+export const skillFor = (type: CharacterType): Skill => SKILLS[SKILL_BY_TYPE[type]]
 
-// A habilidade que a imitação copia de uma peça: só não pode ser outra imitação
-export const imitableSkillOf = (model: PieceDefinition): Skill | null => {
+// A habilidade que a imitação copia de uma personagem: só não pode ser outra imitação
+export const imitableSkillOf = (model: CharacterDefinition): Skill | null => {
     const skill = skillFor(model.type)
     return skill.effect !== "mimic" ? skill : null
 }
 
-export const hasRangedAttackSkill = (type: PieceType) => {
+export const hasRangedAttackSkill = (type: CharacterType) => {
     const skill = skillFor(type)
     return skill.ranged && skill.effect === "strike"
 }
 
-// O valor de uma grandeza da habilidade no nível em que a peça está
+// O valor de uma grandeza da habilidade no nível em que a personagem está
 const levelValue = <T>(values: readonly T[] | undefined, level: number): T | null => {
     if (!values || values.length === 0) return null
     return values[Math.min(Math.max(level, 1), values.length) - 1]
 }
 
 // Os dados que sorteiam o alcance da habilidade, quando ela o sorteia
-export const skillRollOf = (skill: Skill, piece: PieceDefinition): DiceSpec | null =>
-    levelValue(SKILL_LEVELS[skill.id].rangeDice, piece.level)
+export const skillRollOf = (skill: Skill, character: CharacterDefinition): DiceSpec | null =>
+    levelValue(SKILL_LEVELS[skill.id].rangeDice, character.level)
 
 // O alcance fixo da habilidade, quando ela não o sorteia
-export const skillRangeOf = (skill: Skill, piece: PieceDefinition): number | null =>
-    levelValue(SKILL_LEVELS[skill.id].fixedRange, piece.level)
+export const skillRangeOf = (skill: Skill, character: CharacterDefinition): number | null =>
+    levelValue(SKILL_LEVELS[skill.id].fixedRange, character.level)
 
 // O maior alcance que a habilidade pode ter: o fixo, ou o maior número que os dados dela tiram
-export const skillMaxRangeOf = (skill: Skill, piece: PieceDefinition): number => {
-    const dice = skillRollOf(skill, piece)
-    return dice ? diceMax(dice) : (skillRangeOf(skill, piece) ?? 0)
+export const skillMaxRangeOf = (skill: Skill, character: CharacterDefinition): number => {
+    const dice = skillRollOf(skill, character)
+    return dice ? diceMax(dice) : (skillRangeOf(skill, character) ?? 0)
 }
 
 // Os dados de dano da habilidade, quando ela tem os seus
-export const skillDamageOf = (skill: Skill, piece: PieceDefinition): DiceSpec | null =>
-    levelValue(SKILL_LEVELS[skill.id].damageDice, piece.level)
+export const skillDamageOf = (skill: Skill, character: CharacterDefinition): DiceSpec | null =>
+    levelValue(SKILL_LEVELS[skill.id].damageDice, character.level)
 
-export const skillChargesOf = (skill: Skill, piece: PieceDefinition): number | null =>
-    levelValue(SKILL_LEVELS[skill.id].charges, piece.level)
+export const skillUsesOf = (skill: Skill, character: CharacterDefinition): number | null =>
+    levelValue(SKILL_LEVELS[skill.id].uses, character.level)
 
 // O lado do quadrado que a habilidade incendeia. Null quando ela não atinge uma área.
-export const skillAreaSideOf = (skill: Skill, piece: PieceDefinition): number | null =>
-    levelValue(SKILL_LEVELS[skill.id].areaSide, piece.level)
+export const skillAreaSideOf = (skill: Skill, character: CharacterDefinition): number | null =>
+    levelValue(SKILL_LEVELS[skill.id].areaSide, character.level)
 
 export interface ActiveSkill {
     skill: Skill
-    pieceId: string
+    characterId: string
     // Alcance: sorteado no dado, ou o fixo, que `skillRangeOf` diz
     range: number
     // O dano já sorteado, para a habilidade que rola o próprio dano antes de agir
     damage?: number
     // Casos em que não pode voltar atrás
     committed: boolean
-    // A habilidade por meio da qual a peça usa esta, quando não é a dela: a imitação
+    // A habilidade por meio da qual a personagem usa esta, quando não é a dela: a imitação
     via?: Skill
 }
 
@@ -172,12 +172,12 @@ export interface SkillReach {
     area: number | null
 }
 
-// Até onde a habilidade chega partindo desta peça, com este alcance:
+// Até onde a habilidade chega partindo desta personagem, com este alcance:
 // o sorteado ou fixo, quando ela está em uso,
-// ou o maior que ela pode ter, quando a peça está só sendo consultada
-export const reachOf = (skill: Skill, piece: PieceDefinition, range: number): SkillReach => {
+// ou o maior que ela pode ter, quando a personagem está só sendo consultada
+export const reachOf = (skill: Skill, character: CharacterDefinition, range: number): SkillReach => {
     const { effect, blockedBy } = skill
-    const area = skillAreaSideOf(skill, piece)
+    const area = skillAreaSideOf(skill, character)
     if (effect === "place" || effect === "mimic") {
         return { move: 0, attack: range, ranged: true, blockedBy, effect, area }
     }
@@ -187,6 +187,6 @@ export const reachOf = (skill: Skill, piece: PieceDefinition, range: number): Sk
         : { move: 0, attack: range, ranged: skill.ranged, blockedBy, effect, area }
 }
 
-// O dano no ataque: os dados da habilidade, quando ela tem, ou o golpe comum da peça
-export const damageOf = (piece: PieceDefinition, skill: Skill | null): DiceSpec =>
-    (skill ? skillDamageOf(skill, piece) : null) ?? statsFor(piece.type, piece.level).damage
+// O dano no ataque: os dados da habilidade, quando ela tem, ou o golpe comum da personagem
+export const damageOf = (character: CharacterDefinition, skill: Skill | null): DiceSpec =>
+    (skill ? skillDamageOf(skill, character) : null) ?? statsFor(character.type, character.level).damage

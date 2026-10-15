@@ -1,17 +1,17 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import { PieceToken } from "../../../components/pieces"
-import type { PieceAuras, PieceDefinition } from "../../../logic/types"
+import { CharacterIcon } from "../../../components/characters"
+import type { CharacterAuras, CharacterDefinition } from "../../../logic/types"
 import { isSpent } from "../../../logic/turn"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 import { AURA_PALETTE } from "../../../constants/palette"
 
 interface TurnOrderBarProps {
-    // Peças ainda em jogo, já na ordem de iniciativa
-    order: PieceDefinition[]
-    auras: PieceAuras
-    // Peça da vez: token clicável para selecionar e centralizar na câmera
+    // Personagens ainda em jogo, já na ordem de iniciativa
+    order: CharacterDefinition[]
+    auras: CharacterAuras
+    // Personagem da vez: ícone clicável para selecionar e centralizar na câmera
     activeId: string | null
     onActivate?: () => void
     round: number
@@ -38,13 +38,13 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, active
                     overflowY: "hidden",
                 }}
             >
-                {order.map((piece) => {
-                    const aura = auras[piece.id] ?? null
-                    const clickable = piece.id === activeId && onActivate !== undefined
+                {order.map((character) => {
+                    const aura = auras[character.id] ?? null
+                    const clickable = character.id === activeId && onActivate !== undefined
 
                     return (
                         <Box
-                            key={piece.id}
+                            key={character.id}
                             onClick={clickable ? onActivate : undefined}
                             sx={{
                                 display: "flex",
@@ -54,16 +54,16 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, active
                                 cursor: clickable ? "pointer" : "default",
                             }}
                         >
-                            <PieceToken
-                                color={piece.color}
-                                type={piece.type}
-                                level={piece.level}
+                            <CharacterIcon
+                                color={character.color}
+                                type={character.type}
+                                level={character.level}
                                 size={34}
                                 aura={aura}
-                                dimmed={isSpent(piece) && !aura}
+                                dimmed={isSpent(character) && !aura}
                             />
                             <Typography sx={{ color: aura ? AURA_PALETTE[aura].color : palette.initiative.idleId, fontSize: 10 }}>
-                                {piece.id}
+                                {character.id}
                             </Typography>
                         </Box>
                     )

@@ -4,10 +4,10 @@ import type { MatchSetup } from "../logic/setup"
 import type { Maze } from "../logic/maze"
 import type {
     Barrier,
-    PieceAuras,
-    PieceColor,
-    PieceDefinition,
-    PiecePosition,
+    CharacterAuras,
+    CharacterColor,
+    CharacterDefinition,
+    CharacterPosition,
     MotivationItem,
     MotivationItemKey,
     RangeKind,
@@ -45,7 +45,7 @@ export interface MatchContextValue {
     board: {
         scrollRef: React.RefObject<HTMLDivElement | null>
         maze: Maze
-        pieces: PieceDefinition[]
+        characters: CharacterDefinition[]
         items: MotivationItem[]
         // De que alcance é cada casa destacada, pela `positionKey` dela
         ranges: ReadonlyMap<string, RangeKind>
@@ -53,18 +53,18 @@ export interface MatchContextValue {
         fireBursts: FireBurst[]
         damagePopups: DamagePopup[]
         chargeRuns: ChargeRun[]
-        auras: PieceAuras
+        auras: CharacterAuras
         selectedId: string | null
         droppedItemId: string | null
-        onCellClick: (position: PiecePosition) => void
-        onCellContextMenu: (event: React.MouseEvent, position: PiecePosition) => void
+        onCellClick: (position: CharacterPosition) => void
+        onCellContextMenu: (event: React.MouseEvent, position: CharacterPosition) => void
     }
 
     // De quem é a vez, e o que se pode fazer com ela
     turn: {
-        activePiece: PieceDefinition | null
-        // Peças ainda em jogo, na ordem de iniciativa
-        order: PieceDefinition[]
+        activeCharacter: CharacterDefinition | null
+        // Personagens ainda em jogo, na ordem de iniciativa
+        order: CharacterDefinition[]
         round: number
         isPlayerTurn: boolean
         spectating: boolean
@@ -72,19 +72,19 @@ export interface MatchContextValue {
         busy: boolean
         end: () => void
         quit: () => void
-        // Traz a câmera até a peça da vez e, se ela ainda tiver ação, a seleciona
-        focusActivePiece: () => void
+        // Traz a câmera até a personagem da vez e, se ela ainda tiver ação, a seleciona
+        focusActiveCharacter: () => void
     }
 
     skill: SkillFlow
 
-    // As barreiras paranormais acesas, e quantas a peça da vez ainda pode acender
+    // As barreiras paranormais acesas, e quantas a personagem da vez ainda pode acender
     barriers: {
         all: Barrier[]
-        chargesLeft: number
+        usesLeft: number
     }
 
-    // A tentativa de comandar uma peça de outro time
+    // A tentativa de comandar uma personagem de outro time
     manipulation: {
         current: Manipulation | null
         cancel: () => void
@@ -93,7 +93,7 @@ export interface MatchContextValue {
     // Os itens de motivação guardados, e o que fazer com eles
     inventory: {
         // Time cujo inventário o HUD mostra. Null quando não há nenhum para mostrar.
-        color: PieceColor | null
+        color: CharacterColor | null
         items: MotivationItemKey[]
         // Com uma jogada em curso o inventário não abre
         locked: boolean
@@ -111,11 +111,11 @@ export interface MatchContextValue {
         attack: () => void
         dispel: () => void
         useSkill: () => void
-        showPieceInfo: () => void
+        showCharacterInfo: () => void
         showItemInfo: () => void
         showBarrierInfo: () => void
-        infoPiece: PieceDefinition | null
-        closeInfoPiece: () => void
+        infoCharacter: CharacterDefinition | null
+        closeInfoCharacter: () => void
         infoItemKey: MotivationItemKey | null
         closeInfoItem: () => void
         infoBarrier: Barrier | null
@@ -148,10 +148,10 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const spectating = controlledColors.length === 0
     // Rolagem de time comandado por jogador espera o clique no dado;
     // as de times comandados por IA rolam automaticamente.
-    const isManualRoll = (color: PieceColor) => controlledColors.includes(color)
+    const isManualRoll = (color: CharacterColor) => controlledColors.includes(color)
 
-    const turn = useTurnFlow({ initialPieces: match.pieces, turnOrder, controlledColors })
-    const { pieces, setPieces, activePiece, isPlayerTurn, activeColor, selectedId, setSelectedId } = turn
+    const turn = useTurnFlow({ initialCharacters: match.characters, turnOrder, controlledColors })
+    const { characters, setCharacters, activeCharacter, isPlayerTurn, activeColor, selectedId, setSelectedId } = turn
     const items = useMatchItems(match.items)
     const log = useGameLog()
     const rolls = useRolls()
@@ -164,8 +164,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
 
     const focus = useMatchFocus({
         maze,
-        pieces,
-        activePieceId: activePiece?.id ?? null,
+        characters,
+        activeCharacterId: activeCharacter?.id ?? null,
         homeColor: controlledColors.length === 1 ? controlledColors[0] : null,
         manipulating: manipulation !== null,
         resolving: rolls.resolving,
@@ -175,37 +175,37 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const [fireBursts, setFireBursts] = useState<FireBurst[]>([])
     // Números de dano já resolvidos, para a cena mostrá-los subindo (ela ignora os repetidos)
     const [damagePopups, setDamagePopups] = useState<DamagePopup[]>([])
-    // Investidas já decididas, para a cena fazer a peça correr em linha reta (ela ignora as repetidas)
+    // Investidas já decididas, para a cena fazer a personagem correr em linha reta (ela ignora as repetidas)
     const [chargeRuns, setChargeRuns] = useState<ChargeRun[]>([])
-    const [infoPiece, setInfoPiece] = useState<PieceDefinition | null>(null)
+    const [infoCharacter, setInfoCharacter] = useState<CharacterDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [infoBarrier, setInfoBarrier] = useState<Barrier | null>(null)
     const [inventoryOpen, setInventoryOpen] = useState(false)
 
-    // Traz a câmera até a peça da vez e, se ela ainda tiver ação, a seleciona. É o que o
-    // token dela no HUD faz ao ser clicado, e o primeiro passo do botão de habilidades.
-    // Peça que já gastou tudo só é mostrada, não selecionada.
-    const focusActivePiece = () => {
-        if (!activePiece || !isPlayerTurn || rolls.resolving || manipulation) return false
-        if (turnStageOf(activePiece) !== "spent") setSelectedId(activePiece.id)
+    // Traz a câmera até a personagem da vez e, se ela ainda tiver ação, a seleciona. É o que o
+    // ícone dela no HUD faz ao ser clicado, e o primeiro passo do botão de habilidades.
+    // Personagem que já gastou tudo só é mostrada, não selecionada.
+    const focusActiveCharacter = () => {
+        if (!activeCharacter || !isPlayerTurn || rolls.resolving || manipulation) return false
+        if (turnStageOf(activeCharacter) !== "spent") setSelectedId(activeCharacter.id)
         focus.nudge()
         return true
     }
 
     const skill = useSkillFlow({
-        activePiece,
+        activeCharacter,
         activeColor,
-        setPieces,
+        setCharacters,
         setSelectedId,
         rolls,
         isManualRoll,
-        focusActivePiece,
+        focusActiveCharacter,
         manipulating: manipulation !== null,
     })
 
     const barriers = useBarriers({
-        pieces,
-        activePieceId: activePiece?.id ?? null,
+        characters,
+        activeCharacterId: activeCharacter?.id ?? null,
         activeColor,
         skill,
         log,
@@ -213,39 +213,39 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
 
     // A dupla de afinidade que se revigora no começo da vez, enquanto a rolagem dela acontece
     const affinityDuo = useAffinity({
-        pieces,
-        setPieces,
-        activePiece,
+        characters,
+        setCharacters,
+        activeCharacter,
         turnKey: `${turn.round}-${turn.turnIndex}`,
         rolls,
         isManualRoll,
         log,
     })
 
-    // Casas destacadas pela seleção: até onde a peça anda e o que ela alcança.
-    // Para a peça que age (a da vez, ou a manipulada), ter ou não a ação comum é o que decide
-    // se há destaque nenhum. Qualquer outra peça selecionada está só sendo consultada.
-    const selectedPiece = pieces.find((p) => p.id === selectedId) ?? null
-    const actingPieceId = manipulation?.itemKey ?? activePiece?.id ?? null
-    const highlighted = useHighlightedCells(selectedId, pieces, maze, {
+    // Casas destacadas pela seleção: até onde a personagem anda e o que ela alcança.
+    // Para a personagem que age (a da vez, ou a manipulada), ter ou não a ação comum é o que decide
+    // se há destaque nenhum. Qualquer outra personagem selecionada está só sendo consultada.
+    const selectedCharacter = characters.find((p) => p.id === selectedId) ?? null
+    const actingCharacterId = manipulation?.itemKey ?? activeCharacter?.id ?? null
+    const highlighted = useHighlightedCells(selectedId, characters, maze, {
         skill: skill.reach,
-        basicAvailable: selectedPiece !== null && (!selectedPiece.movedThisTurn || manipulation !== null),
-        consulting: selectedPiece !== null && selectedPiece.id !== actingPieceId,
+        basicAvailable: selectedCharacter !== null && (!selectedCharacter.movedThisTurn || manipulation !== null),
+        consulting: selectedCharacter !== null && selectedCharacter.id !== actingCharacterId,
         barriers: barriers.all,
         items: items.items,
         manipulatedBy: manipulation?.color ?? null,
     })
 
     const input = useBoardInput({
-        pieces,
+        characters,
         items: items.items,
         barriers: barriers.all,
         maze,
         selectedId,
         setSelectedId,
-        activePiece,
+        activeCharacter,
         activeColor,
-        manipulatedPieceId: manipulation?.itemKey ?? null,
+        manipulatedCharacterId: manipulation?.itemKey ?? null,
         skill,
         moveCells: highlighted.move,
         attackCells: highlighted.attack,
@@ -256,7 +256,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     })
 
     // Retorna a chave de ação adequada (mover vs coletar) consultando se há item no destino
-    const moveActionFor = (position: PiecePosition): { actionKey: TextKey; target?: string } => {
+    const moveActionFor = (position: CharacterPosition): { actionKey: TextKey; target?: string } => {
         const item = items.itemAt(position)
         return item ? { actionKey: "toCollectItem", target: item.key } : { actionKey: "toMove" }
     }
@@ -264,17 +264,17 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     // Tentativa de manipulação falha:
     // o item cai de volta no tabuleiro em uma casa livre sorteada
     const returnItemToBoard = (key: MotivationItemKey) => {
-        const item = items.dropOnBoard(key, maze, pieces)
+        const item = items.dropOnBoard(key, maze, characters)
         if (!item) return
         log.returned(key)
         focus.showDroppedItem(item)
     }
 
     const combat = useCombatResolution({
-        pieces,
+        characters,
         maze,
         barriers: barriers.all,
-        setPieces,
+        setCharacters,
         setFireBursts,
         setDamagePopups,
         setChargeRuns,
@@ -287,8 +287,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     })
 
     const actions = useBoardActions({
-        pieces,
-        setPieces,
+        characters,
+        setCharacters,
         maze,
         activeColor,
         selectedId,
@@ -309,13 +309,13 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     })
 
     // Um item usado no meio de uma manipulação ou de uma habilidade se misturaria com ela:
-    // a peça manipulada herdaria a habilidade em uso, e uma segunda manipulação tomaria o
+    // a personagem manipulada herdaria a habilidade em uso, e uma segunda manipulação tomaria o
     // lugar da primeira. Enquanto uma delas durar, o inventário fica fechado.
     const inventoryLocked = manipulation !== null || skill.active !== null
 
     const itemActions = useItemActions({
-        pieces,
-        setPieces,
+        characters,
+        setCharacters,
         activeColor,
         inventoryColor,
         inventories: items.inventories,
@@ -339,12 +339,12 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     }
 
     useAiTurn({
-        activePiece,
+        activeCharacter,
         isPlayerTurn,
         round: turn.round,
         turnIndex: turn.turnIndex,
-        pieces,
-        setPieces,
+        characters,
+        setCharacters,
         items: items.items,
         inventories: items.inventories,
         setInventories: items.setInventories,
@@ -360,48 +360,48 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         log,
     })
 
-    // Se a peça manipulada for eliminada durante a manipulação, cancela e libera o jogador
+    // Se a personagem manipulada for eliminada durante a manipulação, cancela e libera o jogador
     useEffect(() => {
         if (!manipulation) return
-        if (!pieces.some((p) => p.id === manipulation.itemKey)) {
+        if (!characters.some((p) => p.id === manipulation.itemKey)) {
             setManipulation(null)
             setSelectedId(null)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pieces, manipulation])
+    }, [characters, manipulation])
 
-    // A peça da vez pode ser eliminada antes de agir (uma manipulação pode virar o alvo
+    // A personagem da vez pode ser eliminada antes de agir (uma manipulação pode virar o alvo
     // contra ela): nesse caso o turno passa para a próxima da ordem.
     useEffect(() => {
-        if (pieces.length === 0 || rolls.resolving) return
-        if (!pieces.some((p) => p.id === turnOrder[turn.turnIndex])) endTurn()
+        if (characters.length === 0 || rolls.resolving) return
+        if (!characters.some((p) => p.id === turnOrder[turn.turnIndex])) endTurn()
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [pieces, turn.turnIndex, rolls.resolving])
+    }, [characters, turn.turnIndex, rolls.resolving])
 
-    useEliminations(pieces, { onPieceEliminated: log.eliminated, onTeamDefeated: log.defeated })
+    useEliminations(characters, { onCharacterEliminated: log.eliminated, onTeamDefeated: log.defeated })
 
-    // Vitória: último time com peças no tabuleiro
+    // Vitória: último time com personagens no tabuleiro
     useEffect(() => {
-        const inPlay = new Set(pieces.map((p) => p.color))
+        const inPlay = new Set(characters.map((p) => p.color))
         if (inPlay.size !== 1) return
         const [winner] = inPlay
         setWinner(winner)
         navigate("/end")
-    }, [pieces, navigate, setWinner])
+    }, [characters, navigate, setWinner])
 
     // Dica de como jogar, após tempo sem ação.
-    // A "fase" é o que o jogador já fez: seleção de peça ou abertura de menu.
+    // A "fase" é o que o jogador já fez: seleção de personagem ou abertura de menu.
     const hint = useIdleHint({
         enabled:
             isPlayerTurn &&
             // Quem já agiu não tem o que selecionar nem que ação escolher: só encerrar
-            activePiece?.movedThisTurn !== true &&
+            activeCharacter?.movedThisTurn !== true &&
             !rolls.resolving &&
             !inventoryOpen &&
             !skill.listOpen &&
             manipulation === null &&
             skill.active === null &&
-            infoPiece === null &&
+            infoCharacter === null &&
             itemInfoKey === null &&
             infoBarrier === null &&
             // Menu aberto é o jogador ocupado: a contagem para, e recomeça quando ele fecha
@@ -413,7 +413,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         // Nenhum modal aberto deixa o tabuleiro rolar por baixo dele
         enabled:
             input.menu === null &&
-            infoPiece === null &&
+            infoCharacter === null &&
             itemInfoKey === null &&
             infoBarrier === null &&
             !inventoryOpen &&
@@ -421,19 +421,19 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             rolls.current === null,
     })
 
-    // Destaques das peças ("auras"), desenhados tanto pelo tabuleiro quanto pelo HUD
-    const activePieceId = activePiece?.id ?? null
-    const skillPieceId = skill.active?.pieceId ?? null
+    // Destaques das personagens ("auras"), desenhados tanto pelo tabuleiro quanto pelo HUD
+    const activeCharacterId = activeCharacter?.id ?? null
+    const skillCharacterId = skill.active?.characterId ?? null
     const manipulatedId = focus.manipulatedId
-    const auras = useMemo<PieceAuras>(() => {
-        const result: PieceAuras = {}
-        if (activePieceId) result[activePieceId] = "active"
+    const auras = useMemo<CharacterAuras>(() => {
+        const result: CharacterAuras = {}
+        if (activeCharacterId) result[activeCharacterId] = "active"
         // A dupla que se revigora brilha junta, por cima da aura da vez
         for (const id of affinityDuo) result[id] = "affinity"
-        if (skillPieceId) result[skillPieceId] = "skill"
+        if (skillCharacterId) result[skillCharacterId] = "skill"
         if (manipulatedId) result[manipulatedId] = "manipulated"
         return result
-    }, [activePieceId, affinityDuo, skillPieceId, manipulatedId])
+    }, [activeCharacterId, affinityDuo, skillCharacterId, manipulatedId])
 
     // O valor nasce de novo a cada render de propósito: quem o lê depende do estado da
     // partida de qualquer jeito, e memorizar não pouparia render nenhum.
@@ -441,7 +441,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         board: {
             scrollRef: focus.scrollRef,
             maze,
-            pieces,
+            characters,
             items: items.items,
             ranges: highlighted.ranges,
             barriers: barriers.all,
@@ -455,18 +455,18 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             onCellContextMenu: input.onCellContextMenu,
         },
         turn: {
-            activePiece,
-            order: turn.orderedPieces,
+            activeCharacter,
+            order: turn.orderedCharacters,
             round: turn.round,
             isPlayerTurn,
             spectating,
             busy: rolls.resolving,
             end: () => isPlayerTurn && !rolls.resolving && endTurn(),
             quit: () => navigate("/"),
-            focusActivePiece,
+            focusActiveCharacter,
         },
         skill,
-        barriers: { all: barriers.all, chargesLeft: barriers.chargesLeft },
+        barriers: { all: barriers.all, usesLeft: barriers.usesLeft },
         manipulation: {
             current: manipulation,
             cancel: () => itemActions.cancelManipulation(manipulation),
@@ -487,8 +487,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             attack: actions.attack,
             dispel: actions.dispel,
             useSkill: actions.useSkill,
-            showPieceInfo: () => {
-                setInfoPiece(input.menu?.targetPiece ?? null)
+            showCharacterInfo: () => {
+                setInfoCharacter(input.menu?.targetCharacter ?? null)
                 input.closeMenu()
             },
             showItemInfo: () => {
@@ -501,8 +501,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
                 setInfoBarrier(input.menu.barrierAtPos)
                 input.closeMenu()
             },
-            infoPiece,
-            closeInfoPiece: () => setInfoPiece(null),
+            infoCharacter,
+            closeInfoCharacter: () => setInfoCharacter(null),
             infoItemKey: itemInfoKey,
             closeInfoItem: () => setItemInfoKey(null),
             infoBarrier,

@@ -2,13 +2,13 @@ import React from "react"
 import { useNavigate } from "react-router-dom"
 import { Box, Typography } from "@mui/material"
 import { TeamButton } from "../../../components/ui"
-import type { PieceColor } from "../../../logic/types"
+import type { CharacterColor } from "../../../logic/types"
 import { characterKeys } from "../../../constants/texts_characters"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
 interface TeamCharacterSectionProps {
-    color: PieceColor
+    color: CharacterColor
 }
 
 export const TeamCharacterSection: React.FC<TeamCharacterSectionProps> = ({ color }) => {

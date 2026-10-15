@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
-import type { Barrier, PieceAuras, PieceDefinition, MotivationItem } from "../../logic/types"
+import type { Barrier, CharacterAuras, CharacterDefinition, MotivationItem } from "../../logic/types"
 import type { ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { BoardScene } from "../../game/BoardScene"
@@ -8,20 +8,20 @@ import { BoardScene } from "../../game/BoardScene"
 interface PhaserBoardProps {
     cellSize: number
     maze: Maze
-    pieces: PieceDefinition[]
+    characters: CharacterDefinition[]
     items: MotivationItem[]
     barriers: Barrier[]
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
     chargeRuns: ChargeRun[]
-    auras: PieceAuras
+    auras: CharacterAuras
     droppedItemId: string | null
 }
 
 export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     cellSize,
     maze,
-    pieces,
+    characters,
     items,
     barriers,
     fireBursts,
@@ -68,7 +68,7 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
         sceneRef.current?.syncBarriers(barriers)
     }, [barriers])
 
-    // Antes das peças (a ordem dos efeitos é a de declaração): a cena precisa saber que a
+    // Antes das personagens (a ordem dos efeitos é a de declaração): a cena precisa saber que a
     // troca de casa que chega junto é uma investida, e não uma caminhada
     useEffect(() => {
         for (const run of chargeRuns) {
@@ -79,11 +79,11 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     }, [chargeRuns])
 
     useEffect(() => {
-        sceneRef.current?.syncPieces(pieces)
-    }, [pieces])
+        sceneRef.current?.syncCharacters(characters)
+    }, [characters])
 
-    // Depois das peças (a ordem dos efeitos é a de declaração): a aura entra no container
-    // da peça, que já precisa existir.
+    // Depois das personagens (a ordem dos efeitos é a de declaração): a aura entra no container
+    // da personagem, que já precisa existir.
     useEffect(() => {
         sceneRef.current?.syncAuras(auras)
     }, [auras])

@@ -76,7 +76,7 @@ export const texts_ui = {
 
     team: {
         enUS: "Team",
-        ptBR: "Equipe",
+        ptBR: "Time",
     },
 
     light: {
@@ -121,32 +121,32 @@ export const texts_ui = {
 
     itemDescReinvigorateLight: {
         enUS: "Reinvigorates Light",
-        ptBR: "Revigora a peça clara",
+        ptBR: "Revigora a personagem clara",
     },
 
     itemDescReinvigorateDark: {
         enUS: "Reinvigorates Dark",
-        ptBR: "Revigora a peça escura",
+        ptBR: "Revigora a personagem escura",
     },
 
     itemDescReinvigorateGray: {
         enUS: "Reinvigorates Gray",
-        ptBR: "Revigora a peça cinza",
+        ptBR: "Revigora a personagem cinza",
     },
 
     itemDescManipulateLight: {
         enUS: "Manipulate Light",
-        ptBR: "Manipula a peça clara",
+        ptBR: "Manipula a personagem clara",
     },
 
     itemDescManipulateDark: {
         enUS: "Manipulate Dark",
-        ptBR: "Manipula a peça escura",
+        ptBR: "Manipula a personagem escura",
     },
 
     itemDescManipulateGray: {
         enUS: "Manipulate Gray",
-        ptBR: "Manipula a peça cinza",
+        ptBR: "Manipula a personagem cinza",
     },
 
     itemDescOwnSuffix: {
@@ -239,7 +239,7 @@ export const texts_ui = {
         ptBR: "Alcance da habilidade",
     },
 
-    skillCharges: {
+    skillUses: {
         enUS: "Uses per turn",
         ptBR: "Usos por turno",
     },
@@ -307,14 +307,14 @@ export const texts_ui = {
     barrierDescription: {
         enUS:
             "A paranormal barrier closes the cell to the other two teams and lets its own team walk through it. " +
-            "It goes out on its own when the turn of the piece that lit it comes around again. " +
-            "A piece of its team standing on it cannot be attacked. " +
+            "It goes out on its own when the turn of the character that lit it comes around again. " +
+            "A character of its team standing on it cannot be attacked. " +
             "An opponent standing next to it can try to dispel it.",
         ptBR:
             "Uma barreira paranormal fecha a casa para os outros dois times e deixa o próprio time passar por ela. " +
-            "Ela se apaga sozinha quando a vez da peça que a acendeu volta. " +
-            "A peça do próprio time que estiver em cima dela não pode ser atacada. " +
-            "Uma peça adversária ao lado dela pode tentar dissipá-la.",
+            "Ela se apaga sozinha quando a vez da personagem que a acendeu volta. " +
+            "A personagem do próprio time que estiver em cima dela não pode ser atacada. " +
+            "Uma personagem adversária ao lado dela pode tentar dissipá-la.",
     },
 
     barriersLeft: {
@@ -417,9 +417,9 @@ export const texts_ui = {
         ptBR: "para incendiar uma área",
     },
 
-    hintSelectPiece: {
-        enUS: "Left click to select a piece. Right click to choose an action, if selected piece is on its turn.",
-        ptBR: "Clique esquerdo para selecionar uma peça. Clique direito para escolher uma ação, se a peça selecionada estiver em seu turno.",
+    hintSelectCharacter: {
+        enUS: "Left click to select a character. Right click to choose an action, if selected character is on its turn.",
+        ptBR: "Clique esquerdo para selecionar uma personagem. Clique direito para escolher uma ação, se a personagem selecionada estiver em seu turno.",
     },
 
     gotIt: {
@@ -427,9 +427,9 @@ export const texts_ui = {
         ptBR: "Entendi",
     },
 
-    pieceInfo: {
-        enUS: "Piece info",
-        ptBR: "Informações da peça",
+    characterInfo: {
+        enUS: "Character info",
+        ptBR: "Informações da personagem",
     },
 
     itemInfo: {
@@ -488,8 +488,8 @@ export const texts_ui = {
     },
 
     inventory: {
-        enUS: "Inventory",
-        ptBR: "Inventário",
+        enUS: "Items",
+        ptBR: "Itens",
     },
 
     reinvigorate: {
@@ -747,7 +747,7 @@ export const texts_ui = {
         ptBR: "Falhou!",
     },
 
-    manipulatingPiece: {
+    manipulatingCharacter: {
         enUS: "Manipulating",
         ptBR: "Manipulando",
     },

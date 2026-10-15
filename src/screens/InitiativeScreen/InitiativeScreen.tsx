@@ -7,7 +7,7 @@ import { InitiativeRoll } from "./local-components/InitiativeRoll"
 import { ScreenLayout } from "../../components/ui"
 import type { RollView } from "../../logic/rolls"
 import { rollInitiative } from "../../logic/initiative"
-import { ALL_PIECE_SLOTS, createGameSetup, type GameSetup, type PieceSlot } from "../../logic/setup"
+import { ALL_CHARACTER_SLOTS, createGameSetup, type GameSetup, type CharacterSlot } from "../../logic/setup"
 import { controlledColorsFor } from "../../logic/types"
 import { useGame } from "../../hooks/useGame"
 import { useLanguage } from "../../hooks/useLanguage"
@@ -22,13 +22,13 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     const { selection, setMatch } = useGame()
     const { boardSize, minRoomSize, maxRoomSize } = useSettings()
 
-    // As peças dos times que o jogador comanda esperam o clique dele para rolar. Só
+    // As personagens dos times que o jogador comanda esperam o clique dele para rolar. Só
     // assistindo, nenhuma espera. Comandando todos, todas esperam.
     const controlledColors = useMemo(() => controlledColorsFor(selection), [selection])
 
     // A iniciativa é rolada de uma vez só. A tela apenas encena o histórico de jogadas.
-    // Os ids das peças não dependem do labirinto, então isso roda antes do mapa existir.
-    const [result] = useState(() => rollInitiative(ALL_PIECE_SLOTS.map((slot) => slot.id)))
+    // Os ids das personagens não dependem do labirinto, então isso roda antes do mapa existir.
+    const [result] = useState(() => rollInitiative(ALL_CHARACTER_SLOTS.map((slot) => slot.id)))
     const [stepIndex, setStepIndex] = useState(0)
     const [setup, setSetup] = useState<GameSetup | null>(null)
 
@@ -38,9 +38,9 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
         if (selection === null) navigate("/choose-side", { replace: true })
     }, [selection, navigate])
 
-    // O labirinto é gerado "por trás" das rolagens: o setTimeout deixa a fila de peças
+    // O labirinto é gerado "por trás" das rolagens: o setTimeout deixa a fila de personagens
     // ser exibida primeiro e o custo da geração cai enquanto o jogador olha os dados. Quando
-    // ele entra no jogo, tabuleiro, peças e itens já estão prontos. Nada é montado à vista.
+    // ele entra no jogo, tabuleiro, personagens e itens já estão prontos. Nada é montado à vista.
     useEffect(() => {
         if (setupStartedRef.current) return
         setupStartedRef.current = true
@@ -50,17 +50,17 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     const attempts = result.attempts
     const finished = stepIndex >= attempts.length
 
-    // Números que já saíram: aparecem embaixo da peça assim que a rolagem dela termina
+    // Números que já saíram: aparecem embaixo da personagem assim que a rolagem dela termina
     const lockedValues = useMemo(() => {
         const values: Record<string, number> = {}
         for (const attempt of attempts.slice(0, stepIndex)) {
-            if (attempt.accepted) values[attempt.pieceId] = attempt.total
+            if (attempt.accepted) values[attempt.characterId] = attempt.total
         }
         return values
     }, [attempts, stepIndex])
 
-    const orderedSlots = useMemo<PieceSlot[]>(
-        () => result.order.map((id) => ALL_PIECE_SLOTS.find((slot) => slot.id === id)!),
+    const orderedSlots = useMemo<CharacterSlot[]>(
+        () => result.order.map((id) => ALL_CHARACTER_SLOTS.find((slot) => slot.id === id)!),
         [result],
     )
 
@@ -73,7 +73,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     const [shownIndex, setShownIndex] = useState(0)
     if (!finished && shownIndex !== stepIndex) setShownIndex(stepIndex)
     const shown = attempts[shownIndex]
-    const shownSlot = ALL_PIECE_SLOTS.find((slot) => slot.id === shown.pieceId)
+    const shownSlot = ALL_CHARACTER_SLOTS.find((slot) => slot.id === shown.characterId)
     const timing = shown.accepted ? INITIATIVE_ROLL_TIMING.accepted : INITIATIVE_ROLL_TIMING.rejected
 
     const roll: RollView = {
@@ -81,7 +81,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
         kind: "d20",
         value: shown.dice,
         title: t("initiativeRoll"),
-        subtitle: shown.pieceId,
+        subtitle: shown.characterId,
         outcome: shown.accepted ? undefined : { label: t("repeatedRoll"), tone: "bad" },
         manual: !!shownSlot && controlledColors.includes(shownSlot.color),
         spinMs: timing.spinMs,
@@ -115,8 +115,8 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     return (
         <ScreenLayout sx={{ justifyContent: "flex-start", alignItems: "stretch", overflow: "hidden" }}>
             <InitiativeHeader
-                slots={showOrder ? orderedSlots : ALL_PIECE_SLOTS}
-                activeId={showOrder ? null : shown.pieceId}
+                slots={showOrder ? orderedSlots : ALL_CHARACTER_SLOTS}
+                activeId={showOrder ? null : shown.characterId}
                 values={showOrder ? result.values : lockedValues}
                 showOrder={showOrder}
                 faded={faded}

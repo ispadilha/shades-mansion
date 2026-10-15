@@ -1,22 +1,22 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
 import { ModalCard } from "../../../components/ui"
-import { ItemBadge } from "../../../components/pieces"
-import type { PieceColor, MotivationItemKey, TextKey } from "../../../logic/types"
+import { ItemBadge } from "../../../components/characters"
+import type { CharacterColor, MotivationItemKey, TextKey } from "../../../logic/types"
 import { itemKeyColor } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
 // O verbete de um item depende de quem olha:
-// o do próprio time revigora ou promove a peça correspondente,
+// o do próprio time revigora ou promove a personagem correspondente,
 // o de outro time serve para manipulá-la.
-const HEAL_HEAD: Record<PieceColor, TextKey> = {
+const HEAL_HEAD: Record<CharacterColor, TextKey> = {
     light: "itemDescReinvigorateLight",
     dark: "itemDescReinvigorateDark",
     gray: "itemDescReinvigorateGray",
 }
 
-const MANIPULATE_HEAD: Record<PieceColor, TextKey> = {
+const MANIPULATE_HEAD: Record<CharacterColor, TextKey> = {
     light: "itemDescManipulateLight",
     dark: "itemDescManipulateDark",
     gray: "itemDescManipulateGray",
@@ -27,7 +27,7 @@ interface ItemInfoModalProps {
     onClose: () => void
     itemKey: MotivationItemKey | null
     // Time de quem está olhando (null quando o jogador só assiste)
-    playerColor?: PieceColor | null
+    playerColor?: CharacterColor | null
 }
 
 export const ItemInfoModal: React.FC<ItemInfoModalProps> = ({ open, onClose, itemKey, playerColor }) => {

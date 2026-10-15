@@ -4,9 +4,9 @@ import { Box } from "@mui/material"
 import { Board } from "../../../components/board"
 import type {
     Barrier,
-    PieceAuras,
-    PieceDefinition,
-    PiecePosition,
+    CharacterAuras,
+    CharacterDefinition,
+    CharacterPosition,
     MotivationItem,
     RangeKind,
 } from "../../../logic/types"
@@ -18,18 +18,18 @@ interface BoardAreaProps {
     // A viewport rolável: a câmera da partida mexe nela
     scrollRef: RefObject<HTMLDivElement | null>
     maze: Maze
-    pieces: PieceDefinition[]
+    characters: CharacterDefinition[]
     items: MotivationItem[]
     ranges: ReadonlyMap<string, RangeKind>
     barriers: Barrier[]
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
     chargeRuns: ChargeRun[]
-    auras: PieceAuras
-    selectedPieceId: string | null
+    auras: CharacterAuras
+    selectedCharacterId: string | null
     droppedItemId: string | null
-    onCellClick: (pos: PiecePosition) => void
-    onCellContextMenu: (event: React.MouseEvent, pos: PiecePosition) => void
+    onCellClick: (pos: CharacterPosition) => void
+    onCellContextMenu: (event: React.MouseEvent, pos: CharacterPosition) => void
 }
 
 // A área do tabuleiro: um labirinto inteiro é maior que a janela, então ele mora dentro
@@ -37,7 +37,7 @@ interface BoardAreaProps {
 export const BoardArea: React.FC<BoardAreaProps> = ({
     scrollRef,
     maze,
-    pieces,
+    characters,
     items,
     ranges,
     barriers,
@@ -45,7 +45,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
     damagePopups,
     chargeRuns,
     auras,
-    selectedPieceId,
+    selectedCharacterId,
     droppedItemId,
     onCellClick,
     onCellContextMenu,
@@ -75,7 +75,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                 <Board
                     cellSize={CELL_SIZE}
                     maze={maze}
-                    pieces={pieces}
+                    characters={characters}
                     items={items}
                     ranges={ranges}
                     barriers={barriers}
@@ -84,7 +84,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                     chargeRuns={chargeRuns}
                     auras={auras}
                     onCellClick={onCellClick}
-                    selectedPieceId={selectedPieceId}
+                    selectedCharacterId={selectedCharacterId}
                     droppedItemId={droppedItemId}
                     onCellContextMenu={onCellContextMenu}
                 />

@@ -11,7 +11,7 @@ export const MatchHud: React.FC<MatchHudProps> = ({}) => {
 
     return (
         <HUD
-            activePiece={turn.activePiece}
+            activeCharacter={turn.activeCharacter}
             turnOrder={turn.order}
             auras={board.auras}
             round={turn.round}
@@ -20,11 +20,11 @@ export const MatchHud: React.FC<MatchHudProps> = ({}) => {
             spectating={turn.spectating}
             onEndTurn={turn.end}
             onQuit={turn.quit}
-            onFocusActivePiece={turn.focusActivePiece}
+            onFocusActiveCharacter={turn.focusActiveCharacter}
             onOpenSkills={skill.openList}
             skillsLocked={skill.listLocked}
             activeSkill={skill.active}
-            skillChargesLeft={barriers.chargesLeft}
+            skillUsesLeft={barriers.usesLeft}
             onCancelSkill={skill.cancel}
             manipulationKey={manipulation.current?.itemKey ?? null}
             onCancelManipulation={manipulation.cancel}

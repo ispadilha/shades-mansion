@@ -1,4 +1,4 @@
-import type { AuraKind, ColorMode, PieceColor } from "../logic/types"
+import type { AuraKind, ColorMode, CharacterColor } from "../logic/types"
 
 // Todas as cores do jogo ficam neste arquivo.
 // Nenhum código de cor é escrito solto pelo resto do projeto.
@@ -21,7 +21,7 @@ import type { AuraKind, ColorMode, PieceColor } from "../logic/types"
 // Identidade: as cores que não mudam de modo
 // ---------------------------------------------------------------------------
 
-export interface PiecePalette {
+export interface CharacterPalette {
     clothing: string
     outline: string
     skin: string
@@ -29,19 +29,19 @@ export interface PiecePalette {
     letterStroke: string
 }
 
-export const PIECE_PALETTE: Record<PieceColor, PiecePalette> = {
+export const CHARACTER_PALETTE: Record<CharacterColor, CharacterPalette> = {
     light: { clothing: "#f2f2f2", outline: "#2a2a2a", skin: "#f0c8a0", letter: "#1a1a1a", letterStroke: "#ffffff" },
     dark: { clothing: "#1a1a1a", outline: "#dedede", skin: "#f0c8a0", letter: "#ffffff", letterStroke: "#000000" },
     gray: { clothing: "#7a7a7a", outline: "#2a2a2a", skin: "#b8a890", letter: "#ffffff", letterStroke: "#000000" },
 }
 
-export const PIECE_DETAIL_PALETTE = {
+export const CHARACTER_DETAIL_PALETTE = {
     shadow: "#000000",
     eyes: "#111111",
 }
 
-// O contorno acompanha o do desenho da peça: é a mesma linha que separa o time do fundo
-export const TEAM_BUTTON_PALETTE: Record<PieceColor, { bg: string; text: string; outline: string }> = {
+// O contorno acompanha o do desenho da personagem: é a mesma linha que separa o time do fundo
+export const TEAM_BUTTON_PALETTE: Record<CharacterColor, { bg: string; text: string; outline: string }> = {
     light: { bg: "#dddddd", text: "#000000", outline: "#2a2a2a" },
     gray: { bg: "#888888", text: "#000000", outline: "#2a2a2a" },
     dark: { bg: "#111111", text: "#ffffff", outline: "#dedede" },
@@ -73,7 +73,7 @@ export const VIGOR_PALETTE = {
     low: "#e04a3c",
 }
 
-export const BARRIER_PALETTE: Record<PieceColor, { floor: string; glow: string; edge: string }> = {
+export const BARRIER_PALETTE: Record<CharacterColor, { floor: string; glow: string; edge: string }> = {
     dark: { floor: "#a855f7", glow: "#c79cff", edge: "#2b0a52" },
     gray: { floor: "#4fa9f5", glow: "#d0ebff", edge: "#2a3f52" },
     light: { floor: "#fdf6dd", glow: "#fffdf0", edge: "#e8c94a" },
@@ -87,7 +87,7 @@ const LEVEL_STAR_PALETTE = {
 export const levelStarColors = (level: number) =>
     level >= 3 ? LEVEL_STAR_PALETTE.gold : LEVEL_STAR_PALETTE.silver
 
-// O número de dano que sobe acima da peça atingida
+// O número de dano que sobe acima da personagem atingida
 export const DAMAGE_POPUP_PALETTE = { fill: "#ffffff", stroke: "#1a1a1a" }
 
 // O incêndio do dano em área: as chamas sorteiam uma das cores da lista.
@@ -98,7 +98,7 @@ export const FIRE_PALETTE = {
     flash: "#fff3c4",
 }
 
-export const ITEM_PALETTE: Record<PieceColor, { bg: string; outline: string; text: string; textStroke: string }> = {
+export const ITEM_PALETTE: Record<CharacterColor, { bg: string; outline: string; text: string; textStroke: string }> = {
     dark: { bg: "#2a2a2a", outline: "#eeeeee", text: "#ffffff", textStroke: "#000000" },
     light: { bg: "#eeeeee", outline: "#222222", text: "#1a1a1a", textStroke: "#ffffff" },
     gray: { bg: "#888888", outline: "#222222", text: "#ffffff", textStroke: "#000000" },
@@ -169,12 +169,12 @@ const dark = {
         selected: "#ffd700",
     },
 
-    // As casas destacadas em volta da peça selecionada, um tom por alcance
+    // As casas destacadas em volta da personagem selecionada, um tom por alcance
     range: {
         move: "#dd7a1c",
         attack: "#b3352c",
         skill: "#2f6aa8",
-        // O alcance máximo da habilidade de uma peça só consultada
+        // O alcance máximo da habilidade de uma personagem só consultada
         skillMax: "#8cbfea",
     },
 
@@ -224,7 +224,7 @@ const dark = {
 
     initiative: {
         rank: "#8f85a8",
-        pieceId: "#bbbbbb",
+        characterId: "#bbbbbb",
         value: "#ffe9a8",
         valuePending: "#544c66",
         idleId: "#777777",
@@ -334,7 +334,7 @@ const light: Palette = {
 
     initiative: {
         rank: "#34231a",
-        pieceId: "#281f15",
+        characterId: "#281f15",
         value: "#4d3608",
         valuePending: "#5f534c",
         idleId: "#473626",
@@ -442,7 +442,7 @@ const gray: Palette = {
 
     initiative: {
         rank: "#8ea4ca",
-        pieceId: "#bcc5d4",
+        characterId: "#bcc5d4",
         value: "#ffe9a8",
         valuePending: "#4b5e7f",
         idleId: "#8795ac",

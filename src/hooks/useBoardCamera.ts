@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import type { RefObject } from "react"
-import type { PieceColor, PiecePosition } from "../logic/types"
+import type { CharacterColor, CharacterPosition } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { CELL_SIZE } from "../constants/rules"
 
@@ -8,7 +8,7 @@ interface BoardCameraOptions {
     maze: Maze
     // Time do jogador: a câmera começa perto da base dele. Null para quem comanda todos
     // os times ou só assiste. Esses não têm base própria e começam no meio do tabuleiro.
-    homeColor: PieceColor | null
+    homeColor: CharacterColor | null
     // O que a câmera acompanha agora. A chave é o que a faz se mexer: enquanto ela não
     // muda, a câmera fica parada e a rolagem manual do jogador não é atrapalhada.
     focus?: CameraFocus
@@ -16,10 +16,10 @@ interface BoardCameraOptions {
 
 export interface CameraFocus {
     key: string
-    position: PiecePosition
+    position: CharacterPosition
 }
 
-// A câmera do tabuleiro: com os turnos indo peça a peça, a ação pode acontecer em qualquer
+// A câmera do tabuleiro: com os turnos indo personagem a personagem, a ação pode acontecer em qualquer
 // canto do labirinto, então a viewport vai atrás de quem está agindo.
 export const useBoardCamera = (
     scrollRef: RefObject<HTMLDivElement | null>,

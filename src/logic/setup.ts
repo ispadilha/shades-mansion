@@ -1,10 +1,10 @@
-import type { PieceColor, PieceDefinition, PiecePosition, PieceType, MotivationItem } from "./types"
-import { ALL_ITEM_KEYS, ALL_PIECE_TYPES } from "./types"
+import type { CharacterColor, CharacterDefinition, CharacterPosition, CharacterType, MotivationItem } from "./types"
+import { ALL_ITEM_KEYS, ALL_CHARACTER_TYPES } from "./types"
 import type { Maze } from "./maze"
 import { generateMaze, inside, isWalkable } from "./maze"
 import { neighbors, positionKey } from "./grid"
 import { pickRandom, shuffle } from "./random"
-import { ITEM_COPIES, LINEUP_COLORS, PIECE_STATS, PLACEMENT_COLORS } from "../constants/rules"
+import { ITEM_COPIES, LINEUP_COLORS, CHARACTER_STATS, PLACEMENT_COLORS } from "../constants/rules"
 
 // Distribui "count" posições em uma linha começando e terminando nos extremos,
 // com espaçamento equivalente entre elas.
@@ -16,9 +16,9 @@ const spreadColumns = (count: number, size: number): number[] => {
 // Casa livre mais próxima da posição ideal. A busca atravessa paredes (é só uma varredura
 // por proximidade), mas só devolve casas caminháveis e ainda não ocupadas — assim uma
 // posição inicial que caiu dentro de uma parede escorrega para a casa útil mais próxima.
-const nearestFreeCell = (maze: Maze, ideal: PiecePosition, occupied: Set<string>): PiecePosition | null => {
+const nearestFreeCell = (maze: Maze, ideal: CharacterPosition, occupied: Set<string>): CharacterPosition | null => {
     const seen = new Set<string>([positionKey(ideal)])
-    const queue: PiecePosition[] = [ideal]
+    const queue: CharacterPosition[] = [ideal]
 
     while (queue.length > 0) {
         const cell = queue.shift()!
@@ -36,40 +36,40 @@ const nearestFreeCell = (maze: Maze, ideal: PiecePosition, occupied: Set<string>
     return null
 }
 
-export const pieceId = (color: PieceColor, type: PieceType) => `${color[0]}${type}`
+export const characterId = (color: CharacterColor, type: CharacterType) => `${color[0]}${type}`
 
 // A "escalação" da partida: quem existe no tabuleiro, independente de labirinto.
 // A tela de iniciativa usa isso para rolar os dados antes de o mapa ficar pronto.
-export interface PieceSlot {
+export interface CharacterSlot {
     id: string
-    color: PieceColor
-    type: PieceType
+    color: CharacterColor
+    type: CharacterType
 }
 
-export const ALL_PIECE_SLOTS: PieceSlot[] = LINEUP_COLORS.flatMap((color) =>
-    ALL_PIECE_TYPES.map((type) => ({ id: pieceId(color, type), color, type })),
+export const ALL_CHARACTER_SLOTS: CharacterSlot[] = LINEUP_COLORS.flatMap((color) =>
+    ALL_CHARACTER_TYPES.map((type) => ({ id: characterId(color, type), color, type })),
 )
 
 // Linha inicial de cada time: escuras no topo, cinzas no meio, claras embaixo
-const teamRow = (color: PieceColor, size: number) =>
+const teamRow = (color: CharacterColor, size: number) =>
     color === "dark" ? 0 : color === "gray" ? Math.floor(size / 2) : size - 1
 
-// Monta as peças já com o labirinto pronto: cada time nasce espalhado na sua linha e,
-// se o ponto ideal for parede (ou já estiver tomado), a peça vai para a casa livre mais próxima.
-export function createInitialPieces(maze: Maze): PieceDefinition[] {
+// Monta as personagens já com o labirinto pronto: cada time nasce espalhado na sua linha e,
+// se o ponto ideal for parede (ou já estiver tomado), a personagem vai para a casa livre mais próxima.
+export function createInitialCharacters(maze: Maze): CharacterDefinition[] {
     const occupied = new Set<string>()
-    const pieces: PieceDefinition[] = []
-    const columns = spreadColumns(ALL_PIECE_TYPES.length, maze.size)
+    const characters: CharacterDefinition[] = []
+    const columns = spreadColumns(ALL_CHARACTER_TYPES.length, maze.size)
 
     for (const color of PLACEMENT_COLORS) {
         const y = teamRow(color, maze.size)
-        ALL_PIECE_TYPES.forEach((type, index) => {
+        ALL_CHARACTER_TYPES.forEach((type, index) => {
             const position = nearestFreeCell(maze, { x: columns[index], y }, occupied)
             if (!position) return
             occupied.add(positionKey(position))
-            const { maxVigor } = PIECE_STATS[type]
-            pieces.push({
-                id: pieceId(color, type),
+            const { maxVigor } = CHARACTER_STATS[type]
+            characters.push({
+                id: characterId(color, type),
                 color,
                 type,
                 position,
@@ -82,14 +82,14 @@ export function createInitialPieces(maze: Maze): PieceDefinition[] {
         })
     }
 
-    return pieces
+    return characters
 }
 
-// As casas em que um item cabe: nem parede, nem peça, nem outro item em cima
-export function freeCells(maze: Maze, pieces: PieceDefinition[], items: MotivationItem[]): PiecePosition[] {
-    const taken = new Set([...pieces.map((p) => positionKey(p.position)), ...items.map((i) => positionKey(i.position))])
+// As casas em que um item cabe: nem parede, nem personagem, nem outro item em cima
+export function freeCells(maze: Maze, characters: CharacterDefinition[], items: MotivationItem[]): CharacterPosition[] {
+    const taken = new Set([...characters.map((p) => positionKey(p.position)), ...items.map((i) => positionKey(i.position))])
 
-    const cells: PiecePosition[] = []
+    const cells: CharacterPosition[] = []
     for (let y = 0; y < maze.size; y++) {
         for (let x = 0; x < maze.size; x++) {
             if (isWalkable(maze, x, y) && !taken.has(positionKey({ x, y }))) cells.push({ x, y })
@@ -99,15 +99,15 @@ export function freeCells(maze: Maze, pieces: PieceDefinition[], items: Motivati
 }
 
 // Uma delas, sorteada. Null só em um labirinto sem casa livre nenhuma.
-export function randomFreeCell(maze: Maze, pieces: PieceDefinition[], items: MotivationItem[]): PiecePosition | null {
-    const cells = freeCells(maze, pieces, items)
+export function randomFreeCell(maze: Maze, characters: CharacterDefinition[], items: MotivationItem[]): CharacterPosition | null {
+    const cells = freeCells(maze, characters, items)
     return cells.length > 0 ? pickRandom(cells) : null
 }
 
 // Espalha cópias de cada item em casas livres do labirinto (nunca em parede,
-// em cima de uma peça ou de outro item).
-export function placeItems(maze: Maze, pieces: PieceDefinition[]): MotivationItem[] {
-    const available = shuffle(freeCells(maze, pieces, []))
+// em cima de uma personagem ou de outro item).
+export function placeItems(maze: Maze, characters: CharacterDefinition[]): MotivationItem[] {
+    const available = shuffle(freeCells(maze, characters, []))
 
     // O tabuleiro mínimo é grande o bastante para as duas cópias de cada item; a saída
     // antecipada abaixo é só uma rede de segurança para um labirinto sem casas livres.
@@ -126,7 +126,7 @@ export function placeItems(maze: Maze, pieces: PieceDefinition[]): MotivationIte
 // (durante as rolagens de iniciativa) para que o tabuleiro apareça já pronto.
 export interface GameSetup {
     maze: Maze
-    pieces: PieceDefinition[]
+    characters: CharacterDefinition[]
     items: MotivationItem[]
 }
 
@@ -138,7 +138,7 @@ export interface MatchSetup extends GameSetup {
 
 export function createGameSetup(boardSize: number, minRoomSize: number, maxRoomSize: number): GameSetup {
     const maze = generateMaze(boardSize, minRoomSize, maxRoomSize)
-    const pieces = createInitialPieces(maze)
-    const items = placeItems(maze, pieces)
-    return { maze, pieces, items }
+    const characters = createInitialCharacters(maze)
+    const items = placeItems(maze, characters)
+    return { maze, characters, items }
 }

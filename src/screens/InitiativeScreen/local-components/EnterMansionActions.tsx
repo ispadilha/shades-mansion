@@ -4,7 +4,7 @@ import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
 interface EnterMansionActionsProps {
-    // A partida já está montada (labirinto, peças e itens prontos)
+    // A partida já está montada (labirinto, personagens e itens prontos)
     ready: boolean
     onEnter: () => void
     onBack: () => void
