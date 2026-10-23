@@ -88,6 +88,23 @@ export const texts_rules = {
         },
     },
 
+    rivalry: {
+        name: {
+            enUS: "Rivalry",
+            ptBR: "Rivalidade",
+        },
+        description: {
+            enUS:
+                "Every character has a rival on another team.\n\n" +
+                "When a character strikes its rival in melee, the defense becomes a rivalry roll with the coin. There is no dodging in it: on one side of the coin, the blow lands in full; on the other, the damage is split between rivals, as the defender guards and fights back.\n\n" +
+                "Only melee strikes stir up a rivalry: against shots, fire and charges, a rival defends itself like any other character.",
+            ptBR:
+                "Cada personagem tem uma rival em outro time.\n\n" +
+                "Quando uma personagem golpeia a rival corpo a corpo, a defesa vira uma rolagem de rivalidade na moeda. Nela não há esquiva: de um lado da moeda, o golpe entra cheio; do outro, o dano é dividido entre as rivais, pois a defensora se defende e contra-ataca.\n\n" +
+                "Só o golpe corpo a corpo desperta a rivalidade: contra tiros, fogo e investidas, a rival se defende como qualquer outra personagem.",
+        },
+    },
+
     gameModes: {
         name: {
             enUS: "Commanding a team",

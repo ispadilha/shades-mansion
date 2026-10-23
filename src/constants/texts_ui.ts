@@ -798,4 +798,29 @@ export const texts_ui = {
         enUS: "recovered vigor through affinity",
         ptBR: "revigoraram pela afinidade",
     },
+
+    rivalry: {
+        enUS: "Rivalry",
+        ptBR: "Rivalidade",
+    },
+
+    rivalryRoll: {
+        enUS: "Rivalry roll",
+        ptBR: "Rolagem de rivalidade",
+    },
+
+    toFightBack: {
+        enUS: "to fight back",
+        ptBR: "para revidar",
+    },
+
+    foughtBack: {
+        enUS: "Fought back!",
+        ptBR: "Revidou!",
+    },
+
+    verbFoughtBack: {
+        enUS: "fought back against",
+        ptBR: "revidou o golpe de",
+    },
 }

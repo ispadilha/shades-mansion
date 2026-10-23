@@ -28,9 +28,10 @@ export const TEAM_BUTTON_PALETTE: Record<CharacterColor, { bg: string; text: str
     dark: { bg: "#111111", text: "#ffffff", outline: "#dedede" },
 }
 
-const MANIPULATION_GLOW = "#c2185b"
+const MANIPULATION_GLOW = "#e05492"
 const SKILL_GLOW = "#1e88e5"
 const AFFINITY_GLOW = "#5ef2df"
+const RIVALRY_GLOW = "#ff1a1a"
 
 export interface AuraPalette {
     color: string
@@ -44,6 +45,7 @@ export const AURA_PALETTE: Record<AuraKind, AuraPalette> = {
     manipulated: { color: MANIPULATION_GLOW, strength: 0.7, radius: 0.68, pulseMs: 700 },
     skill: { color: SKILL_GLOW, strength: 0.7, radius: 0.68, pulseMs: 900 },
     affinity: { color: AFFINITY_GLOW, strength: 0.7, radius: 0.68, pulseMs: 1000 },
+    rivalry: { color: RIVALRY_GLOW, strength: 0.75, radius: 0.68, pulseMs: 600 },
 }
 
 export const VIGOR_PALETTE = {

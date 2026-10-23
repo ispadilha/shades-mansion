@@ -26,6 +26,8 @@ export interface GameLog {
     attackHit: (attackerId: string, targetId: string, damage: number) => void
     attackGuarded: (attackerId: string, targetId: string, damage: number) => void
     attackDodged: (attackerId: string, targetId: string) => void
+    // "{alvo} (−x) revidou o golpe de {rival} (−y)": o que cada uma perdeu, logo depois do nome
+    foughtBack: (attackerId: string, targetId: string, damage: number, returned: number) => void
     manipulationRoll: (characterId: string, success: boolean) => void
     // "{personagem} dissipou a barreira de {dona}", ou não conseguiu
     dispelRoll: (characterId: string, ownerId: string, success: boolean) => void
@@ -104,6 +106,13 @@ export const useGameLog = (): GameLog => {
         add(`${tCharacterName(targetId)} ${t("verbDodged")} ${tCharacterName(attackerId)}`)
     }
 
+    // Com um golpe de 1 só, não sobra nada para devolver
+    const foughtBack = (attackerId: string, targetId: string, damage: number, returned: number) => {
+        const target = `${tCharacterName(targetId)}${vigorLoss(damage)}`
+        const attacker = `${tCharacterName(attackerId)}${returned > 0 ? vigorLoss(returned) : ""}`
+        add(`${target} ${t("verbFoughtBack")} ${attacker}`)
+    }
+
     const manipulationRoll = (characterId: string, success: boolean) => {
         add(`${tCharacterName(characterId)} ${t(success ? "verbFellUnderManipulation" : "verbResistedManipulation")}`)
     }
@@ -138,6 +147,7 @@ export const useGameLog = (): GameLog => {
         attackHit,
         attackGuarded,
         attackDodged,
+        foughtBack,
         manipulationRoll,
         dispelRoll,
         barriersWoreOff,

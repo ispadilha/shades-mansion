@@ -189,6 +189,7 @@ export const useBoardActions = ({
             // Pela habilidade, o golpe sai com os dados de dano dela, quando ela os tem
             damageDice: damageOf(attacker, active?.skill ?? null),
             delayMs,
+            melee: !ranged,
             ...(target ? { targetId: target.id } : {}),
             ...(area ? { area } : {}),
             ...(forcedBy ? { manipulatedBy: forcedBy } : {}),

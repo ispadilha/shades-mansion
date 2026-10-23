@@ -56,6 +56,22 @@ export function rollDefense(character: CharacterDefinition, damage: number): Def
     return { die, outcome: "clean", damage }
 }
 
+export interface RivalryRoll {
+    face: CoinFace
+    foughtBack: boolean
+    // O dano que fica com quem defende, e o que volta para quem atacou
+    damage: number
+    returned: number
+}
+
+// A defesa contra a rival, num golpe corpo a corpo, é a moeda.
+export function rollRivalry(damage: number): RivalryRoll {
+    const face = flipCoin()
+    if (face !== SUCCESS_FACE) return { face, foughtBack: false, damage, returned: 0 }
+    const kept = Math.ceil(damage * GUARDED_DAMAGE_SHARE)
+    return { face, foughtBack: true, damage: kept, returned: damage - kept }
+}
+
 export interface DispelRoll {
     die: number
     success: boolean
@@ -163,6 +179,8 @@ export interface PendingAttack {
     // Ataque em área (incendiário): o quadrado que pega fogo. Todas as personagens dentro dele
     // se defendem, do time que forem.
     area?: AttackArea
+    // Golpe corpo a corpo, com quem ataca ao lado do alvo: é o que desperta a rivalidade
+    melee: boolean
     // Time que manipulou o atacante, quando o ataque vem de uma manipulação:
     // é ele quem joga os dados do golpe.
     manipulatedBy?: CharacterColor

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import type { Dispatch, SetStateAction } from "react"
 import type { Barrier, CharacterColor, CharacterDefinition, CharacterPosition, MotivationItemKey, TextKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
@@ -9,6 +9,7 @@ import {
     rollDefense,
     rollDispel,
     rollManipulation,
+    rollRivalry,
     type Aim,
     type ChargeRun,
     type DamageRoll,
@@ -20,6 +21,7 @@ import {
     type PendingDispel,
 } from "../logic/combat"
 import { dieKind, type RollTarget, type RollTone } from "../logic/rolls"
+import { areRivals } from "../logic/rivalry"
 import { useLanguage } from "./useLanguage"
 import type { GameLog } from "./useGameLog"
 import type { RollQueue } from "./useRolls"
@@ -95,6 +97,8 @@ export interface CombatResolution {
     // O ataque e a dissipação viram quem age sozinhos, quando ela chega, e o ataque vira também quem
     // é atingido. As outras ações com alvo chamam isto.
     aimAt: (characterId: string, target: CharacterPosition | string) => void
+    // As duas rivais de um golpe corpo a corpo, enquanto os dados dele rolam (vazio fora disso)
+    rivals: string[]
 }
 
 export const useCombatResolution = ({
@@ -127,6 +131,13 @@ export const useCombatResolution = ({
     const effectTimerRef = useRef<number | null>(null)
     // Os golpes de uma investida em andamento, um por personagem no caminho, e o fim da corrida
     const chargeTimersRef = useRef<number[]>([])
+    // As personagens como estão agora. As rolagens terminam depois de quem ataca ter andado até o
+    // alvo, e o número do dano que volta para ela tem que subir da casa a que ela chegou.
+    const charactersRef = useRef(characters)
+    const [rivals, setRivals] = useState<string[]>([])
+    useEffect(() => {
+        charactersRef.current = characters
+    })
 
     useEffect(() => {
         return () => {
@@ -149,6 +160,10 @@ export const useCombatResolution = ({
             // Já perto, quem ataca se vira para o alvo: a personagem mirada, ou o centro do fogo
             const aimed = attack.area?.center ?? attack.targetId
             if (aimed) aimAt(attack.attackerId, aimed)
+            // Golpe corpo a corpo na rival: as duas brilham juntas até os dados acabarem
+            if (attack.melee && attack.targetId && areRivals(attack.attackerId, attack.targetId)) {
+                setRivals([attack.attackerId, attack.targetId])
+            }
 
             // Quem segura o fogo é barreira adversária de quem o acendeu,
             // e o fogo é da personagem que atira, não do time que a manipulou, se foi o caso.
@@ -225,6 +240,10 @@ export const useCombatResolution = ({
             settleAttack(attack, reached, hits)
             return
         }
+        if (attack.melee && areRivals(attack.attackerId, defender.id)) {
+            resolveRivalry(attack, reached, damage, defenders, index, hits)
+            return
+        }
 
         const defense = rollDefense(defender, damage.total)
         const reading = DEFENSE_READING[defense.outcome]
@@ -252,10 +271,51 @@ export const useCombatResolution = ({
         )
     }
 
+    // Golpe corpo a corpo na rival: a defesa vira a rolagem de rivalidade, na moeda.
+    const resolveRivalry = (
+        attack: PendingAttack,
+        reached: CharacterPosition[],
+        damage: DamageRoll,
+        defenders: CharacterDefinition[],
+        index: number,
+        hits: Hit[],
+    ) => {
+        const defender = defenders[index]
+        const rivalry = rollRivalry(damage.total)
+
+        rolls.show(
+            {
+                id: `rivalry-${defender.id}-${Date.now()}`,
+                kind: "coin",
+                value: rivalry.face,
+                title: t("rivalryRoll"),
+                subtitle: tCharacterName(defender.id),
+                targets: [{ value: t(SUCCESS_FACE === "heads" ? "coinHeads" : "coinTails"), label: t("toFightBack") }],
+                outcome: rivalry.foughtBack
+                    ? { label: t("foughtBack"), tone: "good" }
+                    : { label: t(DEFENSE_READING.clean.label), tone: DEFENSE_READING.clean.tone },
+                manual: isManualRoll(defender.color),
+                ...DODGE_ROLL_TIMING,
+            },
+            () => {
+                if (rivalry.foughtBack) log.foughtBack(attack.attackerId, defender.id, rivalry.damage, rivalry.returned)
+                else log.attackHit(attack.attackerId, defender.id, rivalry.damage)
+
+                const next = [
+                    ...hits,
+                    { characterId: defender.id, damage: rivalry.damage },
+                    ...(rivalry.returned > 0 ? [{ characterId: attack.attackerId, damage: rivalry.returned }] : []),
+                ]
+                resolveDefenders(attack, reached, damage, defenders, index + 1, next)
+            },
+        )
+    }
+
     // Fim das rolagens: agora sim o golpe aparece no tabuleiro, e o dano de todas as personagens
     // atingidas entra junto com ele. Nenhuma personagem sai do tabuleiro antes de a animação
     // mostrar o que a tirou de lá.
     const settleAttack = (attack: PendingAttack, reached: CharacterPosition[], hits: Hit[]) => {
+        setRivals((prev) => (prev.length > 0 ? [] : prev))
         const animated = playAttackEffect(attack, reached)
         if (hits.length > 0) applyDamage(hits)
 
@@ -288,7 +348,7 @@ export const useCombatResolution = ({
         // O número sobe da casa em que a personagem estava: ele precisa aparecer mesmo para
         // quem foi eliminada por este golpe.
         const popups = hits.flatMap((hit) => {
-            const character = characters.find((p) => p.id === hit.characterId)
+            const character = charactersRef.current.find((p) => p.id === hit.characterId)
             if (!character) return []
             return [{ id: `dmg-${hit.characterId}-${Date.now()}`, position: { ...character.position }, amount: hit.damage }]
         })
@@ -422,5 +482,5 @@ export const useCombatResolution = ({
         setAims((prev) => [...prev.slice(-MAX_AIMS + 1), aim])
     }
 
-    return { resolveAttack, resolveManipulation, resolveDispel, resolveCharge, aimAt }
+    return { resolveAttack, resolveManipulation, resolveDispel, resolveCharge, aimAt, rivals }
 }

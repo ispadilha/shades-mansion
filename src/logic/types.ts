@@ -39,7 +39,7 @@ export type CharacterAuras = Record<string, AuraKind>
 
 // Aura vale ao mesmo tempo para o tabuleiro e para o HUD.
 // `palette.ts` diz de que cor cada uma é desenhada.
-export type AuraKind = "active" | "manipulated" | "skill" | "affinity"
+export type AuraKind = "active" | "manipulated" | "skill" | "affinity" | "rivalry"
 
 // Para que lado a personagem está virada no tabuleiro: a direção em que andou por último
 export type Facing = "down" | "left" | "right" | "up"

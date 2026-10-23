@@ -436,8 +436,10 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         for (const id of affinityDuo) result[id] = "affinity"
         if (skillCharacterId) result[skillCharacterId] = "skill"
         if (manipulatedId) result[manipulatedId] = "manipulated"
+        // As rivais em duelo, por cima de tudo, só enquanto os dados delas rolam
+        for (const id of combat.rivals) result[id] = "rivalry"
         return result
-    }, [activeCharacterId, affinityDuo, skillCharacterId, manipulatedId])
+    }, [activeCharacterId, affinityDuo, skillCharacterId, manipulatedId, combat.rivals])
 
     // O valor nasce de novo a cada render de propósito: quem o lê depende do estado da
     // partida de qualquer jeito, e memorizar não pouparia render nenhum.

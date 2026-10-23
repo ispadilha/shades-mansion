@@ -248,14 +248,17 @@ export class SimpleAI {
         manipulatedBy: CharacterColor | null,
     ): AIMoveResult {
         const moveSteps = pathLength(attacker.position, approach, maze, blockedCellsFor(attacker.color, barriers, characters))
-        const area = attackArea(attacker, this.rangedSkillOf(attacker), target.position)
+        const skill = this.rangedSkillOf(attacker)
+        const area = attackArea(attacker, skill, target.position)
         return {
             updatedCharacters: this.moved(characters, attacker.id, approach, manipulatedBy === null),
             pendingAttack: {
                 attackerId: attacker.id,
-                damageDice: damageOf(attacker, this.rangedSkillOf(attacker)),
+                damageDice: damageOf(attacker, skill),
                 targetId: target.id,
                 delayMs: moveSteps * STEP_MS + ACTION_SETTLE_MS,
+                // Quem tem habilidade de alcance atira com ela, e quem não tem anda até o alvo
+                melee: skill === null,
                 ...(area ? { area } : {}),
                 ...(manipulatedBy ? { manipulatedBy } : {}),
             },
