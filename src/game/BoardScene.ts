@@ -1,10 +1,18 @@
 import Phaser from "phaser"
-import type { AuraKind, Barrier, CharacterAuras, CharacterPosition, CharacterDefinition, MotivationItem } from "../logic/types"
-import { itemKeyColor } from "../logic/types"
+import type {
+    AuraKind,
+    Barrier,
+    CharacterAuras,
+    CharacterDefinition,
+    CharacterPosition,
+    Facing,
+    MotivationItem,
+} from "../logic/types"
+import { characterKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
-import type { ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
+import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
 import { findPath } from "../logic/movement"
-import { blockedCellsFor, samePosition } from "../logic/grid"
+import { blockedCellsFor, facingToward, samePosition } from "../logic/grid"
 import { isSpent } from "../logic/turn"
 import { pickRandom, randomInt } from "../logic/random"
 import {
@@ -15,11 +23,7 @@ import {
     FIRE_PALETTE,
     VIGOR_PALETTE,
     levelStarColors,
-    ITEM_PALETTE,
-    CHARACTER_DETAIL_PALETTE,
-    CHARACTER_PALETTE,
     hex,
-    rgba,
 } from "../constants/palette"
 import {
     ALPHA_TWEEN_MS,
@@ -28,14 +32,15 @@ import {
     BARRIER_GLOW_ALPHA,
     BARRIER_FLOOR_ALPHA,
     BARRIER_PULSE_MS,
-    DAMAGE_POPUP_FONT,
+    BOARD_ART_SCALE,
+    CHARACTER_FLOOR,
     DAMAGE_POPUP_MS,
     DAMAGE_POPUP_RISE,
     LEVEL_STAR,
     ITEM_DROP_HEIGHT,
     ITEM_DROP_MS,
-    AURA_TEXTURE_SIZE,
     FIRE_BURST_MS,
+    GLOW_BANDS,
     FLAMES_PER_CELL,
     ITEM_FADE_MS,
     MOVED_CHARACTER_ALPHA,
@@ -43,6 +48,27 @@ import {
     STEP_MS,
     VIGOR_BAR,
 } from "../constants/rules"
+import { CHARACTER_ART_SIZE, CHARACTER_SHEETS, FACING_FRAMES, ITEM_ARTS } from "../assets"
+import { glowGrid, numberGrid, starGrid, type PixelGrid } from "../assets/pixels"
+
+// As texturas das artes na cena, pela chave da personagem
+const characterTexture = (key: string) => `character-${key}`
+const itemTexture = (key: string) => `item-${key}`
+
+// As artes sempre caem em pixels inteiros da tela, paradas ou no meio da caminhada:
+// ampliadas, numa posição quebrada os pixels delas mudariam de largura a cada passo
+const WHOLE_PIXELS = "full"
+
+// O halo da aura: mais forte na altura da personagem e sumindo para fora, um anel e não um disco chapado
+const AURA_FADE = [
+    [0, 0.45],
+    [0.45, 0.75],
+    [0.75, 0.3],
+    [1, 0],
+] as const
+
+// Onde os pés da personagem pisam, a partir do centro da casa: no chão dela
+const feetY = (cellSize: number) => cellSize * (0.5 - CHARACTER_FLOOR)
 
 const vigorColor = (ratio: number) =>
     ratio > 0.5 ? VIGOR_PALETTE.high : ratio > 0.25 ? VIGOR_PALETTE.medium : VIGOR_PALETTE.low
@@ -60,6 +86,8 @@ export class BoardScene extends Phaser.Scene {
     private cellSize: number
     private maze: Maze
     private sprites: Map<string, Phaser.GameObjects.Container> = new Map()
+    // A arte de cada personagem, dentro do container dela: é o quadro dela que muda com a direção
+    private arts: Map<string, Phaser.GameObjects.Sprite> = new Map()
     private itemSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private lastCells: Map<string, CharacterPosition> = new Map()
     // Auras em cena, por personagem. O desenho fica dentro do container da personagem, então acompanha
@@ -68,7 +96,7 @@ export class BoardScene extends Phaser.Scene {
     private vigorBars: Map<string, VigorBar> = new Map()
     // A estrela de promoção de cada personagem. Ela mora dentro do container da personagem, então
     // acompanha a caminhada sozinha. O que muda com o nível é a cor e se ela aparece.
-    private levelStars: Map<string, Phaser.GameObjects.Star> = new Map()
+    private levelStars: Map<string, Phaser.GameObjects.Image> = new Map()
     private barrierSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     // A última lista recebida: o caminho de uma personagem contorna as barreiras dos oponentes,
     // e é aqui que o passo-a-passo da caminhada consulta quais são.
@@ -76,6 +104,10 @@ export class BoardScene extends Phaser.Scene {
     // Investidas anunciadas, por personagem: na próxima troca de casa dela, ela corre em linha reta
     // até lá, em vez de caminhar pelo labirinto
     private charges: Map<string, ChargeRun> = new Map()
+    // Quem está caminhando agora. Durante a caminhada são os passos que decidem para onde a personagem
+    // olha: a virada para o alvo de uma ação fica guardada e só acontece quando ela chega.
+    private walking: Set<string> = new Set()
+    private arrivalFacings: Map<string, Facing> = new Map()
     // Buffer de syncs que chegam antes do Phaser terminar de inicializar a cena
     private pendingCharacters: CharacterDefinition[] | null = null
     private pendingItems: MotivationItem[] | null = null
@@ -86,13 +118,30 @@ export class BoardScene extends Phaser.Scene {
     private pendingAuras: CharacterAuras | null = null
     private isReady = false
 
-    constructor(cellSize: number, maze: Maze) {
+    // Quanto a cena passa da borda do tabuleiro, em pixels:
+    // a câmera recua isso, e o tabuleiro começa um pouco para dentro dela
+    private overflow: number
+
+    constructor(cellSize: number, maze: Maze, overflow: number) {
         super({ key: "BoardScene" })
         this.cellSize = cellSize
         this.maze = maze
+        this.overflow = overflow
+    }
+
+    // As artes chegam antes de a cena montar: o spritesheet de cada personagem e o item de cada uma
+    preload() {
+        for (const [key, url] of Object.entries(CHARACTER_SHEETS)) {
+            this.load.spritesheet(characterTexture(key), url, {
+                frameWidth: CHARACTER_ART_SIZE,
+                frameHeight: CHARACTER_ART_SIZE,
+            })
+        }
+        for (const [key, url] of Object.entries(ITEM_ARTS)) this.load.image(itemTexture(key), url)
     }
 
     create() {
+        this.cameras.main.setScroll(-this.overflow, -this.overflow)
         this.isReady = true
         if (this.pendingItems) {
             this.applyItems(this.pendingItems)
@@ -171,6 +220,18 @@ export class BoardScene extends Phaser.Scene {
         this.charges.set(run.characterId, run)
     }
 
+    // A personagem se vira para o alvo, a partir da casa em que está, ou da casa a que está indo:
+    // se ainda estiver andando até lá, ela se vira ao chegar. Alvo que é outra personagem conta
+    // pela casa em que ela está (ou para a qual está indo).
+    playAim(aim: Aim) {
+        const cell = this.lastCells.get(aim.characterId)
+        const target = typeof aim.target === "string" ? this.lastCells.get(aim.target) : aim.target
+        if (!cell || !target || samePosition(cell, target)) return
+        const facing = facingToward(cell, target)
+        if (this.walking.has(aim.characterId)) this.arrivalFacings.set(aim.characterId, facing)
+        else this.face(aim.characterId, facing)
+    }
+
     // A queda de um item que voltou ao tabuleiro.
     // O item já está na lista: aqui ele só é jogado para cair na casa dele.
     playItemDrop(itemId: string) {
@@ -241,11 +302,14 @@ export class BoardScene extends Phaser.Scene {
             const cellChanged = !last || last.x !== character.position.x || last.y !== character.position.y
             if (cellChanged) {
                 this.tweens.killTweensOf(sprite)
+                this.walking.delete(character.id)
+                this.arrivalFacings.delete(character.id)
                 const charge = this.charges.get(character.id)
                 this.charges.delete(character.id)
                 if (charge && samePosition(charge.to, character.position)) {
                     // Investida: corre em linha reta, por cima das outras personagens e abaixo do
-                    // fogo e dos números de dano
+                    // fogo e dos números de dano, virada para onde corre
+                    this.face(character.id, facingToward(last ?? character.position, character.position))
                     const runner = sprite.setDepth(5)
                     this.tweens.add({
                         targets: runner,
@@ -258,15 +322,25 @@ export class BoardScene extends Phaser.Scene {
                 } else {
                     // Anima passo-a-passo (uma célula por vez, contornando as paredes) para criar o efeito de caminhada
                     const blocked = blockedCellsFor(character.color, this.barriers, characters)
-                    const path = findPath(last ?? character.position, character.position, this.maze, blocked)
+                    const start = last ?? character.position
+                    const path = findPath(start, character.position, this.maze, blocked)
                     if (path.length === 0) {
                         sprite.setPosition(targetPx.x, targetPx.y)
                     } else {
-                        const steps = path.map((cell) => {
+                        // A cada passo, a personagem se vira para a casa seguinte, e fica virada
+                        // para a última direção em que andou
+                        const steps = path.map((cell, index) => {
                             const px = this.cellToPixel(cell)
-                            return { x: px.x, y: px.y, duration: STEP_MS, ease: "Linear" }
+                            const facing = facingToward(index === 0 ? start : path[index - 1], cell)
+                            const onStart = () => this.face(character.id, facing)
+                            return { x: px.x, y: px.y, duration: STEP_MS, ease: "Linear", onStart }
                         })
-                        this.tweens.chain({ targets: sprite, tweens: steps })
+                        this.walking.add(character.id)
+                        this.tweens.chain({
+                            targets: sprite,
+                            tweens: steps,
+                            onComplete: () => this.arrive(character.id),
+                        })
                     }
                 }
                 this.lastCells.set(character.id, { ...character.position })
@@ -284,7 +358,10 @@ export class BoardScene extends Phaser.Scene {
         for (const [id, sprite] of this.sprites) {
             if (seen.has(id)) continue
             this.sprites.delete(id)
+            this.arts.delete(id)
             this.lastCells.delete(id)
+            this.walking.delete(id)
+            this.arrivalFacings.delete(id)
             // O brilho e a barra de vigor são filhos do container: somem junto com a personagem,
             // sem tween próprio
             this.auras.delete(id)
@@ -463,15 +540,16 @@ export class BoardScene extends Phaser.Scene {
         const cs = this.cellSize
         const { x, y } = this.cellToPixel(popup.position)
 
+        // Algarismos em pixel, com pixels do tamanho dos da arte
+        const { fill, stroke } = DAMAGE_POPUP_PALETTE
+        const digits = this.pixelTexture(`damage-${popup.amount}-${fill}-${stroke}`, () =>
+            numberGrid(popup.amount, fill, stroke),
+        )
         const label = this.add
-            .text(x, y - cs * 0.12, String(popup.amount), {
-                fontFamily: "Arial Black",
-                fontSize: `${Math.max(11, Math.floor(cs * DAMAGE_POPUP_FONT))}px`,
-                color: DAMAGE_POPUP_PALETTE.fill,
-                stroke: DAMAGE_POPUP_PALETTE.stroke,
-                strokeThickness: 3,
-            })
+            .image(x, y - cs * 0.12, digits)
             .setOrigin(0.5, 1)
+            .setScale(BOARD_ART_SCALE.character)
+            .setVertexRoundMode(WHOLE_PIXELS)
             .setDepth(20)
 
         this.tweens.add({
@@ -523,10 +601,10 @@ export class BoardScene extends Phaser.Scene {
         }
     }
 
-    // O brilho em si: um disco que se dissolve até a borda, pulsando devagar
+    // O brilho em si: um halo que se apaga em faixas até a borda, pulsando devagar
     private buildAura(kind: AuraKind): Phaser.GameObjects.Image {
-        const { strength, radius, pulseMs } = AURA_PALETTE[kind]
-        const scale = (radius * 2 * this.cellSize) / AURA_TEXTURE_SIZE
+        const { strength, pulseMs } = AURA_PALETTE[kind]
+        const scale = BOARD_ART_SCALE.character
 
         const sprite = this.add.image(0, 0, this.auraTexture(kind)).setScale(scale).setAlpha(strength * 0.5)
         this.tweens.add({
@@ -543,29 +621,37 @@ export class BoardScene extends Phaser.Scene {
     }
 
     // Textura do brilho, uma por tipo de aura (a cor já vai pintada nela, o que dispensa
-    // tingir o sprite e sai igual em qualquer renderizador)
+    // tingir o sprite e sai igual em qualquer renderizador). O halo tem pixels do tamanho dos da
+    // arte, então a textura tem um pixel para cada um deles.
     private auraTexture(kind: AuraKind): string {
-        const { color } = AURA_PALETTE[kind]
-        // A cor entra na chave: mexer na paleta gera uma textura nova em vez de reaproveitar
-        // a antiga, que já está pintada
-        const key = `aura-${kind}-${color}`
-        if (this.textures.exists(key)) return key
+        const { color, radius } = AURA_PALETTE[kind]
+        const side = Math.round((radius * 2 * this.cellSize) / BOARD_ART_SCALE.character)
+        return this.pixelTexture(`aura-${kind}-${color}-${side}`, () => glowGrid(side, color, AURA_FADE, GLOW_BANDS))
+    }
 
-        const texture = this.textures.createCanvas(key, AURA_TEXTURE_SIZE, AURA_TEXTURE_SIZE)
+    private starTexture(level: number): string {
+        const { fill, outline } = levelStarColors(level)
+        return this.pixelTexture(`star-${fill}-${outline}`, () => starGrid(fill, outline))
+    }
+
+    // Uma imagem em pixels vira textura uma vez só, com um pixel da textura para cada pixel dela.
+    // A cor entra na chave de quem chama: mexer na paleta gera uma textura nova em vez de
+    // reaproveitar a antiga, que já está pintada.
+    private pixelTexture(key: string, draw: () => PixelGrid): string {
+        if (this.textures.exists(key)) return key
+        const grid = draw()
+        const texture = this.textures.createCanvas(key, grid[0].length, grid.length)
         if (!texture) return key
 
-        const half = AURA_TEXTURE_SIZE / 2
         const context = texture.getContext()
-        const gradient = context.createRadialGradient(half, half, 0, half, half, half)
-        // Mais forte na altura da personagem e sumindo para fora: vira um halo, não um disco chapado
-        gradient.addColorStop(0, rgba(color, 0.45))
-        gradient.addColorStop(0.45, rgba(color, 0.75))
-        gradient.addColorStop(0.75, rgba(color, 0.3))
-        gradient.addColorStop(1, rgba(color, 0))
-        context.fillStyle = gradient
-        context.fillRect(0, 0, AURA_TEXTURE_SIZE, AURA_TEXTURE_SIZE)
+        grid.forEach((row, y) =>
+            row.forEach((color, x) => {
+                if (!color) return
+                context.fillStyle = color
+                context.fillRect(x, y, 1, 1)
+            }),
+        )
         texture.refresh()
-
         return key
     }
 
@@ -576,49 +662,34 @@ export class BoardScene extends Phaser.Scene {
         }
     }
 
+    // A personagem é a arte dela, virada para baixo no começo da partida, com a barra de vigor
+    // e a estrela de promoção por cima. Os pés pisam no chão da casa.
     private buildCharacter(character: CharacterDefinition): Phaser.GameObjects.Container {
-        const cs = this.cellSize
-        const palette = CHARACTER_PALETTE[character.color]
-        const clothing = hex(palette.clothing)
-        const outline = hex(palette.outline)
-        const skin = hex(palette.skin)
+        const texture = characterTexture(characterKey(character.color, character.type))
+        const art = this.add
+            .sprite(0, feetY(this.cellSize), texture, FACING_FRAMES.down)
+            .setOrigin(0.5, 1)
+            .setScale(BOARD_ART_SCALE.character)
+            .setVertexRoundMode(WHOLE_PIXELS)
+        this.arts.set(character.id, art)
 
-        const container = this.add.container(0, 0)
-        const shadow = this.add.ellipse(0, cs * 0.3, cs * 0.42, cs * 0.1, hex(CHARACTER_DETAIL_PALETTE.shadow), 0.45)
-
-        const legY = cs * 0.2
-        const leftLeg = this.add.rectangle(-cs * 0.07, legY, cs * 0.09, cs * 0.14, clothing).setStrokeStyle(1, outline)
-        const rightLeg = this.add.rectangle(cs * 0.07, legY, cs * 0.09, cs * 0.14, clothing).setStrokeStyle(1, outline)
-
-        const armY = cs * 0.03
-        const leftArm = this.add.rectangle(-cs * 0.2, armY, cs * 0.08, cs * 0.22, clothing).setStrokeStyle(1, outline)
-        const rightArm = this.add.rectangle(cs * 0.2, armY, cs * 0.08, cs * 0.22, clothing).setStrokeStyle(1, outline)
-
-        const body = this.add.rectangle(0, 0, cs * 0.3, cs * 0.3, clothing).setStrokeStyle(1.5, outline)
-
-        const headY = -cs * 0.22
-        const head = this.add.circle(0, headY, cs * 0.13, skin).setStrokeStyle(1.5, outline)
-
-        const eyeR = Math.max(1, cs * 0.014)
-        const eyeY = headY - cs * 0.01
-        const eyeColor = hex(CHARACTER_DETAIL_PALETTE.eyes)
-        const leftEye = this.add.circle(-cs * 0.04, eyeY, eyeR, eyeColor)
-        const rightEye = this.add.circle(cs * 0.04, eyeY, eyeR, eyeColor)
-
-        const letter = this.add
-            .text(0, 0, character.type, {
-                fontFamily: "Arial Black",
-                fontSize: `${Math.max(10, Math.floor(cs * 0.18))}px`,
-                color: palette.letter,
-                stroke: palette.letterStroke,
-                strokeThickness: 2,
-            })
-            .setOrigin(0.5, 0.5)
-
-        container.add([shadow, leftLeg, rightLeg, leftArm, rightArm, body, head, leftEye, rightEye, letter])
+        const container = this.add.container(0, 0, [art])
         container.add(this.buildVigorBar(character.id))
-        container.add(this.buildLevelStar(character.id))
+        container.add(this.buildLevelStar(character))
         return container
+    }
+
+    private face(characterId: string, facing: Facing) {
+        this.arts.get(characterId)?.setFrame(FACING_FRAMES[facing])
+    }
+
+    // Fim da caminhada: a personagem se vira para o alvo do que foi fazer, se houver um
+    private arrive(characterId: string) {
+        this.walking.delete(characterId)
+        const facing = this.arrivalFacings.get(characterId)
+        if (!facing) return
+        this.arrivalFacings.delete(characterId)
+        this.face(characterId, facing)
     }
 
     // A barra nasce apagada: o tabuleiro só marca quem já foi atingido, e é `syncVigorBar`
@@ -636,25 +707,25 @@ export class BoardScene extends Phaser.Scene {
             .rectangle(-width / 2 + VIGOR_BAR.inset, 0, width - VIGOR_BAR.inset * 2, height - VIGOR_BAR.inset * 2, hex(VIGOR_PALETTE.high))
             .setOrigin(0, 0.5)
 
-        const root = this.add.container(0, -cs * VIGOR_BAR.offsetY, [track, fill]).setAlpha(0)
+        // Acima da personagem: do alto da arte, que pode passar da casa, sobe a folga e a barra
+        const artTop = feetY(cs) - CHARACTER_ART_SIZE * BOARD_ART_SCALE.character
+        const y = Math.round(artTop - cs * VIGOR_BAR.gap - height / 2)
+        const root = this.add.container(0, y, [track, fill]).setAlpha(0)
         this.vigorBars.set(characterId, { root, fill, width: width - VIGOR_BAR.inset * 2 })
         return root
     }
 
     // A estrela nasce invisível: no nível 1 não há promoção para marcar, e é
-    // `syncLevelStar` que a acende quando a personagem sobe.
-    private buildLevelStar(characterId: string): Phaser.GameObjects.Star {
+    // `syncLevelStar` que a acende, e troca a cor, quando a personagem sobe. Os pixels dela
+    // são do tamanho dos da arte.
+    private buildLevelStar(character: CharacterDefinition): Phaser.GameObjects.Image {
         const cs = this.cellSize
         const star = this.add
-            .star(
-                cs * LEVEL_STAR.x,
-                -cs * LEVEL_STAR.y,
-                LEVEL_STAR.points,
-                cs * LEVEL_STAR.inner,
-                cs * LEVEL_STAR.outer,
-            )
+            .image(cs * LEVEL_STAR.x, -cs * LEVEL_STAR.y, this.starTexture(character.level))
+            .setScale(BOARD_ART_SCALE.character)
+            .setVertexRoundMode(WHOLE_PIXELS)
             .setVisible(false)
-        this.levelStars.set(characterId, star)
+        this.levelStars.set(character.id, star)
         return star
     }
 
@@ -668,9 +739,7 @@ export class BoardScene extends Phaser.Scene {
             star.setVisible(false)
             return
         }
-        const colors = levelStarColors(character.level)
-        star.setFillStyle(hex(colors.fill))
-        star.setStrokeStyle(1.5, hex(colors.outline))
+        star.setTexture(this.starTexture(character.level))
         star.setVisible(true)
     }
 
@@ -691,23 +760,10 @@ export class BoardScene extends Phaser.Scene {
     }
 
     private buildItem(item: MotivationItem): Phaser.GameObjects.Container {
-        const cs = this.cellSize
-        const colors = ITEM_PALETTE[itemKeyColor(item.key)]
-
-        const container = this.add.container(0, 0)
-        const ring = this.add.circle(0, 0, cs * 0.22, hex(CHARACTER_DETAIL_PALETTE.shadow), 0.25)
-        const circle = this.add.circle(0, 0, cs * 0.18, hex(colors.bg)).setStrokeStyle(2, hex(colors.outline))
-        const letter = this.add
-            .text(0, 0, item.key[1], {
-                fontFamily: "Arial Black",
-                fontSize: `${Math.max(10, Math.floor(cs * 0.18))}px`,
-                color: colors.text,
-                stroke: colors.textStroke,
-                strokeThickness: 2,
-            })
-            .setOrigin(0.5, 0.5)
-
-        container.add([ring, circle, letter])
-        return container
+        const art = this.add
+            .image(0, 0, itemTexture(item.key))
+            .setScale(BOARD_ART_SCALE.item)
+            .setVertexRoundMode(WHOLE_PIXELS)
+        return this.add.container(0, 0, [art])
     }
 }

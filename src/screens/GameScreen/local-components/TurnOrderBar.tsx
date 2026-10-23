@@ -5,7 +5,7 @@ import type { CharacterAuras, CharacterDefinition } from "../../../logic/types"
 import { isSpent } from "../../../logic/turn"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
-import { AURA_PALETTE } from "../../../constants/palette"
+import { CHARACTER_ICON_SCALE } from "../../../constants/rules"
 
 interface TurnOrderBarProps {
     // Personagens ainda em jogo, já na ordem de iniciativa
@@ -19,7 +19,7 @@ interface TurnOrderBarProps {
 
 export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, activeId, onActivate, round }) => {
     const palette = usePalette()
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
 
     return (
         <Box sx={{ height: "100%", minWidth: 0, display: "flex", alignItems: "center", gap: 1, px: 2 }}>
@@ -45,26 +45,18 @@ export const TurnOrderBar: React.FC<TurnOrderBarProps> = ({ order, auras, active
                     return (
                         <Box
                             key={character.id}
+                            title={tCharacterName(character.id)}
                             onClick={clickable ? onActivate : undefined}
-                            sx={{
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                flexShrink: 0,
-                                cursor: clickable ? "pointer" : "default",
-                            }}
+                            sx={{ flexShrink: 0, cursor: clickable ? "pointer" : "default" }}
                         >
                             <CharacterIcon
                                 color={character.color}
                                 type={character.type}
                                 level={character.level}
-                                size={34}
+                                scale={CHARACTER_ICON_SCALE.turnOrder}
                                 aura={aura}
                                 dimmed={isSpent(character) && !aura}
                             />
-                            <Typography sx={{ color: aura ? AURA_PALETTE[aura].color : palette.initiative.idleId, fontSize: 10 }}>
-                                {character.id}
-                            </Typography>
                         </Box>
                     )
                 })}

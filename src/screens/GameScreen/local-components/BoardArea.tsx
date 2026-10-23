@@ -10,9 +10,9 @@ import type {
     MotivationItem,
     RangeKind,
 } from "../../../logic/types"
-import type { ChargeRun, DamagePopup, FireBurst } from "../../../logic/combat"
+import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../../../logic/combat"
 import type { Maze } from "../../../logic/maze"
-import { CELL_SIZE } from "../../../constants/rules"
+import { BOARD_OVERFLOW, CELL_SIZE } from "../../../constants/rules"
 
 interface BoardAreaProps {
     // A viewport rolável: a câmera da partida mexe nela
@@ -25,6 +25,7 @@ interface BoardAreaProps {
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
     chargeRuns: ChargeRun[]
+    aims: Aim[]
     auras: CharacterAuras
     selectedCharacterId: string | null
     droppedItemId: string | null
@@ -44,6 +45,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
     fireBursts,
     damagePopups,
     chargeRuns,
+    aims,
     auras,
     selectedCharacterId,
     droppedItemId,
@@ -68,7 +70,8 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    p: 2,
+                    // A folga em volta do tabuleiro é o quanto a cena passa da borda dele
+                    p: `${CELL_SIZE * BOARD_OVERFLOW}px`,
                     boxSizing: "border-box",
                 }}
             >
@@ -82,6 +85,7 @@ export const BoardArea: React.FC<BoardAreaProps> = ({
                     fireBursts={fireBursts}
                     damagePopups={damagePopups}
                     chargeRuns={chargeRuns}
+                    aims={aims}
                     auras={auras}
                     onCellClick={onCellClick}
                     selectedCharacterId={selectedCharacterId}

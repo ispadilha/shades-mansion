@@ -1,9 +1,10 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
 import type { Barrier, CharacterAuras, CharacterDefinition, MotivationItem } from "../../logic/types"
-import type { ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
+import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { BoardScene } from "../../game/BoardScene"
+import { BOARD_OVERFLOW } from "../../constants/rules"
 
 interface PhaserBoardProps {
     cellSize: number
@@ -14,6 +15,7 @@ interface PhaserBoardProps {
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
     chargeRuns: ChargeRun[]
+    aims: Aim[]
     auras: CharacterAuras
     droppedItemId: string | null
 }
@@ -27,6 +29,7 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     fireBursts,
     damagePopups,
     chargeRuns,
+    aims,
     auras,
     droppedItemId,
 }) => {
@@ -35,25 +38,33 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     const playedBurstsRef = useRef(new Set<string>())
     const playedDamageRef = useRef(new Set<string>())
     const playedChargesRef = useRef(new Set<string>())
+    const playedAimsRef = useRef(new Set<string>())
+    // A cena passa da borda do tabuleiro, para não cortar o que sobe das casas da beirada
+    const overflow = Math.round(cellSize * BOARD_OVERFLOW)
+    const side = maze.size * cellSize + 2 * overflow
 
     useEffect(() => {
         if (!containerRef.current) return
-        const scene = new BoardScene(cellSize, maze)
+        const scene = new BoardScene(cellSize, maze, overflow)
         sceneRef.current = scene
         const game = new Phaser.Game({
             type: Phaser.AUTO,
             parent: containerRef.current,
-            width: maze.size * cellSize,
-            height: maze.size * cellSize,
+            width: side,
+            height: side,
             transparent: true,
             banner: false,
+            // Tudo em pixel, nada suavizado: nem as texturas ao mudar de tamanho, nem as bordas das
+            // formas desenhadas (o fogo, as barreiras, as barras), nem o tabuleiro inteiro quando o
+            // navegador o amplia (tela com escala ou zoom na página)
+            pixelArt: true,
             scene,
         })
         return () => {
             sceneRef.current = null
             game.destroy(true)
         }
-    }, [cellSize, maze])
+    }, [cellSize, maze, overflow, side])
 
     useEffect(() => {
         sceneRef.current?.syncItems(items)
@@ -81,6 +92,16 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     useEffect(() => {
         sceneRef.current?.syncCharacters(characters)
     }, [characters])
+
+    // Depois das personagens (a ordem dos efeitos é a de declaração): a virada parte da casa em
+    // que a personagem está, ou da casa a que ela está indo
+    useEffect(() => {
+        for (const aim of aims) {
+            if (playedAimsRef.current.has(aim.id)) continue
+            playedAimsRef.current.add(aim.id)
+            sceneRef.current?.playAim(aim)
+        }
+    }, [aims])
 
     // Depois das personagens (a ordem dos efeitos é a de declaração): a aura entra no container
     // da personagem, que já precisa existir.
@@ -113,10 +134,10 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
             ref={containerRef}
             style={{
                 position: "absolute",
-                top: 0,
-                left: 0,
-                width: maze.size * cellSize,
-                height: maze.size * cellSize,
+                top: -overflow,
+                left: -overflow,
+                width: side,
+                height: side,
                 pointerEvents: "none",
             }}
         />

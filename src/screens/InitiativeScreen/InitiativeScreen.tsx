@@ -18,7 +18,7 @@ interface InitiativeScreenProps {}
 
 export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
     const navigate = useNavigate()
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
     const { selection, setMatch } = useGame()
     const { boardSize, minRoomSize, maxRoomSize } = useSettings()
 
@@ -81,7 +81,7 @@ export const InitiativeScreen: React.FC<InitiativeScreenProps> = ({}) => {
         kind: "d20",
         value: shown.dice,
         title: t("initiativeRoll"),
-        subtitle: shown.characterId,
+        subtitle: tCharacterName(shown.characterId),
         outcome: shown.accepted ? undefined : { label: t("repeatedRoll"), tone: "bad" },
         manual: !!shownSlot && controlledColors.includes(shownSlot.color),
         spinMs: timing.spinMs,

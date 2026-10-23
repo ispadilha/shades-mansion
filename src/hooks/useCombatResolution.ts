@@ -9,6 +9,7 @@ import {
     rollDefense,
     rollDispel,
     rollManipulation,
+    type Aim,
     type ChargeRun,
     type DamageRoll,
     type DefenseOutcome,
@@ -32,6 +33,7 @@ import {
     DISPEL_MIN_ROLL,
     DODGE_ROLL_TIMING,
     ITEM_DROP_HOLD_MS,
+    MAX_AIMS,
     MAX_CHARGE_RUNS,
     MAX_DAMAGE_POPUPS,
     MAX_FIRE_BURSTS,
@@ -63,6 +65,8 @@ interface CombatResolutionOptions {
     setDamagePopups: Dispatch<SetStateAction<DamagePopup[]>>
     // As investidas, para a cena fazer a personagem correr em linha reta
     setChargeRuns: Dispatch<SetStateAction<ChargeRun[]>>
+    // As viradas para o alvo, para a cena virar a personagem antes de ela agir
+    setAims: Dispatch<SetStateAction<Aim[]>>
     // Personagem sob manipulação: é ela que a câmera segue enquanto a moeda está no ar
     setManipulatedId: (characterId: string | null) => void
     rolls: RollQueue
@@ -87,6 +91,10 @@ export interface CombatResolution {
     // se a personagem obedece. Falhando, o item cai de volta no tabuleiro. Devolve o resultado a
     // quem chamou depois de encenar a rolagem.
     resolveManipulation: (color: CharacterColor, itemKey: MotivationItemKey, onSettled: (success: boolean) => void) => void
+    // A personagem se vira para o alvo do que vai fazer (uma casa, ou outra personagem pelo id).
+    // O ataque e a dissipação viram quem age sozinhos, quando ela chega, e o ataque vira também quem
+    // é atingido. As outras ações com alvo chamam isto.
+    aimAt: (characterId: string, target: CharacterPosition | string) => void
 }
 
 export const useCombatResolution = ({
@@ -97,6 +105,7 @@ export const useCombatResolution = ({
     setFireBursts,
     setDamagePopups,
     setChargeRuns,
+    setAims,
     setManipulatedId,
     rolls,
     log,
@@ -104,10 +113,11 @@ export const useCombatResolution = ({
     onManipulationFailed,
     dispelBarrier,
 }: CombatResolutionOptions): CombatResolution => {
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
     // Quem está rolando, com o nível ao lado. O nível pertence à ficha da rolagem porque é
     // ele que decide o dado de dano do atacante e os números de defesa de quem se defende.
-    const withLevel = (character: CharacterDefinition) => `${character.id} (${t("level")} ${character.level})`
+    const withLevel = (character: CharacterDefinition) =>
+        `${tCharacterName(character.id)} (${t("level")} ${character.level})`
     // Os dados só são jogados quando quem age termina de se aproximar:
     // o timer fica guardado para ser cancelado quando a tela sair.
     const approachTimerRef = useRef<number | null>(null)
@@ -136,6 +146,9 @@ export const useCombatResolution = ({
 
         approachTimerRef.current = window.setTimeout(() => {
             approachTimerRef.current = null
+            // Já perto, quem ataca se vira para o alvo: a personagem mirada, ou o centro do fogo
+            const aimed = attack.area?.center ?? attack.targetId
+            if (aimed) aimAt(attack.attackerId, aimed)
 
             // Quem segura o fogo é barreira adversária de quem o acendeu,
             // e o fogo é da personagem que atira, não do time que a manipulou, se foi o caso.
@@ -145,6 +158,10 @@ export const useCombatResolution = ({
             // quem se defende. Nada é animado ainda: o tabuleiro só reage depois dos dados.
             const reached = attack.area ? areaCells(maze, attack.area.center, attack.area.side, fire) : []
             const defenders = defendersOf(attack, reached)
+            // E quem é atingido se vira para encarar quem ataca
+            for (const defender of defenders) {
+                if (defender.id !== attack.attackerId) aimAt(defender.id, attack.attackerId)
+            }
 
             // Golpe no vazio (área sem ninguém, ou alvo que já saiu do tabuleiro): não há o
             // que rolar, mas a animação acontece do mesmo jeito
@@ -153,7 +170,7 @@ export const useCombatResolution = ({
                 return
             }
 
-            const attackerLabel = firedBy ? withLevel(firedBy) : attack.attackerId
+            const attackerLabel = firedBy ? withLevel(firedBy) : tCharacterName(attack.attackerId)
             const damage = rollDamage(attack.damageDice)
 
             rolls.show(
@@ -163,7 +180,7 @@ export const useCombatResolution = ({
                     value: damage.dice,
                     title: t("damageRoll"),
                     subtitle: attack.targetId
-                    ? `${attackerLabel} → ${attack.targetId}`
+                    ? `${attackerLabel} › ${tCharacterName(attack.targetId)}`
                     : attackerLabel,
                     outcome: { label: t("damagePoints"), tone: "neutral" },
                     manual: attackerColor !== null && isManualRoll(attackerColor),
@@ -303,7 +320,7 @@ export const useCombatResolution = ({
                 kind: "coin",
                 value: face,
                 title: t("manipulationRoll"),
-                subtitle: itemKey,
+                subtitle: tCharacterName(itemKey),
                 targets: [{ value: t(SUCCESS_FACE === "heads" ? "coinHeads" : "coinTails"), label: t("toManipulate") }],
                 outcome: {
                     label: success ? t("manipulationWorked") : t("manipulationFailed"),
@@ -341,7 +358,10 @@ export const useCombatResolution = ({
 
         approachTimerRef.current = window.setTimeout(() => {
             approachTimerRef.current = null
+            // Ao lado da barreira, a personagem se vira para ela
+            aimAt(dispel.characterId, dispel.barrier.position)
             const { die, success } = rollDispel()
+            const barrierOwner = tCharacterName(dispel.barrier.ownerId)
 
             rolls.show(
                 {
@@ -349,7 +369,7 @@ export const useCombatResolution = ({
                     kind: dieKind(DISPEL_DIE),
                     value: [die],
                     title: t("dispelRoll"),
-                    subtitle: `${dispel.characterId} → ${t("barrierOf")} ${dispel.barrier.ownerId}`,
+                    subtitle: `${tCharacterName(dispel.characterId)} › ${t("barrierOf")} ${barrierOwner}`,
                     targets: [{ value: String(DISPEL_MIN_ROLL), label: t("toDispel") }],
                     outcome: {
                         label: success ? t("dispelWorked") : t("dispelFailed"),
@@ -372,6 +392,8 @@ export const useCombatResolution = ({
     // A partida fica travada até a corrida acabar.
     const resolveCharge = (charge: PendingCharge) => {
         rolls.setResolving(true)
+        // Quem está no caminho se vira para encarar a investida que vem
+        for (const hit of charge.hits) aimAt(hit.characterId, charge.from)
         setChargeRuns((prev) => [
             ...prev.slice(-MAX_CHARGE_RUNS + 1),
             {
@@ -395,5 +417,10 @@ export const useCombatResolution = ({
         chargeTimersRef.current = [...timers, finish]
     }
 
-    return { resolveAttack, resolveManipulation, resolveDispel, resolveCharge }
+    const aimAt = (characterId: string, target: CharacterPosition | string) => {
+        const aim = { id: `aim-${characterId}-${Date.now()}`, characterId, target }
+        setAims((prev) => [...prev.slice(-MAX_AIMS + 1), aim])
+    }
+
+    return { resolveAttack, resolveManipulation, resolveDispel, resolveCharge, aimAt }
 }

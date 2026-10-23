@@ -209,10 +209,22 @@ export interface ChargeRun {
 // instante em que ela passa por cima, `atMs` depois da largada
 export interface PendingCharge {
     characterId: string
+    // De onde ela larga: é para lá que as atropeladas se viram
+    from: CharacterPosition
     to: CharacterPosition
     damage: number
     durationMs: number
     hits: Array<{ characterId: string; atMs: number }>
+}
+
+// A personagem se vira para o alvo do que vai fazer (quem ela ataca, a barreira que vai dissipar,
+// a casa em que acende uma barreira, quem ela imita) ou para quem a ataca.
+// Como as explosões, cada uma é tocada uma vez só.
+export interface Aim {
+    id: string
+    characterId: string
+    // Uma casa, ou o id de outra personagem: aí a virada é para a casa em que ela estiver
+    target: CharacterPosition | string
 }
 
 // Fogo amigo: quem a incendiária pegaria de tabela ao mirar em "target" sem poder atacar.

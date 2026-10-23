@@ -9,7 +9,9 @@ export const useLanguage = () => {
     const t = context.t
     const tTeam = context.tTeam
     const tCharacter = context.tCharacter
+    const tCharacterName = context.tCharacterName
+    const tItemName = context.tItemName
     const tRule = context.tRule
 
-    return { language, setLanguage, t, tTeam, tCharacter, tRule }
+    return { language, setLanguage, t, tTeam, tCharacter, tCharacterName, tItemName, tRule }
 }

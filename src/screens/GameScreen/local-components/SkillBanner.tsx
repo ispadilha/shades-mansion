@@ -16,7 +16,7 @@ interface SkillBannerProps {
 
 export const SkillBanner: React.FC<SkillBannerProps> = ({ active, character, usesLeft, onCancel }) => {
     const palette = usePalette()
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
 
     // A faixa diz o que a habilidade em uso ainda tem a oferecer: a que rolou dados anuncia
     // o que saiu, o alcance e, se for o caso, o dano. A que cria coisas, quantas ainda restam.
@@ -28,8 +28,8 @@ export const SkillBanner: React.FC<SkillBannerProps> = ({ active, character, use
           ? ` — ${usesLeft} ${t("barriersLeft")}`
           : ""
     // Habilidade usada por meio de outra (a imitação) diz as duas: a da personagem, e a que ela imita
-    const name = active?.via ? `${t(active.via.name)} → ${t(active.skill.name)}` : active ? t(active.skill.name) : ""
-    const message = active ? `${t("usingSkill")}: ${name} (${active.characterId})${detail}` : ""
+    const name = active?.via ? `${t(active.via.name)} › ${t(active.skill.name)}` : active ? t(active.skill.name) : ""
+    const message = active ? `${t("usingSkill")}: ${name} (${tCharacterName(active.characterId)})${detail}` : ""
 
     return (
         <HudBanner

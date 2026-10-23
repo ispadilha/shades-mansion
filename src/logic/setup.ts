@@ -1,5 +1,5 @@
 import type { CharacterColor, CharacterDefinition, CharacterPosition, CharacterType, MotivationItem } from "./types"
-import { ALL_ITEM_KEYS, ALL_CHARACTER_TYPES } from "./types"
+import { ALL_ITEM_KEYS, ALL_CHARACTER_TYPES, characterKey } from "./types"
 import type { Maze } from "./maze"
 import { generateMaze, inside, isWalkable } from "./maze"
 import { neighbors, positionKey } from "./grid"
@@ -36,8 +36,6 @@ const nearestFreeCell = (maze: Maze, ideal: CharacterPosition, occupied: Set<str
     return null
 }
 
-export const characterId = (color: CharacterColor, type: CharacterType) => `${color[0]}${type}`
-
 // A "escalação" da partida: quem existe no tabuleiro, independente de labirinto.
 // A tela de iniciativa usa isso para rolar os dados antes de o mapa ficar pronto.
 export interface CharacterSlot {
@@ -47,7 +45,7 @@ export interface CharacterSlot {
 }
 
 export const ALL_CHARACTER_SLOTS: CharacterSlot[] = LINEUP_COLORS.flatMap((color) =>
-    ALL_CHARACTER_TYPES.map((type) => ({ id: characterId(color, type), color, type })),
+    ALL_CHARACTER_TYPES.map((type) => ({ id: characterKey(color, type), color, type })),
 )
 
 // Linha inicial de cada time: escuras no topo, cinzas no meio, claras embaixo
@@ -69,7 +67,7 @@ export function createInitialCharacters(maze: Maze): CharacterDefinition[] {
             occupied.add(positionKey(position))
             const { maxVigor } = CHARACTER_STATS[type]
             characters.push({
-                id: characterId(color, type),
+                id: characterKey(color, type),
                 color,
                 type,
                 position,

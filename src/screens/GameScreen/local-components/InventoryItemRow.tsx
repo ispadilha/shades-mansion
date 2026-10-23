@@ -1,9 +1,10 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
-import { ItemBadge } from "../../../components/characters"
+import { ItemIcon } from "../../../components/characters"
 import type { MotivationItemKey, TextKey } from "../../../logic/types"
 import type { ItemUse } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"
+import { ITEM_ICON_SCALE } from "../../../constants/rules"
 
 interface InventoryItemRowProps {
     itemKey: MotivationItemKey
@@ -22,7 +23,7 @@ interface InventoryItemRowProps {
 const USE_LABEL: Record<ItemUse, TextKey> = { reinvigorate: "reinvigorate", promote: "promote", manipulate: "use" }
 
 export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, count, use, disabled, onUse, onExamine }) => {
-    const { t } = useLanguage()
+    const { t, tItemName } = useLanguage()
 
     return (
         <Box
@@ -35,14 +36,13 @@ export const InventoryItemRow: React.FC<InventoryItemRowProps> = ({ itemKey, cou
                 alignItems: "center",
                 gap: 1.5,
                 p: 1,
-                borderRadius: 1,
                 "&:hover": { bgcolor: "action.hover" },
                 cursor: "context-menu",
             }}
         >
-            <ItemBadge itemKey={itemKey} />
+            <ItemIcon itemKey={itemKey} scale={ITEM_ICON_SCALE.inventory} />
             <Typography sx={{ flex: 1, fontSize: 14 }}>
-                {itemKey}
+                {tItemName(itemKey)}
                 {count > 1 ? ` × ${count}` : ""}
             </Typography>
             {use && (

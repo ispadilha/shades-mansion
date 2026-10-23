@@ -88,7 +88,7 @@ export const useItemActions = ({
         const color = activeColor
         closeInventory()
         removeFromInventory(color, key)
-        log.usedTo(color, key, "toManipulate")
+        log.usedToManipulate(color, key)
         combat.resolveManipulation(color, key, (success) => {
             if (!success) return
             setManipulation({ itemKey: key, color })

@@ -5,7 +5,7 @@ import type { AuraKind, ColorMode, CharacterColor } from "../logic/types"
 //
 // Elas se dividem em duas famílias:
 //
-// - Cores de identidade (a primeira metade): os times, o fogo, os itens, o vigor. Elas
+// - Cores de identidade (a primeira metade): os times, o fogo, as auras, o vigor. Elas
 //   são o jogo em si e valem igual nos três modos de cor — inclusive porque quem desenha
 //   a maioria delas é o Phaser, que pinta em textura e não acompanha o React. São
 //   constantes de módulo: quem precisa, importa direto.
@@ -21,26 +21,7 @@ import type { AuraKind, ColorMode, CharacterColor } from "../logic/types"
 // Identidade: as cores que não mudam de modo
 // ---------------------------------------------------------------------------
 
-export interface CharacterPalette {
-    clothing: string
-    outline: string
-    skin: string
-    letter: string
-    letterStroke: string
-}
-
-export const CHARACTER_PALETTE: Record<CharacterColor, CharacterPalette> = {
-    light: { clothing: "#f2f2f2", outline: "#2a2a2a", skin: "#f0c8a0", letter: "#1a1a1a", letterStroke: "#ffffff" },
-    dark: { clothing: "#1a1a1a", outline: "#dedede", skin: "#f0c8a0", letter: "#ffffff", letterStroke: "#000000" },
-    gray: { clothing: "#7a7a7a", outline: "#2a2a2a", skin: "#b8a890", letter: "#ffffff", letterStroke: "#000000" },
-}
-
-export const CHARACTER_DETAIL_PALETTE = {
-    shadow: "#000000",
-    eyes: "#111111",
-}
-
-// O contorno acompanha o do desenho da personagem: é a mesma linha que separa o time do fundo
+// O contorno é a linha que separa a cor do time do fundo
 export const TEAM_BUTTON_PALETTE: Record<CharacterColor, { bg: string; text: string; outline: string }> = {
     light: { bg: "#dddddd", text: "#000000", outline: "#2a2a2a" },
     gray: { bg: "#888888", text: "#000000", outline: "#2a2a2a" },
@@ -96,12 +77,6 @@ export const FIRE_PALETTE = {
     ember: "#ff7a18",
     emberEdge: "#ffd166",
     flash: "#fff3c4",
-}
-
-export const ITEM_PALETTE: Record<CharacterColor, { bg: string; outline: string; text: string; textStroke: string }> = {
-    dark: { bg: "#2a2a2a", outline: "#eeeeee", text: "#ffffff", textStroke: "#000000" },
-    light: { bg: "#eeeeee", outline: "#222222", text: "#1a1a1a", textStroke: "#ffffff" },
-    gray: { bg: "#888888", outline: "#222222", text: "#ffffff", textStroke: "#000000" },
 }
 
 // ---------------------------------------------------------------------------
@@ -171,7 +146,7 @@ const dark = {
 
     // As casas destacadas em volta da personagem selecionada, um tom por alcance
     range: {
-        move: "#dd7a1c",
+        move: "#dd951c",
         attack: "#b3352c",
         skill: "#2f6aa8",
         // O alcance máximo da habilidade de uma personagem só consultada
@@ -224,10 +199,8 @@ const dark = {
 
     initiative: {
         rank: "#8f85a8",
-        characterId: "#bbbbbb",
         value: "#ffe9a8",
         valuePending: "#544c66",
-        idleId: "#777777",
     },
 }
 
@@ -334,10 +307,8 @@ const light: Palette = {
 
     initiative: {
         rank: "#34231a",
-        characterId: "#281f15",
         value: "#4d3608",
         valuePending: "#5f534c",
-        idleId: "#473626",
     },
 }
 
@@ -442,10 +413,8 @@ const gray: Palette = {
 
     initiative: {
         rank: "#8ea4ca",
-        characterId: "#bcc5d4",
         value: "#ffe9a8",
         valuePending: "#4b5e7f",
-        idleId: "#8795ac",
     },
 }
 
@@ -460,4 +429,11 @@ export const FIRE_COLORS = FIRE_PALETTE.flames.map(hex)
 export const rgba = (css: string, alpha: number): string => {
     const value = hex(css)
     return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`
+}
+
+// A cor `over` por cima de `base`, com a opacidade dada: a mistura das duas, já opaca
+export const mix = (base: string, over: string, alpha: number): string => {
+    const channel = (shift: number) =>
+        Math.round(((hex(base) >> shift) & 255) * (1 - alpha) + ((hex(over) >> shift) & 255) * alpha)
+    return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`
 }

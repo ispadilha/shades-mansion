@@ -36,11 +36,11 @@ export const texts_rules = {
         },
         description: {
             enUS:
-                "Light, Gray and Dark each start with six characters, one of each type: Agile (A), Barrier (B), Champion (C), Distance shooter (D), Exotic (E) and Firestarter (F).\n\n" +
+                "Light, Gray and Dark each start with six characters, one of each type: A (Agile), B (Barrier), C (Champion), D (Distance), E (Exotic) and F (Firestarter).\n\n" +
                 "The six types are the same for the three teams, and no two of them are alike: they differ in how far they walk, how far they reach, how much vigor they have, the dice their blow rolls and how well they defend themselves.\n\n" +
                 "Dark starts spread along the top row of the board, Gray along the middle row and Light along the bottom row.",
             ptBR:
-                "Claro, Cinza e Escuro começam com seis personagens cada, uma de cada tipo: Ágil (A), a de Barreira (B), Campeão (C), a que atira à Distância (D), a Exótica (E), e a perigosa incendiária com seu Fogo (F).\n\n" +
+                "Claro, Cinza e Escuro começam com seis personagens cada, uma de cada tipo: A (Ágil), B (Barreira), C (Campeão), D (Distância), E (Exótico) e F (Fogo).\n\n" +
                 "Os seis tipos são os mesmos para os três times, e não há dois iguais: eles se diferenciam em quanto andam, quanto alcançam, quanto vigor têm, os dados que o golpe deles rola e o quanto conseguem se defender.\n\n" +
                 "As personagens escuras começam espalhadas na linha de cima do tabuleiro, as cinzas na linha do meio e as claras na linha de baixo.",
         },
@@ -48,26 +48,26 @@ export const texts_rules = {
 
     characterTypes: {
         name: {
-            enUS: "The six characters",
-            ptBR: "As seis personagens",
+            enUS: "The six types",
+            ptBR: "Os seis tipos",
         },
         description: {
             enUS:
-                "The Agile (A) runs the farthest, but hits the softest and has the least vigor. In exchange, no other character slips out of a blow completely as often.\n\n" +
-                "The Barrier (B) is the middle of the table in a fight. It is the only character that can close a corridor: it lights paranormal barriers at a distance, which let its own team through and no one else.\n\n" +
-                "The Champion (C) is the heaviest of all, with the most vigor and the strongest blow, but has the most limited movement. Its charge makes up for it: it runs in a straight line over every character in the way, and each of them takes the damage. This includes allies, which calls for care and strategy.\n\n" +
-                "The Distance shooter (D) attacks from where it stands, and still ducks a blow now and then.\n\n" +
-                "The Exotic (E) sits between the middle and the top, in vigor and in the strength of its blow. Its skill is mimicry: it picks another character within its line of sight, ally or opponent, and uses the chosen character's skill as if it were its own, at its own level and for that turn only. It cannot mimic another Exotic.\n\n" +
-                "The Firestarter (F) shoots from a moderate distance, and its shot burns a whole area.\n\n" +
-                "Right-click a character and ask for its information to see its numbers, including how much vigor it has left.",
+                "The A (Agile) characters — the Drone, the Wildcat and the Ghost — move the farthest, but hit the softest and have the least vigor. In exchange, no other character slips out of a blow completely as often.\n\n" +
+                "The B (Barrier) characters — the Paranormal Investigator, the Witch and the Cultist — are the middle of the table in a fight. They can close a corridor by lighting paranormal barriers, which let only their own team through.\n\n" +
+                "The C (Champion) characters — the Modern Paladin, the Werewolf and the Vampire — are the heaviest of all, with the most vigor and the strongest blow, but have the most limited movement. Their charge makes up for it: they run berserk in a straight line.\n\n" +
+                "The D (Distance) characters — the Police Officer, the Warrior Shaman and the Renegade — may shoot from where they stand, and still duck a blow now and then.\n\n" +
+                "The E (Exotic) characters — the Robot, the Cryptid and the Monster — sit between the middle and the top, in vigor and strength. They can mimic the abilities of characters of other types.\n\n" +
+                "The F (Firestarter) characters — the Inventor, the Alien and the Mad Doctor — may shoot a fireball from a moderate distance, and affect an area.\n\n" +
+                "Right-click a character and ask for its information to see its numbers, including how much vigor it currently has.",
             ptBR:
-                "A Ágil (A) é a que corre mais longe, mas a que bate mais fraco e tem menos vigor. Em troca, nenhuma outra personagem desvia de ataques com tanta frequência.\n\n" +
-                "A de Barreira (B) é o meio da tabela em uma luta. É a única personagem que consegue fechar um corredor: ela acende barreiras paranormais à distância, que deixam passar só o time dela.\n\n" +
-                "O Campeão (C) é o mais pesado de todos, com o maior vigor e o golpe mais forte, mas tem o movimento mais limitado. A investida compensa isso: ele corre em linha reta por cima de toda personagem no caminho, e cada uma delas leva o dano. Isso inclui aliadas, o que exige cuidado e estratégia.\n\n" +
-                "A que atira à Distância (D) ataca de onde está, e ainda desvia de um golpe de vez em quando.\n\n" +
-                "A Exótica (E) fica entre o meio e o topo, no vigor e na força do golpe. A habilidade dela é a imitação: ela escolhe outra personagem na sua linha de visão, aliada ou adversária, e usa a habilidade da personagem escolhida como se fosse sua, no seu próprio nível e só naquele turno. Só não imita outra Exótica.\n\n" +
-                "A incendiária com seu Fogo (F) atira a uma distância moderada, e seu tiro queima uma área inteira.\n\n" +
-                "Clique com o botão direito em uma personagem e peça a informação dela para ver seus números, inclusive quanto vigor ainda lhe resta.",
+                "Os personagens A (Ágeis) — o Drone, o Gato Selvagem e o Fantasma — são os que se movem mais longe, mas os que batem mais fraco e têm menos vigor. Em compensação, nenhuma outra personagem desvia de ataques com tanta frequência.\n\n" +
+                "Os personagens B (Barreira) — o Investigador Paranormal, a Bruxa e o Cultista — são o meio da tabela em uma luta. Eles podem fechar um corredor acendendo barreiras paranormais, que deixam passar só o próprio time.\n\n" +
+                "Os personagens C (Campeões) — o Paladino Moderno, o Lobisomem e o Vampiro — são os mais pesados de todos, com o maior vigor e o golpe mais forte, mas têm o movimento mais limitado. A investida compensa isso: eles correm enfurecidos em linha reta.\n\n" +
+                "Os personagens D (Distância) — o Policial, o Xamã Guerreiro e o Renegado — podem atirar de onde estão, e ainda desviam de um golpe de vez em quando.\n\n" +
+                "Os personagens E (Exóticos) — o Robô, o Criptídeo e o Monstro — ficam entre o meio e o topo, no vigor e na força. Eles podem imitar as habilidades de personagens de outros tipos.\n\n" +
+                "Os personagens F (Fogo) — o Inventor, o Alien e o Doutor Louco — podem atirar uma bola de fogo a uma distância moderada, e afetar uma área.\n\n" +
+                "Clique com o botão direito em uma personagem e peça a informação dela para ver seus números, inclusive quanto vigor possui no momento.",
         },
     },
 
@@ -82,7 +82,7 @@ export const texts_rules = {
                 "When a character starts its turn next to its partner, and either of them has lost vigor, both roll their affinity dice: each of them recovers the vigor rolled, up to its maximum.\n\n" +
                 "A duo that stays side by side gets this roll twice per round, once at the start of each one's turn. The higher the level of either of them, the stronger the dice.",
             ptBR:
-                "Dentro de cada time, as seis personagens formam três duplas que motivam uma à outra: a Ágil com a de Barreira, o Campeão com a que atira à Distância, e a Exótica com a incendiária.\n\n" +
+                "Dentro de cada time, as seis personagens formam três duplas que motivam-se entre si: o Ágil com o de Barreira, o Campeão com o de Distância, e o Exótico com o de Fogo.\n\n" +
                 "Quando uma personagem começa o turno ao lado da parceira, e alguma das duas perdeu vigor, as duas rolam os dados de afinidade: cada uma revigora o que sair, até o seu vigor máximo.\n\n" +
                 "Uma dupla que fica lado a lado ganha essa rolagem duas vezes por rodada, uma no começo do turno de cada uma. Quanto mais alto o nível de qualquer uma delas, mais forte o dado.",
         },
@@ -163,7 +163,7 @@ export const texts_rules = {
                 "A character that runs out of vigor gives up the dispute and leaves the mansion.",
             ptBR:
                 "As personagens corpo a corpo atacam caminhando até uma casa livre ao lado do alvo e golpeando ao chegar. A caminhada precisa caber no alcance de ataque da personagem.\n\n" +
-                "A personagem atiradora e a incendiária atacam de onde estão, qualquer alvo com a linha de tiro livre. A incendiária pode mirar também uma casa vazia.\n\n" +
+                "A personagem atiradora e a de fogo atacam de onde estão, qualquer alvo com a linha de tiro livre. A de fogo pode mirar também uma casa vazia.\n\n" +
                 "Todo ataque é resolvido em duas rolagens, uma depois da outra. Primeiro a personagem atacante rola os dados de seu golpe. Depois a personagem atacada responde com a rolagem de defesa, que decide quanto desse dano chega de fato.\n\n" +
                 "A personagem que fica sem vigor desiste da disputa e sai da mansão.",
         },

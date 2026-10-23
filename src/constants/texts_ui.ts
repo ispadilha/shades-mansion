@@ -119,44 +119,19 @@ export const texts_ui = {
         ptBR: "Examinar",
     },
 
-    itemDescReinvigorateLight: {
-        enUS: "Reinvigorates Light",
-        ptBR: "Revigora a personagem clara",
+    itemMotivates: {
+        enUS: "Motivates",
+        ptBR: "Motiva",
     },
 
-    itemDescReinvigorateDark: {
-        enUS: "Reinvigorates Dark",
-        ptBR: "Revigora a personagem escura",
+    itemDescOwn: {
+        enUS: "Reinvigorates this character of your team, or promotes it.",
+        ptBR: "Revigora essa personagem do seu time, ou a promove.",
     },
 
-    itemDescReinvigorateGray: {
-        enUS: "Reinvigorates Gray",
-        ptBR: "Revigora a personagem cinza",
-    },
-
-    itemDescManipulateLight: {
-        enUS: "Manipulate Light",
-        ptBR: "Manipula a personagem clara",
-    },
-
-    itemDescManipulateDark: {
-        enUS: "Manipulate Dark",
-        ptBR: "Manipula a personagem escura",
-    },
-
-    itemDescManipulateGray: {
-        enUS: "Manipulate Gray",
-        ptBR: "Manipula a personagem cinza",
-    },
-
-    itemDescOwnSuffix: {
-        enUS: "(reinvigorates it, or promotes it)",
-        ptBR: "(revigora, ou promove)",
-    },
-
-    itemDescManipulateSuffix: {
-        enUS: "(force one action: move or attack — single use)",
-        ptBR: "(força uma ação: mover ou atacar — uso único)",
+    itemDescOther: {
+        enUS: "Manipulates this character of another team: forces one action, move or attack. Single use.",
+        ptBR: "Manipula essa personagem de outro time: força uma ação, mover ou atacar. Uso único.",
     },
 
     level: {
@@ -174,9 +149,44 @@ export const texts_ui = {
         ptBR: "Tipo",
     },
 
+    typeAgile: {
+        enUS: "A (Agile)",
+        ptBR: "A (Ágil)",
+    },
+
+    typeBarrier: {
+        enUS: "B (Barrier)",
+        ptBR: "B (Barreira)",
+    },
+
+    typeChampion: {
+        enUS: "C (Champion)",
+        ptBR: "C (Campeão)",
+    },
+
+    typeShooter: {
+        enUS: "D (Distance)",
+        ptBR: "D (Distância)",
+    },
+
+    typeExotic: {
+        enUS: "E (Exotic)",
+        ptBR: "E (Exótico)",
+    },
+
+    typeFirestarter: {
+        enUS: "F (Firestarter)",
+        ptBR: "F (Fogo)",
+    },
+
     description: {
         enUS: "Description",
         ptBR: "Descrição",
+    },
+
+    item: {
+        enUS: "Item",
+        ptBR: "Item",
     },
 
     moveRange: {
@@ -305,16 +315,8 @@ export const texts_ui = {
     },
 
     barrierDescription: {
-        enUS:
-            "A paranormal barrier closes the cell to the other two teams and lets its own team walk through it. " +
-            "It goes out on its own when the turn of the character that lit it comes around again. " +
-            "A character of its team standing on it cannot be attacked. " +
-            "An opponent standing next to it can try to dispel it.",
-        ptBR:
-            "Uma barreira paranormal fecha a casa para os outros dois times e deixa o próprio time passar por ela. " +
-            "Ela se apaga sozinha quando a vez da personagem que a acendeu volta. " +
-            "A personagem do próprio time que estiver em cima dela não pode ser atacada. " +
-            "Uma personagem adversária ao lado dela pode tentar dissipá-la.",
+        enUS: "A paranormal barrier stops opponents and protects allies.",
+        ptBR: "Uma barreira paranormal barra oponentes e protege aliados.",
     },
 
     barriersLeft: {

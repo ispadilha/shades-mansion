@@ -7,6 +7,16 @@ export type CharacterColor = "light" | "dark" | "gray"
 export type CharacterType = "A" | "B" | "C" | "D" | "E" | "F"
 export const ALL_CHARACTER_TYPES: CharacterType[] = ["A", "B", "C", "D", "E", "F"]
 
+// O nome de cada tipo, nos textos do jogo
+export const CHARACTER_TYPE_NAMES: Record<CharacterType, TextKey> = {
+    A: "typeAgile",
+    B: "typeBarrier",
+    C: "typeChampion",
+    D: "typeShooter",
+    E: "typeExotic",
+    F: "typeFirestarter",
+}
+
 export interface CharacterPosition {
     x: number
     y: number
@@ -30,6 +40,9 @@ export type CharacterAuras = Record<string, AuraKind>
 // Aura vale ao mesmo tempo para o tabuleiro e para o HUD.
 // `palette.ts` diz de que cor cada uma é desenhada.
 export type AuraKind = "active" | "manipulated" | "skill" | "affinity"
+
+// Para que lado a personagem está virada no tabuleiro: a direção em que andou por último
+export type Facing = "down" | "left" | "right" | "up"
 
 // Os alcances que o tabuleiro destaca em volta da personagem selecionada.
 // `palette.ts` diz de que cor cada um é pintado.
@@ -67,6 +80,7 @@ export interface MotivationItem {
 // então cada personagem nova traz o seu item junto, sem lista para manter à parte.
 export type ItemPrefix = "d" | "g" | "l"
 const ITEM_PREFIXES: ItemPrefix[] = ["d", "g", "l"]
+const COLOR_PREFIXES: Record<CharacterColor, ItemPrefix> = { dark: "d", gray: "g", light: "l" }
 
 export type MotivationItemKey = `${ItemPrefix}${CharacterType}`
 export const ALL_ITEM_KEYS: MotivationItemKey[] = ITEM_PREFIXES.flatMap((prefix) =>
@@ -77,6 +91,10 @@ export const itemKeyColor = (key: MotivationItemKey): CharacterColor =>
     key[0] === "l" ? "light" : key[0] === "d" ? "dark" : "gray"
 
 export const keyCharacterType = (key: MotivationItemKey): CharacterType => key[1] as CharacterType
+
+// A chave de uma personagem pelo time e pelo tipo, a mesma do item que a motiva ("dA")
+export const characterKey = (color: CharacterColor, type: CharacterType): MotivationItemKey =>
+    `${COLOR_PREFIXES[color]}${type}`
 
 export const ALL_TEAM_COLORS: CharacterColor[] = ["light", "dark", "gray"]
 
@@ -108,4 +126,4 @@ export type TextKey = keyof typeof texts_ui
 export type CharacterKey = keyof typeof texts_characters
 export type RuleKey = keyof typeof texts_rules
 export type LoreField = "name" | "description"
-export type CharacterField = LoreField | "type" | "skill" | "affinity"
+export type CharacterField = LoreField | "item" | "type" | "skill" | "affinity"

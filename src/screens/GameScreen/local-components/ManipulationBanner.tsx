@@ -11,7 +11,7 @@ interface ManipulationBannerProps {
 
 export const ManipulationBanner: React.FC<ManipulationBannerProps> = ({ itemKey, onCancel }) => {
     const palette = usePalette()
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
 
     return (
         <HudBanner
@@ -19,7 +19,7 @@ export const ManipulationBanner: React.FC<ManipulationBannerProps> = ({ itemKey,
             bg={palette.manipulation.bandBg}
             outline={palette.manipulation.bandOutline}
             textColor={palette.manipulation.bandText}
-            message={itemKey ? `${t("manipulatingCharacter")}: ${itemKey}` : ""}
+            message={itemKey ? `${t("manipulatingCharacter")}: ${tCharacterName(itemKey)}` : ""}
             actionLabel={t("cancelManipulation")}
             onAction={onCancel}
         />

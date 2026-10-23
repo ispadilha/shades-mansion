@@ -46,10 +46,12 @@ export const useBoardCamera = (
         const container = scrollRef.current
         if (!container || !focus) return
 
+        // O tabuleiro fica no meio da área rolável, com a mesma folga dos dois lados
         const offsetX = (container.scrollWidth - maze.size * CELL_SIZE) / 2
+        const offsetY = (container.scrollHeight - maze.size * CELL_SIZE) / 2
         container.scrollTo({
             left: offsetX + focus.position.x * CELL_SIZE + CELL_SIZE / 2 - container.clientWidth / 2,
-            top: focus.position.y * CELL_SIZE + CELL_SIZE / 2 - container.clientHeight / 2,
+            top: offsetY + focus.position.y * CELL_SIZE + CELL_SIZE / 2 - container.clientHeight / 2,
             behavior: "smooth",
         })
         // eslint-disable-next-line react-hooks/exhaustive-deps

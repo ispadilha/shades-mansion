@@ -2,17 +2,18 @@ import React from "react"
 import { Typography } from "@mui/material"
 import { ModalCard } from "../../../components/ui"
 import type { CharacterDefinition } from "../../../logic/types"
+import { CHARACTER_TYPE_NAMES } from "../../../logic/types"
 import { diceLabel } from "../../../logic/rolls"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { skillAreaSideOf, skillUsesOf, skillDamageOf, skillFor, skillRangeOf, skillRollOf } from "../../../logic/skills"
 import { DEFENSE_DIE, canDodge, statsFor } from "../../../constants/rules"
 
-// O número que o d20 da defesa precisa alcançar
-const defenseTarget = (target: number) => `d${DEFENSE_DIE} ≥ ${target}`
+// O número que o d20 da defesa precisa alcançar, na notação de mesa: "13+" é 13 ou mais
+const defenseTarget = (target: number) => `d${DEFENSE_DIE} ${target}+`
 
 // A ficha da personagem, com os atributos para o nível em que ela está
 const CharacterSheet: React.FC<{ character: CharacterDefinition }> = ({ character }) => {
-    const { t, tTeam } = useLanguage()
+    const { t, tTeam, tCharacterName } = useLanguage()
     const stats = statsFor(character.type, character.level)
     const skill = skillFor(character.type)
     const uses = skillUsesOf(skill, character)
@@ -22,8 +23,11 @@ const CharacterSheet: React.FC<{ character: CharacterDefinition }> = ({ characte
 
     return (
         <>
+            <Typography variant="h6" sx={{ mb: 1 }}>
+                {tCharacterName(character.id)}
+            </Typography>
             <Typography>{t("team")}: {tTeam(character.color)}</Typography>
-            <Typography>{t("type")}: {character.type}</Typography>
+            <Typography>{t("type")}: {t(CHARACTER_TYPE_NAMES[character.type])}</Typography>
             <Typography>{t("level")}: {character.level}</Typography>
             <Typography>{t("vigor")}: {character.vigor} / {character.maxVigor}</Typography>
             <Typography>{t("moveRange")}: {stats.moveRange}</Typography>
@@ -67,7 +71,7 @@ interface CharacterInfoModalProps {
 
 export const CharacterInfoModal: React.FC<CharacterInfoModalProps> = ({ character, onClose }) => {
     return (
-        <ModalCard open={character !== null} onClose={onClose} width={220} sx={{ p: 2 }}>
+        <ModalCard open={character !== null} onClose={onClose} sx={{ p: 2 }}>
             {character && <CharacterSheet character={character} />}
         </ModalCard>
     )

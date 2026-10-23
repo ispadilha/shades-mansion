@@ -3,7 +3,7 @@ import { Box } from "@mui/material"
 import { Cell } from "./Cell"
 import { PhaserBoard } from "./PhaserBoard"
 import type { Barrier, CharacterAuras, CharacterDefinition, CharacterPosition, MotivationItem, RangeKind } from "../../logic/types"
-import type { ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
+import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
 import type { Maze } from "../../logic/maze"
 import { isWall } from "../../logic/maze"
 import { atPosition, positionKey } from "../../logic/grid"
@@ -19,6 +19,7 @@ interface BoardProps {
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
     chargeRuns: ChargeRun[]
+    aims: Aim[]
     auras: CharacterAuras
     selectedCharacterId: string | null
     // Item que caiu de volta no tabuleiro
@@ -39,6 +40,7 @@ export const Board: React.FC<BoardProps> = ({
     fireBursts,
     damagePopups,
     chargeRuns,
+    aims,
     auras,
     selectedCharacterId,
     droppedItemId,
@@ -78,6 +80,7 @@ export const Board: React.FC<BoardProps> = ({
                 fireBursts={fireBursts}
                 damagePopups={damagePopups}
                 chargeRuns={chargeRuns}
+                aims={aims}
                 auras={auras}
                 droppedItemId={droppedItemId}
             />

@@ -15,6 +15,36 @@ export const CELL_SIZE = 64
 export const DEFAULT_BOARD_SIZE = 30
 export const BOARD_SIZE_RANGE = { min: 20, max: 40 }
 
+// O quanto a cena do tabuleiro passa da borda dele, em frações da casa, para não cortar o que
+// sobe das casas da beirada: as personagens mais altas que a casa, a barra de vigor em cima delas,
+// o brilho das auras, os números de dano. Com artes bem maiores, pode precisar de mais.
+export const BOARD_OVERFLOW = 0.5
+
+// ---------------------------------------------------------------------------
+// Artes
+// ---------------------------------------------------------------------------
+
+// Quanto cada arte cresce sobre o tamanho em que foi desenhada. Com fator inteiro, todos os
+// pixels da arte saem do mesmo tamanho; com fator quebrado, alguns saem um pouco mais largos
+// que os vizinhos.
+export const BOARD_ART_SCALE = { character: 1.5, item: 1.5 }
+
+// O chão em que a personagem pisa, medido da borda de baixo da casa, em frações da casa:
+// em zero, os pés ficam na borda
+export const CHARACTER_FLOOR = 0.1
+
+// Fora do tabuleiro: o retrato da personagem na barra de turnos, na fila da iniciativa e nas
+// habilidades, e o item no inventário e no verbete dele
+export const CHARACTER_ICON_SCALE = { turnOrder: 2, lineup: 3, skills: 4 }
+export const ITEM_ICON_SCALE = { inventory: 1, info: 3 }
+
+// Os dados e a moeda na mesa de rolagem: um dado sozinho (ou a moeda), ou dois lado a lado
+export const ROLL_ART_SCALE = { single: 4, pair: 3 }
+
+// Os brilhos desenhados em pixel (o halo da aura, o do d4) não têm degradê contínuo: a
+// opacidade desce em faixas, e este é o número delas
+export const GLOW_BANDS = 4
+
 // ---------------------------------------------------------------------------
 // Labirinto
 // ---------------------------------------------------------------------------
@@ -258,6 +288,9 @@ export const MAX_FIRE_BURSTS = 8
 // Investidas guardadas no estado, pelo mesmo motivo
 export const MAX_CHARGE_RUNS = 8
 
+// Viradas para o alvo guardadas no estado, pelo mesmo motivo
+export const MAX_AIMS = 8
+
 // Quanto tempo a câmera fica presa no item que caiu de volta no tabuleiro
 export const ITEM_DROP_HOLD_MS = 1000
 
@@ -318,10 +351,6 @@ export const BARRIER_EDGE_WIDTH = 3
 export const FIRE_BURST_MS = 900
 export const FLAMES_PER_CELL = 2
 
-// Lado da textura do brilho da aura, em pixels. É desenhada uma vez por tipo de aura e
-// depois esticada para o tamanho pedido na paleta.
-export const AURA_TEXTURE_SIZE = 128
-
 // Personagem que já agiu na rodada fica translúcida
 export const MOVED_CHARACTER_ALPHA = 0.55
 
@@ -355,21 +384,22 @@ export const LINEUP_RANK_LINE = { fontSize: 12, lineHeight: "18px", minHeight: "
 export const ROLL_RESULT_LINE = { fontSize: 22, lineHeight: "32px", minHeight: "32px" }
 export const ROLL_READING_LINE = { fontSize: 16, lineHeight: "24px", minHeight: "24px" }
 
-// O brilho difuso atrás do número do d4, no quadrado de 64 do desenho do dado
+// O brilho atrás do número do d4, no quadrado de 64 do desenho do dado
 export const DIE_GLOW = { x: 32, y: 35, radius: 26 }
 
-// A barra de vigor sob a personagem, em frações da casa
-export const VIGOR_BAR = { width: 0.56, height: 0.1, offsetY: 0.42, inset: 1 }
+// A barra de vigor, em frações da casa. Ela fica acima da personagem, que pode ser mais alta que
+// a casa: `gap` é a folga entre o alto da arte e a barra.
+export const VIGOR_BAR = { width: 0.56, height: 0.1, gap: 0.04, inset: 1 }
 
-// A estrela que marca a promoção da personagem
-export const LEVEL_STAR = { x: 0.37, y: 0.26, outer: 0.075, inner: 0.032, points: 5 }
+// O centro da estrela que marca a promoção da personagem, no canto de cima à direita da casa.
+// Os pixels dela são do tamanho dos da arte.
+export const LEVEL_STAR = { x: 0.4, y: 0.36 }
 
-// A mesma estrela no ícone do HUD. A posição é outra porque ali a personagem é um círculo:
-// a estrela desce pela diagonal para caber dentro do anel da aura.
-export const ICON_LEVEL_STAR = { x: 0.27, y: 0.27 }
+// A mesma estrela no ícone do HUD, mais para dentro, para caber dentro da borda da aura.
+// Os pixels dela são uma fração dos do retrato, para ela não cobrir o rosto.
+export const ICON_LEVEL_STAR = { x: 0.27, y: 0.27, pixel: 0.5 }
 
 // O número de dano que sobe acima da personagem atingida
 export const DAMAGE_POPUP_MS = 1000
 export const DAMAGE_POPUP_RISE = 0.5
-export const DAMAGE_POPUP_FONT = 0.22
 export const MAX_DAMAGE_POPUPS = 12

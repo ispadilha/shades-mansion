@@ -2,8 +2,9 @@ import React from "react"
 import { Box, Typography } from "@mui/material"
 import { CharacterIcon } from "../../../components/characters"
 import type { CharacterSlot } from "../../../logic/setup"
+import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
-import { LINEUP_RANK_LINE } from "../../../constants/rules"
+import { CHARACTER_ICON_SCALE, LINEUP_RANK_LINE } from "../../../constants/rules"
 
 interface LineupSlotProps {
     slot: CharacterSlot
@@ -15,22 +16,30 @@ interface LineupSlotProps {
     active: boolean
 }
 
-// Uma personagem na fila da iniciativa: a colocação, o boneco, o id e o número que ela tirou
+// Uma personagem na fila da iniciativa: a colocação, o retrato e o número que ela tirou
 export const LineupSlot: React.FC<LineupSlotProps> = ({ slot, rank = "", value, active }) => {
     const palette = usePalette()
+    const { tCharacterName } = useLanguage()
     const rolled = value !== undefined
 
     return (
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5, width: 62 }}>
+        <Box
+            title={tCharacterName(slot.id)}
+            sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 0.5, width: 62 }}
+        >
             {/* O número entra e sai pelo texto, e não escondendo o elemento:
             `visibility` invalida só a pintura, e pintura pendente dentro da
             camada que acabou de ser animada pode não acontecer.
             Trocar o texto invalida o layout, que o navegador é obrigado a refazer. */}
             <Typography sx={{ ...LINEUP_RANK_LINE, color: palette.initiative.rank }}>{rank}</Typography>
 
-            <CharacterIcon color={slot.color} type={slot.type} aura={active ? "active" : null} dimmed={!rolled && !active} />
-
-            <Typography sx={{ color: palette.initiative.characterId, fontSize: 12 }}>{slot.id}</Typography>
+            <CharacterIcon
+                color={slot.color}
+                type={slot.type}
+                scale={CHARACTER_ICON_SCALE.lineup}
+                aura={active ? "active" : null}
+                dimmed={!rolled && !active}
+            />
 
             <Typography
                 sx={{

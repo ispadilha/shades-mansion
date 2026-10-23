@@ -8,6 +8,7 @@ import type { Skill } from "../../../logic/skills"
 import { skillFor } from "../../../logic/skills"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
+import { CHARACTER_ICON_SCALE } from "../../../constants/rules"
 
 interface SkillsModalProps {
     open: boolean
@@ -20,7 +21,7 @@ interface SkillsModalProps {
 
 export const SkillsModal: React.FC<SkillsModalProps> = ({ open, onClose, character, disabled, onUse }) => {
     const palette = usePalette()
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
 
     const skill = character ? skillFor(character.type) : null
 
@@ -33,10 +34,26 @@ export const SkillsModal: React.FC<SkillsModalProps> = ({ open, onClose, charact
                     </Typography>
 
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-                            <CharacterIcon color={character.color} type={character.type} level={character.level} size={72} />
-                            <Typography sx={{ fontSize: 12, color: palette.surface.textMuted, mt: 0.5 }}>
-                                {character.id}
+                        {/* Largura fixa: nome comprido quebra em duas linhas, sem empurrar a habilidade */}
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                                flexShrink: 0,
+                                width: 88,
+                            }}
+                        >
+                            <CharacterIcon
+                                color={character.color}
+                                type={character.type}
+                                scale={CHARACTER_ICON_SCALE.skills}
+                                level={character.level}
+                            />
+                            <Typography
+                                sx={{ fontSize: 12, color: palette.surface.textMuted, mt: 0.5, textAlign: "center" }}
+                            >
+                                {tCharacterName(character.id)}
                             </Typography>
                         </Box>
 

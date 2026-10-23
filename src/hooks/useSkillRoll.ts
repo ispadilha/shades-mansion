@@ -22,7 +22,7 @@ export interface SkillRoll {
 }
 
 export const useSkillRoll = ({ rolls, isManualRoll }: SkillRollOptions): SkillRoll => {
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
 
     // Uma rolagem na tela. O total segue para quem vem depois dela.
     // O nível fica ao lado da personagem porque os dados de algumas habilidades mudam com ele.
@@ -41,7 +41,7 @@ export const useSkillRoll = ({ rolls, isManualRoll }: SkillRollOptions): SkillRo
                 kind: dieKind(dice.sides),
                 value: values,
                 title,
-                subtitle: `${character.id} (${t("level")} ${character.level})`,
+                subtitle: `${tCharacterName(character.id)} (${t("level")} ${character.level})`,
                 outcome: { label: unit, tone: "neutral" },
                 manual: isManualRoll(color),
             },

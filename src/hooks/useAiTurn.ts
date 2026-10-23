@@ -157,7 +157,7 @@ export const useAiTurn = ({
             // manipulação pegar.
             if (manipulationItem) {
                 removeFromInventory(color, manipulationItem)
-                log.usedTo(color, manipulationItem, "toManipulate")
+                log.usedToManipulate(color, manipulationItem)
                 combat.resolveManipulation(color, manipulationItem, (success) => {
                     if (success) play((character, actionKey, target) => log.manipulatedTo(color, character, actionKey, target))
                 })

@@ -30,7 +30,7 @@ export const useAffinity = ({
     isManualRoll,
     log,
 }: AffinityOptions): string[] => {
-    const { t } = useLanguage()
+    const { t, tCharacterName } = useLanguage()
     const [rolling, setRolling] = useState<string[]>([])
 
     // A vez cuja afinidade já foi conferida.
@@ -63,7 +63,7 @@ export const useAffinity = ({
                 kind: dieKind(dice.sides),
                 value: values,
                 title: t("affinityRoll"),
-                subtitle: `${activeCharacter.id} ${t("and")} ${partner.id}`,
+                subtitle: `${tCharacterName(activeCharacter.id)} ${t("and")} ${tCharacterName(partner.id)}`,
                 outcome: { label: t("affinityReading"), tone: "good" },
                 manual: isManualRoll(activeCharacter.color),
             },

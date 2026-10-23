@@ -15,9 +15,11 @@ interface TurnStatusProps {
 // De quem é a vez e o que o jogador pode fazer agora
 export const TurnStatus: React.FC<TurnStatusProps> = ({ activeCharacter, isPlayerTurn, spectating }) => {
     const palette = usePalette()
-    const { t, tTeam } = useLanguage()
+    const { t, tTeam, tCharacterName } = useLanguage()
 
-    const turnLabel = activeCharacter ? `${activeCharacter.id} (${tTeam(activeCharacter.color)})` : "—"
+    const turnLabel = activeCharacter
+        ? `${tCharacterName(activeCharacter.id)} (${tTeam(activeCharacter.color)})`
+        : "—"
 
     // Três estados na vez do jogador:
     // ainda tem tudo,

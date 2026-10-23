@@ -21,7 +21,17 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
             disableEscapeKeyDown
             slotProps={{ backdrop: { sx: { bgcolor: palette.roll.backdrop } } }}
         >
-            <Box sx={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", outline: "none" }}>
+            {/* Centrado pelo layout, como o `ModalCard`: com `transform`, meio pixel borraria tudo */}
+            <Box
+                sx={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    outline: "none",
+                }}
+            >
                 <RollBoard
                     roll={roll}
                     onDone={onDone}
@@ -32,7 +42,6 @@ export const RollModal: React.FC<RollModalProps> = ({ roll, onDone, footer }) =>
                         py: 3,
                         bgcolor: palette.roll.bg,
                         border: `1px solid ${palette.roll.border}`,
-                        borderRadius: 2,
                     }}
                 />
             </Box>

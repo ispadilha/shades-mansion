@@ -1,110 +1,87 @@
 import React from "react"
 import { Box } from "@mui/material"
+import { PixelImage } from "../ui"
 import type { AuraKind, CharacterColor, CharacterType } from "../../logic/types"
-import { AURA_PALETTE, CHARACTER_DETAIL_PALETTE, CHARACTER_PALETTE, levelStarColors, rgba } from "../../constants/palette"
-import { LEVEL_STAR, ICON_LEVEL_STAR } from "../../constants/rules"
+import { characterKey } from "../../logic/types"
+import { AURA_PALETTE, levelStarColors, rgba } from "../../constants/palette"
+import { ICON_LEVEL_STAR } from "../../constants/rules"
+import { CHARACTER_ICONS, ICON_ART_SIZE } from "../../assets"
+import { starGrid } from "../../assets/pixels"
 
-// O desenho vive num `viewBox` de 64, o mesmo espaço da casa do tabuleiro: as medidas em
-// frações da casa valem aqui multiplicadas por 64, com o centro em 32.
-const VIEW = 64
-const CENTER = VIEW / 2
-
-// Os pontos de uma estrela de N pontas, na mesma forma da que o tabuleiro desenha
-const starPoints = (cx: number, cy: number, outer: number, inner: number, points: number) =>
-    Array.from({ length: points * 2 }, (_, i) => {
-        const radius = i % 2 === 0 ? outer : inner
-        const angle = -Math.PI / 2 + (i * Math.PI) / points
-        return `${(cx + radius * Math.cos(angle)).toFixed(2)},${(cy + radius * Math.sin(angle)).toFixed(2)}`
-    }).join(" ")
+// A moldura do retrato: a borda, que acende com a aura, e a folga entre ela e a arte
+const FRAME = { border: 2, gap: 2 }
 
 interface CharacterIconProps {
     color: CharacterColor
     type: CharacterType
+    // Quantas vezes o retrato cresce sobre o tamanho em que foi desenhado
+    scale: number
     // Do nível 2 em diante a personagem ganha a estrela de promoção no canto
     level?: number
-    size?: number
     aura?: AuraKind | null
     // Personagem que já agiu na rodada: fica apagada
     dimmed?: boolean
 }
 
+// O retrato da personagem, numa moldura que acende com a aura dela
 export const CharacterIcon: React.FC<CharacterIconProps> = ({
     color,
     type,
+    scale,
     level = 1,
-    size = 56,
     aura = null,
     dimmed = false,
 }) => {
-    const palette = CHARACTER_PALETTE[color]
     const highlight = aura ? AURA_PALETTE[aura] : null
-    const star = level >= 2 ? levelStarColors(level) : null
+    const art = ICON_ART_SIZE * scale
+    const size = art + 2 * (FRAME.border + FRAME.gap)
+
+    // A estrela de promoção, com pixels menores que os do retrato, posta pelo centro dela
+    // (medido de dentro da borda) no canto de cima à direita
+    const starColors = level >= 2 ? levelStarColors(level) : null
+    const star = starColors ? starGrid(starColors.fill, starColors.outline) : null
+    const starPixel = Math.max(1, Math.round(scale * ICON_LEVEL_STAR.pixel))
+    const starAt = (fraction: number) =>
+        Math.round((size - 2 * FRAME.border) * fraction - ((star?.length ?? 0) * starPixel) / 2)
 
     return (
         <Box
             sx={{
+                position: "relative",
                 width: size,
                 height: size,
-                borderRadius: "50%",
                 boxSizing: "border-box",
-                border: highlight ? `2px solid ${highlight.color}` : "2px solid transparent",
+                // A aura é a borda e, por dentro dela, uma faixa translúcida na folga: sem desfoque
+                border: `${FRAME.border}px solid ${highlight ? highlight.color : "transparent"}`,
                 boxShadow: highlight
-                    ? `inset 0 0 ${size * 0.3}px ${size * 0.06}px ${rgba(highlight.color, highlight.strength)}`
+                    ? `inset 0 0 0 ${FRAME.gap}px ${rgba(highlight.color, highlight.strength)}`
                     : "none",
                 opacity: dimmed ? 0.35 : 1,
                 transition: "opacity 200ms, box-shadow 200ms, border-color 200ms",
                 flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
             }}
         >
-            <svg viewBox="0 0 64 64" width="100%" height="100%">
-                <ellipse cx="32" cy="51.2" rx="13.4" ry="3.2" fill={CHARACTER_DETAIL_PALETTE.shadow} opacity="0.45" />
+            <Box
+                component="img"
+                src={CHARACTER_ICONS[characterKey(color, type)]}
+                alt=""
+                sx={{ width: art, height: art, imageRendering: "pixelated" }}
+            />
 
-                {/* Pernas */}
-                <rect x="26.2" y="40.3" width="5.8" height="9" fill={palette.clothing} stroke={palette.outline} strokeWidth="1" />
-                <rect x="32" y="40.3" width="5.8" height="9" fill={palette.clothing} stroke={palette.outline} strokeWidth="1" />
-
-                {/* Braços */}
-                <rect x="16.6" y="26.9" width="5.1" height="14.1" fill={palette.clothing} stroke={palette.outline} strokeWidth="1" />
-                <rect x="42.2" y="26.9" width="5.1" height="14.1" fill={palette.clothing} stroke={palette.outline} strokeWidth="1" />
-
-                {/* Tronco */}
-                <rect x="22.4" y="22.4" width="19.2" height="19.2" fill={palette.clothing} stroke={palette.outline} strokeWidth="1.5" />
-
-                {/* Cabeça e olhos */}
-                <circle cx="32" cy="17.9" r="8.3" fill={palette.skin} stroke={palette.outline} strokeWidth="1.5" />
-                <circle cx="29.4" cy="17.3" r="0.9" fill={CHARACTER_DETAIL_PALETTE.eyes} />
-                <circle cx="34.6" cy="17.3" r="0.9" fill={CHARACTER_DETAIL_PALETTE.eyes} />
-
-                <text
-                    x="32"
-                    y="33"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontFamily="Arial Black"
-                    fontSize="11.5"
-                    fill={palette.letter}
-                    stroke={palette.letterStroke}
-                    strokeWidth="0.6"
+            {star && (
+                <Box
+                    sx={{
+                        position: "absolute",
+                        left: starAt(0.5 + ICON_LEVEL_STAR.x),
+                        top: starAt(0.5 - ICON_LEVEL_STAR.y),
+                    }}
                 >
-                    {type}
-                </text>
-
-                {/* A estrela de promoção, no canto de cima à direita */}
-                {star && (
-                    <polygon
-                        points={starPoints(
-                            CENTER + ICON_LEVEL_STAR.x * VIEW,
-                            CENTER - ICON_LEVEL_STAR.y * VIEW,
-                            LEVEL_STAR.outer * VIEW,
-                            LEVEL_STAR.inner * VIEW,
-                            LEVEL_STAR.points,
-                        )}
-                        fill={star.fill}
-                        stroke={star.outline}
-                        strokeWidth="1"
-                    />
-                )}
-            </svg>
+                    <PixelImage grid={star} pixel={starPixel} />
+                </Box>
+            )}
         </Box>
     )
 }

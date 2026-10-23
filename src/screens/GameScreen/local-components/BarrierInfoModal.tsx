@@ -12,7 +12,7 @@ interface BarrierInfoModalProps {
 
 export const BarrierInfoModal: React.FC<BarrierInfoModalProps> = ({ barrier, onClose }) => {
     const palette = usePalette()
-    const { t, tTeam } = useLanguage()
+    const { t, tTeam, tCharacterName } = useLanguage()
 
     return (
         <ModalCard open={barrier !== null} onClose={onClose} width={280} sx={{ p: 2 }}>
@@ -25,7 +25,7 @@ export const BarrierInfoModal: React.FC<BarrierInfoModalProps> = ({ barrier, onC
                         {t("team")}: {tTeam(barrier.color)}
                     </Typography>
                     <Typography>
-                        {t("litBy")}: {barrier.ownerId}
+                        {t("litBy")}: {tCharacterName(barrier.ownerId)}
                     </Typography>
                     <Typography sx={{ mt: 1.5, fontSize: 13, color: palette.surface.textMuted }}>
                         {t("barrierDescription")}

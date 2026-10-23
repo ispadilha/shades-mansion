@@ -1,9 +1,12 @@
-import React, { useId } from "react"
+import React from "react"
 import { Box } from "@mui/material"
 import { keyframes } from "@emotion/react"
 import type { DieSides } from "../../logic/rolls"
 import { usePalette } from "../../hooks/usePalette"
-import { DIE_GLOW } from "../../constants/rules"
+import { PixelImage } from "../ui"
+import { ROLL_ART_SIZE } from "../../assets"
+import { borderOf, emptyGrid, numberGrid, paint, paintGlow, polygonMask, stamp } from "../../assets/pixels"
+import { DIE_GLOW, GLOW_BANDS } from "../../constants/rules"
 
 const tumble = keyframes`
     0% { transform: rotate(0deg) scale(1) }
@@ -16,6 +19,17 @@ const land = keyframes`
     60% { transform: rotate(4deg) scale(0.95) }
     100% { transform: rotate(0deg) scale(1) }
 `
+
+// Os sólidos são desenhados num quadrado de 64, e viram pixels na grade das artes de rolagem
+const UNITS = 64
+
+// O brilho do d4: forte no meio, sumindo para fora
+const D4_GLOW_FADE = [
+    [0, 0.85],
+    [0.4, 0.6],
+    [0.75, 0.25],
+    [1, 0],
+] as const
 
 interface DieShape {
     // A silhueta do sólido, vista de cima
@@ -52,18 +66,41 @@ const SHAPES: Record<DieSides, DieShape> = {
 interface DieProps {
     sides: DieSides
     value: number
-    size?: number
+    // Quantos pixels da tela cada pixel do dado ocupa
+    scale: number
     spinning?: boolean
     // Defasagem do giro: com vários dados na mesa, eles caem juntos mas não em sincronia
     // perfeita, o que fica mais natural do que dois desenhos idênticos girando.
     spinOffsetMs?: number
 }
 
-export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = false, spinOffsetMs = 0 }) => {
+export const Die: React.FC<DieProps> = ({ sides, value, scale, spinning = false, spinOffsetMs = 0 }) => {
     const palette = usePalette()
     const shape = SHAPES[sides]
-    // Um id por dado em cena
-    const uid = useId().replace(/:/g, "")
+    const size = ROLL_ART_SIZE * scale
+
+    // O sólido em pixels: o corpo com a borda e, por cima, a face que se lê com a borda dela
+    const grid = emptyGrid(ROLL_ART_SIZE)
+    const outer = polygonMask(shape.outer, ROLL_ART_SIZE, UNITS)
+    const outerEdge = borderOf(outer)
+    paint(grid, outer, palette.die.face)
+    paint(grid, outerEdge, palette.die.faceEdge)
+    if (shape.inner) {
+        const inner = polygonMask(shape.inner, ROLL_ART_SIZE, UNITS)
+        paint(grid, inner, palette.die.inner)
+        paint(grid, borderOf(inner), palette.die.innerEdge)
+    } else {
+        // O d4 não tem face para cima, e sim um vértice bem no meio do triângulo.
+        // No lugar de uma face fica um brilho, por trás do número,
+        // que não passa da borda do sólido.
+        const body = outer.map((row, y) => row.map((on, x) => on && !outerEdge[y][x]))
+        paintGlow(grid, body, DIE_GLOW, UNITS, palette.die.inner, D4_GLOW_FADE, GLOW_BANDS)
+    }
+
+    // O número, centrado na altura de leitura de cada sólido
+    const number = numberGrid(value, palette.die.value, palette.die.valueStroke)
+    const top = Math.round((shape.textY / UNITS) * ROLL_ART_SIZE - number.length / 2)
+    stamp(grid, number, Math.round((ROLL_ART_SIZE - number[0].length) / 2), top)
 
     return (
         <Box
@@ -74,64 +111,7 @@ export const Die: React.FC<DieProps> = ({ sides, value, size = 120, spinning = f
                 animationDelay: `${-spinOffsetMs}ms`,
             }}
         >
-            <svg viewBox="0 0 64 64" width={size} height={size}>
-                {shape.inner === null && (
-                    <defs>
-                        <clipPath id={`die-face-${uid}`}>
-                            <polygon points={shape.outer} />
-                        </clipPath>
-                        <radialGradient id={`die-glow-${uid}`}>
-                            <stop offset="0%" stopColor={palette.die.inner} stopOpacity="0.85" />
-                            <stop offset="40%" stopColor={palette.die.inner} stopOpacity="0.6" />
-                            <stop offset="75%" stopColor={palette.die.inner} stopOpacity="0.25" />
-                            <stop offset="100%" stopColor={palette.die.inner} stopOpacity="0" />
-                        </radialGradient>
-                    </defs>
-                )}
-
-                <polygon
-                    points={shape.outer}
-                    fill={palette.die.face}
-                    stroke={palette.die.faceEdge}
-                    strokeWidth="2"
-                    strokeLinejoin="round"
-                />
-
-                {shape.inner ? (
-                    <polygon
-                        points={shape.inner}
-                        fill={palette.die.inner}
-                        stroke={palette.die.innerEdge}
-                        strokeWidth="1"
-                        strokeLinejoin="round"
-                    />
-                ) : (
-                    // O d4 não tem face para cima, e sim um vértice bem no meio do triângulo.
-                    // No lugar de uma face poligonal fica este brilho: difuso, sem ponto
-                    // nem contorno, no centro e por trás do número.
-                    <circle
-                        cx={DIE_GLOW.x}
-                        cy={DIE_GLOW.y}
-                        r={DIE_GLOW.radius}
-                        fill={`url(#die-glow-${uid})`}
-                        clipPath={`url(#die-face-${uid})`}
-                    />
-                )}
-
-                <text
-                    x="32"
-                    y={shape.textY}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fontFamily="Arial Black"
-                    fontSize="20"
-                    fill={palette.die.value}
-                    stroke={palette.die.valueStroke}
-                    strokeWidth="0.8"
-                >
-                    {value}
-                </text>
-            </svg>
+            <PixelImage grid={grid} pixel={scale} />
         </Box>
     )
 }

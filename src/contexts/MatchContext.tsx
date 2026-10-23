@@ -14,7 +14,7 @@ import type {
     TextKey,
 } from "../logic/types"
 import { controlledColorsFor } from "../logic/types"
-import type { ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
+import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { turnStageOf } from "../logic/turn"
 import { useAiTurn } from "../hooks/useAiTurn"
@@ -53,6 +53,7 @@ export interface MatchContextValue {
         fireBursts: FireBurst[]
         damagePopups: DamagePopup[]
         chargeRuns: ChargeRun[]
+        aims: Aim[]
         auras: CharacterAuras
         selectedId: string | null
         droppedItemId: string | null
@@ -177,6 +178,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const [damagePopups, setDamagePopups] = useState<DamagePopup[]>([])
     // Investidas já decididas, para a cena fazer a personagem correr em linha reta (ela ignora as repetidas)
     const [chargeRuns, setChargeRuns] = useState<ChargeRun[]>([])
+    // Viradas para o alvo de quem age, para a cena virar a personagem (ela ignora as repetidas)
+    const [aims, setAims] = useState<Aim[]>([])
     const [infoCharacter, setInfoCharacter] = useState<CharacterDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [infoBarrier, setInfoBarrier] = useState<Barrier | null>(null)
@@ -278,6 +281,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         setFireBursts,
         setDamagePopups,
         setChargeRuns,
+        setAims,
         setManipulatedId: focus.setManipulatedId,
         rolls,
         log,
@@ -448,6 +452,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             fireBursts,
             damagePopups,
             chargeRuns,
+            aims,
             auras,
             selectedId,
             droppedItemId: focus.droppedItem?.id ?? null,

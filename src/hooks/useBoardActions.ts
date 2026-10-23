@@ -254,6 +254,7 @@ export const useBoardActions = ({
 
         combat.resolveCharge({
             characterId: runner.id,
+            from: runner.position,
             to: destination,
             damage: active.damage,
             durationMs,
@@ -268,6 +269,7 @@ export const useBoardActions = ({
         const model = menu?.targetCharacter
         const active = skill.active
         if (!model || !active || !activeColor) return
+        combat.aimAt(active.characterId, model.position)
         log.usedTo(activeColor, active.characterId, "toMimic", model.id)
         skill.imitate(model)
         closeMenu()
@@ -276,6 +278,7 @@ export const useBoardActions = ({
     const useSkill = () => {
         if (!menu || !skill.active) return
         if (skill.active.skill.effect === "place") {
+            combat.aimAt(skill.active.characterId, menu.position)
             placeSkill(menu.position)
             // Ao usar habilidade em uma casa, a habilidade continua em uso
             // e a personagem, selecionada: só o menu se fecha, e pode

@@ -13,6 +13,10 @@ interface LanguageContextValue {
     t: (key: TextKey) => string
     tTeam: (color: CharacterColor) => string
     tCharacter: (key: CharacterKey, field: CharacterField) => string
+    // O nome da personagem pelo id dela, e o do item que a motiva pela chave dele.
+    // Os dois são a mesma chave ("dA"), que fica só no código: o jogador só vê os nomes.
+    tCharacterName: (id: string) => string
+    tItemName: (key: string) => string
     tRule: (key: RuleKey, field: LoreField) => string
 }
 
@@ -38,12 +42,16 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
         return texts_characters[key][field][value]
     }
 
+    const tCharacterName = (id: string): string => tCharacter(id as CharacterKey, "name")
+
+    const tItemName = (key: string): string => tCharacter(key as CharacterKey, "item")
+
     const tRule = (key: RuleKey, field: LoreField): string => {
         return texts_rules[key][field][value]
     }
 
     return (
-        <LanguageContext.Provider value={{ value, setValue, t, tTeam, tCharacter, tRule }}>
+        <LanguageContext.Provider value={{ value, setValue, t, tTeam, tCharacter, tCharacterName, tItemName, tRule }}>
             {children}
         </LanguageContext.Provider>
     )

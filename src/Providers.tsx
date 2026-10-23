@@ -1,5 +1,5 @@
 import React, { useMemo } from "react"
-import { ThemeProvider, createTheme } from "@mui/material"
+import { ThemeProvider, createTheme, type Shadows } from "@mui/material"
 import { LanguageProvider } from "./contexts/LanguageContext"
 import { GameProvider } from "./contexts/GameContext"
 import { SettingsProvider } from "./contexts/SettingsContext"
@@ -31,7 +31,20 @@ const MuiTheme: React.FC<MuiThemeProps> = ({ children }) => {
                     divider: palette.surface.border,
                     action: { hover: palette.surface.hover },
                 },
+                // Tudo em pixel, como as artes: cantos retos, nenhuma sombra, e a fonte quadrada
+                // que o CSS da página define. O espaço entre as letras fica no da própria fonte.
+                shape: { borderRadius: 0 },
+                shadows: Array(25).fill("none") as Shadows,
+                typography: { fontFamily: "inherit", allVariants: { letterSpacing: 0 } },
                 components: {
+                    // A onda que se espalha ao clicar é redonda e esfumaçada
+                    MuiButtonBase: { defaultProps: { disableRipple: true } },
+                    // O menu abre de uma vez, sem crescer: ampliado no meio do caminho, ele borraria.
+                    // Sem sombra, é a borda que o separa do que está atrás.
+                    MuiMenu: {
+                        defaultProps: { transitionDuration: 0 },
+                        styleOverrides: { paper: { border: `1px solid ${palette.surface.border}` } },
+                    },
                     // No modo escuro o MUI clareia superfícies elevadas (o menu de contexto,
                     // por exemplo). Sem desligar isso, elas não sairiam na cor exata da paleta.
                     MuiPaper: { styleOverrides: { root: { backgroundImage: "none" } } },
