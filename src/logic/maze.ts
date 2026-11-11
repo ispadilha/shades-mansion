@@ -24,6 +24,13 @@ export const isWall = (maze: Maze, x: number, y: number) => !inside(maze, x, y) 
 
 export const isWalkable = (maze: Maze, x: number, y: number) => inside(maze, x, y) && !maze.walls[y][x]
 
+// Casa de corredor: livre, e fora de qualquer sala
+export const isCorridor = (maze: Maze, cell: CharacterPosition) =>
+    isWalkable(maze, cell.x, cell.y) &&
+    !maze.rooms.some(
+        (room) => cell.x >= room.x && cell.x < room.x + room.size && cell.y >= room.y && cell.y < room.y + room.size,
+    )
+
 export const roomCenter = (room: MazeRoom): CharacterPosition => ({
     x: room.x + Math.floor(room.size / 2),
     y: room.y + Math.floor(room.size / 2),

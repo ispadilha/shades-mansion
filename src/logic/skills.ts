@@ -96,11 +96,6 @@ export const imitableSkillOf = (model: CharacterDefinition): Skill | null => {
     return skill.effect !== "mimic" ? skill : null
 }
 
-export const hasRangedAttackSkill = (type: CharacterType) => {
-    const skill = skillFor(type)
-    return skill.ranged && skill.effect === "strike"
-}
-
 // O valor de uma grandeza da habilidade no nível em que a personagem está
 const levelValue = <T>(values: readonly T[] | undefined, level: number): T | null => {
     if (!values || values.length === 0) return null

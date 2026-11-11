@@ -342,7 +342,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         turn.advanceTurn()
     }
 
-    useAiTurn({
+    // A personagem da IA que está usando a habilidade
+    const aiSkillUserId = useAiTurn({
         activeCharacter,
         isPlayerTurn,
         round: turn.round,
@@ -351,10 +352,11 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         setCharacters,
         items: items.items,
         inventories: items.inventories,
-        setInventories: items.setInventories,
         maze,
         barriers: barriers.all,
-        resolving: rolls.resolving,
+        raiseBarrier: barriers.raise,
+        rolls,
+        isManualRoll,
         endTurn,
         schedulePickup: items.schedulePickup,
         moveActionFor,
@@ -427,7 +429,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
 
     // Destaques das personagens ("auras"), desenhados tanto pelo tabuleiro quanto pelo HUD
     const activeCharacterId = activeCharacter?.id ?? null
-    const skillCharacterId = skill.active?.characterId ?? null
+    const skillCharacterId = skill.active?.characterId ?? aiSkillUserId
     const manipulatedId = focus.manipulatedId
     const auras = useMemo<CharacterAuras>(() => {
         const result: CharacterAuras = {}

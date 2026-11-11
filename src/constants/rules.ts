@@ -263,6 +263,58 @@ export const DISTINCT_INITIATIVE_TOTALS = INITIATIVE_DICE * INITIATIVE_DIE - INI
 export const ITEM_COPIES = 2
 
 // ---------------------------------------------------------------------------
+// IA
+// ---------------------------------------------------------------------------
+
+// As chances, em porcentagem, de a IA fazer cada coisa na vez de uma personagem.
+// Elas são sorteadas quando a vez começa,
+// e é por elas que a IA às vezes "se distrai", simulando um jogador de verdade.
+export const AI_CHANCES = {
+    // Promover as personagens inteiras cujo item o time guarda
+    shouldPromote: 80,
+    // Usar a habilidade antes de andar.
+    shouldUseSkillBeforeMovement: 50,
+    // Quem não usou a habilidade antes de andar, tem o sorteio de depois.
+    shouldUseSkillAfterMovement: 50,
+    // Entre os itens ao alcance, preferir os do próprio time aos dos outros times
+    shouldPrioritizeTeamItems: 60,
+    // Coletar item de personagem que já fugiu da mansão, que não serve para nada,
+    // quando não há item útil ao alcance
+    shouldCollectStrayItems: 20,
+    // Pesar a manipulação antes de fazê-la.
+    // Sem pesar, a IA manipula por impulso, e a personagem manipulada vai
+    // para uma casa qualquer: em 0 é sempre assim, e em 100, nunca.
+    shouldAssessManipulation: 90,
+    // Ir atrás das oponentes, em vez de andar para uma casa qualquer
+    shouldSeekOpponent: 75,
+}
+
+interface AiTactics {
+    shouldUseItemToCureAtVigor: number
+    chargeOpponentsPerAlly: number
+    fireOpponentsPerAlly: number
+    longShotTarget: "mostVigor" | "leastVigor"
+    itemSearchTurns: number
+    barrierThreatTurns: number
+}
+
+export const AI_TACTICS: AiTactics = {
+    // Com o vigor nesta porcentagem, ou abaixo, a IA gasta o item da personagem para revigorá-la.
+    // Acima dela, guarda o item para a promoção, e a personagem vai atrás da parceira de afinidade.
+    shouldUseItemToCureAtVigor: 25,
+    // Quantas oponentes a investida e o incêndio precisam atingir, no mínimo, para cada aliada que pegarem junto
+    chargeOpponentsPerAlly: 2,
+    fireOpponentsPerAlly: 2,
+    // Em quem o tiro longo mira: na oponente de mais vigor ("mostVigor"), ou na de menos ("leastVigor")
+    longShotTarget: "mostVigor",
+    // De quantas vezes de caminhada a IA vai buscar um item que serve para alguma coisa
+    itemSearchTurns: 2,
+    // A quantas vezes de caminhada uma oponente precisa estar de uma aliada (ou de um item) para a barreira
+    // se importar com ela
+    barrierThreatTurns: 2,
+}
+
+// ---------------------------------------------------------------------------
 // Ritmo da partida
 // ---------------------------------------------------------------------------
 
@@ -278,6 +330,9 @@ export const AI_STEP_MS = 1000
 
 // Espera antes de a IA passar a vez depois de já ter agido
 export const AI_END_TURN_MS = 600
+
+// Intervalo entre as barreiras que a IA acende, uma depois da outra
+export const AI_BARRIER_STEP_MS = 800
 
 // Entradas guardadas no histórico de jogadas
 export const MAX_LOG_ENTRIES = 100

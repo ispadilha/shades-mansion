@@ -5,6 +5,9 @@ export const randomInt = (min: number, max: number) => min + Math.floor(Math.ran
 
 export const pickRandom = <T>(list: T[]): T => list[Math.floor(Math.random() * list.length)]
 
+// Um sorteio que dá certo com esta chance, em porcentagem
+export const chance = (percent: number) => Math.random() * 100 < percent
+
 // Embaralha a própria lista (Fisher-Yates) e a devolve, para encadear com quem a criou
 export const shuffle = <T>(list: T[]): T[] => {
     for (let i = list.length - 1; i > 0; i--) {

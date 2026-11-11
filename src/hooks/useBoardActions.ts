@@ -5,13 +5,12 @@ import type { Maze } from "../logic/maze"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { attackArea } from "../logic/combat"
 import { chargeDurationMs, chargeVictims } from "../logic/charge"
-import { findApproachCell, pathLength, strikeWalkRange } from "../logic/movement"
+import { findApproachCell, strikeWalkRange, walkDurationMs } from "../logic/movement"
 import { blockedCellsFor } from "../logic/grid"
 import { damageOf } from "../logic/skills"
 import type { SkillFlow } from "./useSkillFlow"
 import type { CombatResolution } from "./useCombatResolution"
 import type { GameLog } from "./useGameLog"
-import { ACTION_SETTLE_MS, STEP_MS } from "../constants/rules"
 
 interface BoardActionsOptions {
     characters: CharacterDefinition[]
@@ -82,7 +81,7 @@ export const useBoardActions = ({
     // Quanto a personagem demora para chegar lá,
     // andando casa a casa e contornando o que estiver fechado para o time dela
     const travelTime = (character: CharacterDefinition, to: CharacterPosition) =>
-        pathLength(character.position, to, maze, blockedCellsFor(character.color, barriers, characters)) * STEP_MS + ACTION_SETTLE_MS
+        walkDurationMs(character, to, maze, barriers, characters)
 
     const finishAction = () => {
         setSelectedId(null)

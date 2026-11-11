@@ -9,7 +9,7 @@ interface BarriersOptions {
     characters: CharacterDefinition[]
     // Personagem da vez: quando a vez volta para quem acendeu, as barreiras dela se apagam
     activeCharacterId: string | null
-    // Cor de quem comanda a jogada, para o histórico
+    // Cor de quem comanda a jogada: a habilidade em uso só acende barreira na vez do jogador
     activeColor: CharacterColor | null
     skill: SkillFlow
     log: GameLog
@@ -23,6 +23,8 @@ export interface BarrierState {
     // Acende uma barreira na casa escolhida.
     // A primeira gasta a habilidade do turno, e a última encerra o uso sozinha.
     lightAt: (position: CharacterPosition) => void
+    // Acende uma barreira da personagem na casa, sem passar pela habilidade em uso: é assim que a IA acende as dela
+    raise: (owner: CharacterDefinition, position: CharacterPosition) => void
     // Apaga a barreira que uma personagem adversária conseguiu dissipar, e só ela
     dispel: (barrierId: string) => void
 }
@@ -56,11 +58,14 @@ export const useBarriers = ({ characters, activeCharacterId, activeColor, skill,
         setAll((prev) => barriersStillStanding(prev, characters))
     }, [characters])
 
+    const raise = (character: CharacterDefinition, position: CharacterPosition) => {
+        setAll((prev) => [...prev, litBarrier(character, position)])
+        log.usedTo(character.color, character.id, "toCreateBarrier")
+    }
+
     const lightAt = (position: CharacterPosition) => {
         if (!owner || !activeColor || usesLeft <= 0) return
-
-        setAll((prev) => [...prev, litBarrier(owner, position)])
-        log.usedTo(activeColor, owner.id, "toCreateBarrier")
+        raise(owner, position)
 
         // A primeira barreira passa o ponto sem volta: encerrar daqui em diante custa a
         // habilidade do turno. Se entrar e sair sem acender nenhuma, não.
@@ -75,5 +80,5 @@ export const useBarriers = ({ characters, activeCharacterId, activeColor, skill,
 
     const dispel = (barrierId: string) => setAll((prev) => prev.filter((barrier) => barrier.id !== barrierId))
 
-    return { all, usesLeft, lightAt, dispel }
+    return { all, usesLeft, lightAt, raise, dispel }
 }

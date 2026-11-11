@@ -6,11 +6,12 @@ import {
     ORTHOGONAL_STEPS,
     SURROUNDING_STEPS,
     atPosition,
+    blockedCellsFor,
     positionKey,
     touching,
     type BlockedCells,
 } from "./grid"
-import { statsFor } from "../constants/rules"
+import { ACTION_SETTLE_MS, STEP_MS, statsFor } from "../constants/rules"
 
 interface WalkNode {
     position: CharacterPosition
@@ -63,6 +64,20 @@ export function pathLength(
 ): number {
     if (from.x === to.x && from.y === to.y) return 0
     return walkFrom(from, maze, Infinity, blocked).get(positionKey(to))?.distance ?? Infinity
+}
+
+// Quanto a personagem leva para chegar a uma casa, andando casa a casa
+// e contornando o que está fechado para o time dela,
+// com a folga para ela parar antes do que vem depois (os dados do golpe, a coleta do item)
+export const walkDurationMs = (
+    character: CharacterDefinition,
+    to: CharacterPosition,
+    maze: Maze,
+    barriers: Barrier[],
+    characters: CharacterDefinition[],
+) => {
+    const blocked = blockedCellsFor(character.color, barriers, characters)
+    return pathLength(character.position, to, maze, blocked) * STEP_MS + ACTION_SETTLE_MS
 }
 
 // Distância andando de "origin" até cada casa livre alcançável, indexada por "positionKey".

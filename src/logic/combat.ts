@@ -3,7 +3,7 @@ import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
 import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
-import { skillAreaSideOf, skillFor, type Skill } from "./skills"
+import { skillAreaSideOf, type Skill } from "./skills"
 import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, GUARDED_DAMAGE_SHARE, SUCCESS_FACE, statsFor } from "../constants/rules"
 
 export interface CoinCheck {
@@ -243,22 +243,4 @@ export interface Aim {
     characterId: string
     // Uma casa, ou o id de outra personagem: aí a virada é para a casa em que ela estiver
     target: CharacterPosition | string
-}
-
-// Fogo amigo: quem a incendiária pegaria de tabela ao mirar em "target" sem poder atacar.
-// São as aliadas dela, ela mesma inclusive, e, sob manipulação, as personagens de quem a manipula.
-// A IA usa isso para não queimar quem não deve.
-export function friendlyFire(
-    attacker: CharacterDefinition,
-    target: CharacterDefinition,
-    characters: CharacterDefinition[],
-    maze: Maze,
-    commander: CharacterColor,
-    barriers: Barrier[],
-): CharacterDefinition[] {
-    const area = attackArea(attacker, skillFor(attacker.type), target.position)
-    if (!area) return []
-    // A conta da IA precisa ver o mesmo fogo que vai acontecer, barreiras recortadas
-    const burning = areaCells(maze, area.center, area.side, { color: attacker.color, barriers })
-    return charactersInCells(characters, burning).filter((p) => !mayAttack(attacker, p, commander))
 }
