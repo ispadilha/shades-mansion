@@ -1,4 +1,5 @@
 import type { MotivationItemKey } from "./types"
+import type { PendingAttack } from "./combat"
 
 // As rivalidades: cada personagem tem uma rival, sempre de outro time,
 // e as duplas são "irregulares": não seguem tipos de personagem, e sim lore.
@@ -16,10 +17,14 @@ const RIVALRIES: Array<[MotivationItemKey, MotivationItemKey]> = [
     ["gE", "dE"], // Criptídeo e Monstro
 ]
 
-export const rivalOf = (characterId: string): string | null => {
-    const pair = RIVALRIES.find(([one, two]) => one === characterId || two === characterId)
-    if (!pair) return null
-    return pair[0] === characterId ? pair[1] : pair[0]
+// A chave da rival de uma personagem, pela chave dela.
+export const rivalOf = (key: MotivationItemKey): MotivationItemKey => {
+    const [one, two] = RIVALRIES.find((pair) => pair.includes(key))!
+    return one === key ? two : one
 }
 
-export const areRivals = (characterId: string, otherId: string) => rivalOf(characterId) === otherId
+export const areRivals = (characterId: string, otherId: string) => rivalOf(characterId as MotivationItemKey) === otherId
+
+// Só o golpe corpo a corpo de uma rival na outra desperta a rivalidade. A distância, não.
+export const awakensRivalry = (attack: PendingAttack, defenderId: string) =>
+    attack.melee && areRivals(attack.attackerId, defenderId)

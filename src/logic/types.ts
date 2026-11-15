@@ -96,7 +96,7 @@ export const keyCharacterType = (key: MotivationItemKey): CharacterType => key[1
 export const characterKey = (color: CharacterColor, type: CharacterType): MotivationItemKey =>
     `${COLOR_PREFIXES[color]}${type}`
 
-export const ALL_TEAM_COLORS: CharacterColor[] = ["light", "dark", "gray"]
+export const ALL_TEAM_COLORS: CharacterColor[] = ["light", "gray", "dark"]
 
 // O que o jogador escolhe na tela de seleção: comandar um time, todos eles
 // (multi-jogador local) ou nenhum (assistir a uma partida de IA).
@@ -122,8 +122,9 @@ export type TextKey = keyof typeof texts_ui
 
 // Verbetes da biblioteca (personagens e regras).
 // Cada um tem um nome curto e uma descrição longa.
-// O de personagem é uma ficha: o tipo de personagem, a história, a habilidade e a afinidade.
+// O de personagem é uma ficha: o item, o tipo de personagem, a história e a habilidade.
+// A parceira de afinidade e a rival não são texto: saem das duplas, em `logic/affinity.ts` e `logic/rivalry.ts`.
 export type CharacterKey = keyof typeof texts_characters
 export type RuleKey = keyof typeof texts_rules
 export type LoreField = "name" | "description"
-export type CharacterField = LoreField | "item" | "type" | "skill" | "affinity"
+export type CharacterField = LoreField | "item" | "type" | "skill"

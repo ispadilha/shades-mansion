@@ -1,15 +1,5 @@
 import { useContext } from "react"
 import GameContext from "../contexts/GameContext"
 
-export const useGame = () => {
-    const context = useContext(GameContext)
-
-    const selection = context.selection
-    const setSelection = context.setSelection
-    const match = context.match
-    const setMatch = context.setMatch
-    const winner = context.winner
-    const setWinner = context.setWinner
-
-    return { selection, setSelection, match, setMatch, winner, setWinner }
-}
+// A partida escolhida: o time do jogador, a montagem vinda da iniciativa e quem venceu
+export const useGame = () => useContext(GameContext)

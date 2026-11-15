@@ -1,7 +1,85 @@
 export const texts_ui = {
+    // ---------------------------------------------------------------------------
+    // Menus e navegação
+    // ---------------------------------------------------------------------------
+
+    startGame: {
+        enUS: "Start game",
+        ptBR: "Iniciar jogo",
+    },
+
+    library: {
+        enUS: "Library",
+        ptBR: "Biblioteca",
+    },
+
+    options: {
+        enUS: "Options",
+        ptBR: "Opções",
+    },
+
+    characters: {
+        enUS: "Characters",
+        ptBR: "Personagens",
+    },
+
+    rules: {
+        enUS: "Rules",
+        ptBR: "Regras",
+    },
+
+    chooseTeams: {
+        enUS: "Choose team(s)",
+        ptBR: "Escolha de time(s)",
+    },
+
+    allTeams: {
+        enUS: "All (local multiplayer)",
+        ptBR: "Todos (multi-jogador local)",
+    },
+
+    noTeam: {
+        enUS: "None (spectate AI match)",
+        ptBR: "Nenhum (assistir a uma partida de IA)",
+    },
+
+    playAgain: {
+        enUS: "Play again",
+        ptBR: "Jogar novamente",
+    },
+
+    goBack: {
+        enUS: "Go back",
+        ptBR: "Voltar",
+    },
+
+    close: {
+        enUS: "Close",
+        ptBR: "Fechar",
+    },
+
+    gotIt: {
+        enUS: "Got it",
+        ptBR: "Entendi",
+    },
+
+    // ---------------------------------------------------------------------------
+    // Opções
+    // ---------------------------------------------------------------------------
+
     languageSettings: {
         enUS: "Language",
         ptBR: "Idioma",
+    },
+
+    enUS: {
+        enUS: "English (US)",
+        ptBR: "Inglês (EUA)",
+    },
+
+    ptBR: {
+        enUS: "Portuguese (BR)",
+        ptBR: "Português (BR)",
     },
 
     colorSettings: {
@@ -29,50 +107,34 @@ export const texts_ui = {
         ptBR: "Do sistema",
     },
 
-    enUS: {
-        enUS: "English (US)",
-        ptBR: "Inglês (EUA)",
+    mazeSettings: {
+        enUS: "Maze",
+        ptBR: "Labirinto",
     },
 
-    ptBR: {
-        enUS: "Portuguese (BR)",
-        ptBR: "Português (BR)",
+    boardSide: {
+        enUS: "Board side",
+        ptBR: "Lado do tabuleiro",
     },
 
-    options: {
-        enUS: "Options",
-        ptBR: "Opções",
+    minRoomSide: {
+        enUS: "Minimum room side",
+        ptBR: "Lado da sala mínima",
     },
 
-    startGame: {
-        enUS: "Start game",
-        ptBR: "Iniciar jogo",
+    maxRoomSide: {
+        enUS: "Maximum room side",
+        ptBR: "Lado da sala máxima",
     },
 
-    library: {
-        enUS: "Library",
-        ptBR: "Biblioteca",
+    cells: {
+        enUS: "cells",
+        ptBR: "casas",
     },
 
-    characters: {
-        enUS: "Characters",
-        ptBR: "Personagens",
-    },
-
-    rules: {
-        enUS: "Rules",
-        ptBR: "Regras",
-    },
-
-    chooseTeams: {
-        enUS: "Choose team(s)",
-        ptBR: "Escolha de time(s)",
-    },
-
-    goBack: {
-        enUS: "Go back",
-        ptBR: "Voltar",
-    },
+    // ---------------------------------------------------------------------------
+    // Times
+    // ---------------------------------------------------------------------------
 
     team: {
         enUS: "Team",
@@ -94,9 +156,131 @@ export const texts_ui = {
         ptBR: "Escuro",
     },
 
+    lightWon: {
+        enUS: "Light side won!",
+        ptBR: "Lado claro venceu!",
+    },
+
+    grayWon: {
+        enUS: "Gray side won!",
+        ptBR: "Lado cinza venceu!",
+    },
+
+    darkWon: {
+        enUS: "Dark side won!",
+        ptBR: "Lado escuro venceu!",
+    },
+
+    // ---------------------------------------------------------------------------
+    // Iniciativa
+    // ---------------------------------------------------------------------------
+
+    initiativeTitle: {
+        enUS: "Initiative",
+        ptBR: "Iniciativa",
+    },
+
+    initiativeSubtitle: {
+        enUS: "Every character rolls the initiative dice, and the highest total acts first",
+        ptBR: "Cada personagem rola os dados de iniciativa, e o maior total age primeiro",
+    },
+
+    initiativeRoll: {
+        enUS: "Initiative roll",
+        ptBR: "Rolagem de iniciativa",
+    },
+
+    repeatedRoll: {
+        enUS: "Repeated — roll again!",
+        ptBR: "Repetido — rolar de novo!",
+    },
+
+    skipRolls: {
+        enUS: "Skip rolls",
+        ptBR: "Pular rolagens",
+    },
+
+    turnOrderReady: {
+        enUS: "Turn order set",
+        ptBR: "Ordem dos turnos definida",
+    },
+
+    preparingMansion: {
+        enUS: "Preparing the mansion...",
+        ptBR: "Preparando a mansão...",
+    },
+
+    enterMansion: {
+        enUS: "Enter the mansion",
+        ptBR: "Entrar na mansão",
+    },
+
+    // ---------------------------------------------------------------------------
+    // A vez e o HUD
+    // ---------------------------------------------------------------------------
+
+    round: {
+        enUS: "Round",
+        ptBR: "Rodada",
+    },
+
+    turn: {
+        enUS: "Turn",
+        ptBR: "Turno",
+    },
+
+    yourTurn: {
+        enUS: "Your turn!",
+        ptBR: "Seu turno!",
+    },
+
+    alreadyMoved: {
+        enUS: "Already moved",
+        ptBR: "Já se moveu",
+    },
+
+    alreadyActed: {
+        enUS: "Already acted",
+        ptBR: "Já agiu",
+    },
+
+    wait: {
+        enUS: "Wait...",
+        ptBR: "Aguarde...",
+    },
+
+    spectating: {
+        enUS: "Spectating...",
+        ptBR: "Assistindo...",
+    },
+
+    endTurn: {
+        enUS: "End Turn",
+        ptBR: "Terminar turno",
+    },
+
+    quit: {
+        enUS: "Quit",
+        ptBR: "Sair",
+    },
+
+    hintSelectCharacter: {
+        enUS: "Left click to select a character. Right click to choose an action, if selected character is on its turn.",
+        ptBR: "Clique esquerdo para selecionar uma personagem. Clique direito para escolher uma ação, se a personagem selecionada estiver em seu turno.",
+    },
+
+    // ---------------------------------------------------------------------------
+    // O menu do clique direito no tabuleiro
+    // ---------------------------------------------------------------------------
+
     move: {
         enUS: "Move",
         ptBR: "Mover",
+    },
+
+    collect: {
+        enUS: "Collect",
+        ptBR: "Coletar",
     },
 
     attack: {
@@ -109,30 +293,29 @@ export const texts_ui = {
         ptBR: "Dissipar",
     },
 
-    collect: {
-        enUS: "Collect",
-        ptBR: "Coletar",
-    },
-
     examine: {
         enUS: "Examine",
         ptBR: "Examinar",
     },
 
-    itemMotivates: {
-        enUS: "Motivates",
-        ptBR: "Motiva",
+    characterInfo: {
+        enUS: "Character info",
+        ptBR: "Informações da personagem",
     },
 
-    itemDescOwn: {
-        enUS: "Reinvigorates this character of your team, or promotes it.",
-        ptBR: "Revigora essa personagem do seu time, ou a promove.",
+    itemInfo: {
+        enUS: "Item info",
+        ptBR: "Informações do item",
     },
 
-    itemDescOther: {
-        enUS: "Manipulates this character of another team: forces one action, move or attack. Single use.",
-        ptBR: "Manipula essa personagem de outro time: força uma ação, mover ou atacar. Uso único.",
+    barrierInfo: {
+        enUS: "Barrier info",
+        ptBR: "Informações da barreira",
     },
+
+    // ---------------------------------------------------------------------------
+    // A ficha de personagem
+    // ---------------------------------------------------------------------------
 
     level: {
         enUS: "Level",
@@ -219,26 +402,6 @@ export const texts_ui = {
         ptBR: "Aparo",
     },
 
-    toDodge: {
-        enUS: "to dodge",
-        ptBR: "para esquivar",
-    },
-
-    toGuard: {
-        enUS: "to guard",
-        ptBR: "para aparar",
-    },
-
-    cannotDodge: {
-        enUS: "cannot dodge",
-        ptBR: "não desvia",
-    },
-
-    skills: {
-        enUS: "Skills",
-        ptBR: "Habilidades",
-    },
-
     skill: {
         enUS: "Skill",
         ptBR: "Habilidade",
@@ -259,14 +422,57 @@ export const texts_ui = {
         ptBR: "Dano da habilidade",
     },
 
-    skillDistanceRoll: {
-        enUS: "distance roll",
-        ptBR: "rolagem de distância",
+    // ---------------------------------------------------------------------------
+    // Itens e inventário
+    // ---------------------------------------------------------------------------
+
+    inventory: {
+        enUS: "Items",
+        ptBR: "Itens",
     },
 
-    skillDamageRoll: {
-        enUS: "damage roll",
-        ptBR: "rolagem de dano",
+    noItems: {
+        enUS: "No items in the inventory.",
+        ptBR: "Nenhum item no inventário.",
+    },
+
+    itemMotivates: {
+        enUS: "Motivates",
+        ptBR: "Motiva",
+    },
+
+    itemDescOwn: {
+        enUS: "Reinvigorates this character of your team, or promotes it.",
+        ptBR: "Revigora essa personagem do seu time, ou a promove.",
+    },
+
+    itemDescOther: {
+        enUS: "Manipulates this character of another team: forces one action, move or attack. Single use.",
+        ptBR: "Manipula essa personagem de outro time: força uma ação, mover ou atacar. Uso único.",
+    },
+
+    use: {
+        enUS: "Use",
+        ptBR: "Usar",
+    },
+
+    reinvigorate: {
+        enUS: "Reinvigorate",
+        ptBR: "Revigorar",
+    },
+
+    promote: {
+        enUS: "Promote",
+        ptBR: "Promover",
+    },
+
+    // ---------------------------------------------------------------------------
+    // Habilidades: o que vale para todas
+    // ---------------------------------------------------------------------------
+
+    skills: {
+        enUS: "Skills",
+        ptBR: "Habilidades",
     },
 
     usingSkill: {
@@ -284,10 +490,28 @@ export const texts_ui = {
         ptBR: "Encerrar",
     },
 
+    skillDistanceRoll: {
+        enUS: "distance roll",
+        ptBR: "rolagem de distância",
+    },
+
+    skillDamageRoll: {
+        enUS: "damage roll",
+        ptBR: "rolagem de dano",
+    },
+
+    // ---------------------------------------------------------------------------
+    // Habilidade do tipo A: movimento extra
+    // ---------------------------------------------------------------------------
+
     skillExtraMove: {
         enUS: "Extra move",
         ptBR: "Movimento extra",
     },
+
+    // ---------------------------------------------------------------------------
+    // Habilidade do tipo B: barreiras paranormais
+    // ---------------------------------------------------------------------------
 
     skillBarrier: {
         enUS: "Paranormal Barriers",
@@ -369,6 +593,10 @@ export const texts_ui = {
         ptBR: "não conseguiu dissipar a barreira de",
     },
 
+    // ---------------------------------------------------------------------------
+    // Habilidade do tipo C: investida
+    // ---------------------------------------------------------------------------
+
     skillCharge: {
         enUS: "Charge",
         ptBR: "Investida",
@@ -379,6 +607,10 @@ export const texts_ui = {
         ptBR: "para uma investida",
     },
 
+    // ---------------------------------------------------------------------------
+    // Habilidade do tipo D: tiro longo
+    // ---------------------------------------------------------------------------
+
     skillLongShot: {
         enUS: "Long shot",
         ptBR: "Tiro longo",
@@ -388,6 +620,10 @@ export const texts_ui = {
         enUS: "Shoot",
         ptBR: "Atirar",
     },
+
+    // ---------------------------------------------------------------------------
+    // Habilidade do tipo E: imitação
+    // ---------------------------------------------------------------------------
 
     skillMimic: {
         enUS: "Mimic",
@@ -404,6 +640,10 @@ export const texts_ui = {
         ptBR: "para imitar",
     },
 
+    // ---------------------------------------------------------------------------
+    // Habilidade do tipo F: incêndio
+    // ---------------------------------------------------------------------------
+
     skillFire: {
         enUS: "Fire",
         ptBR: "Incêndio",
@@ -419,249 +659,13 @@ export const texts_ui = {
         ptBR: "para incendiar uma área",
     },
 
-    hintSelectCharacter: {
-        enUS: "Left click to select a character. Right click to choose an action, if selected character is on its turn.",
-        ptBR: "Clique esquerdo para selecionar uma personagem. Clique direito para escolher uma ação, se a personagem selecionada estiver em seu turno.",
-    },
+    // ---------------------------------------------------------------------------
+    // As rolagens do golpe: dano e defesa
+    // ---------------------------------------------------------------------------
 
-    gotIt: {
-        enUS: "Got it",
-        ptBR: "Entendi",
-    },
-
-    characterInfo: {
-        enUS: "Character info",
-        ptBR: "Informações da personagem",
-    },
-
-    itemInfo: {
-        enUS: "Item info",
-        ptBR: "Informações do item",
-    },
-
-    barrierInfo: {
-        enUS: "Barrier info",
-        ptBR: "Informações da barreira",
-    },
-
-    turn: {
-        enUS: "Turn",
-        ptBR: "Turno",
-    },
-
-    yourTurn: {
-        enUS: "Your turn!",
-        ptBR: "Seu turno!",
-    },
-
-    wait: {
-        enUS: "Wait...",
-        ptBR: "Aguarde...",
-    },
-
-    endTurn: {
-        enUS: "End Turn",
-        ptBR: "Terminar turno",
-    },
-
-    quit: {
-        enUS: "Quit",
-        ptBR: "Sair",
-    },
-
-    lightWon: {
-        enUS: "Light side won!",
-        ptBR: "Lado claro venceu!",
-    },
-
-    darkWon: {
-        enUS: "Dark side won!",
-        ptBR: "Lado escuro venceu!",
-    },
-
-    grayWon: {
-        enUS: "Gray side won!",
-        ptBR: "Lado cinza venceu!",
-    },
-
-    playAgain: {
-        enUS: "Play again",
-        ptBR: "Jogar novamente",
-    },
-
-    inventory: {
-        enUS: "Items",
-        ptBR: "Itens",
-    },
-
-    reinvigorate: {
-        enUS: "Reinvigorate",
-        ptBR: "Revigorar",
-    },
-
-    promote: {
-        enUS: "Promote",
-        ptBR: "Promover",
-    },
-
-    use: {
-        enUS: "Use",
-        ptBR: "Usar",
-    },
-
-    close: {
-        enUS: "Close",
-        ptBR: "Fechar",
-    },
-
-    noItems: {
-        enUS: "No items in the inventory.",
-        ptBR: "Nenhum item no inventário.",
-    },
-
-    verbUsed: {
-        enUS: "used",
-        ptBR: "usou",
-    },
-
-    verbMoved: {
-        enUS: "moved",
-        ptBR: "moveu",
-    },
-
-    verbManipulated: {
-        enUS: "manipulated",
-        ptBR: "manipulou",
-    },
-
-    verbPromoted: {
-        enUS: "promoted",
-        ptBR: "promoveu",
-    },
-
-    toLevel: {
-        enUS: "to level",
-        ptBR: "ao nível",
-    },
-
-    itemFellBack: {
-        enUS: "fell back on the floor",
-        ptBR: "caiu de volta no chão",
-    },
-
-    verbReinvigorated: {
-        enUS: "reinvigorated",
-        ptBR: "revigorou",
-    },
-
-    toMove: {
-        enUS: "to move",
-        ptBR: "para mover",
-    },
-
-    toAttack: {
-        enUS: "to attack",
-        ptBR: "para atacar",
-    },
-
-    toCollectItem: {
-        enUS: "to collect item",
-        ptBR: "para coletar o item",
-    },
-
-    wasEliminated: {
-        enUS: "fled the mansion",
-        ptBR: "fugiu da mansão",
-    },
-
-    wasDefeated: {
-        enUS: "abandoned the mansion",
-        ptBR: "abandonou a mansão",
-    },
-
-    mazeSettings: {
-        enUS: "Maze",
-        ptBR: "Labirinto",
-    },
-
-    boardSide: {
-        enUS: "Board side",
-        ptBR: "Lado do tabuleiro",
-    },
-
-    minRoomSide: {
-        enUS: "Minimum room side",
-        ptBR: "Lado da sala mínima",
-    },
-
-    maxRoomSide: {
-        enUS: "Maximum room side",
-        ptBR: "Lado da sala máxima",
-    },
-
-    cells: {
-        enUS: "cells",
-        ptBR: "casas",
-    },
-
-    allTeams: {
-        enUS: "All (local multiplayer)",
-        ptBR: "Todos (multi-jogador local)",
-    },
-
-    noTeam: {
-        enUS: "None (spectate AI match)",
-        ptBR: "Nenhum (assistir a uma partida de IA)",
-    },
-
-    spectating: {
-        enUS: "Spectating...",
-        ptBR: "Assistindo...",
-    },
-
-    initiativeTitle: {
-        enUS: "Initiative",
-        ptBR: "Iniciativa",
-    },
-
-    initiativeSubtitle: {
-        enUS: "Every character rolls the initiative dice, and the highest total acts first",
-        ptBR: "Cada personagem rola os dados de iniciativa, e o maior total age primeiro",
-    },
-
-    initiativeRoll: {
-        enUS: "Initiative roll",
-        ptBR: "Rolagem de iniciativa",
-    },
-
-    repeatedRoll: {
-        enUS: "Repeated — roll again!",
-        ptBR: "Repetido — rolar de novo!",
-    },
-
-    turnOrderReady: {
-        enUS: "Turn order set",
-        ptBR: "Ordem dos turnos definida",
-    },
-
-    skipRolls: {
-        enUS: "Skip rolls",
-        ptBR: "Pular rolagens",
-    },
-
-    preparingMansion: {
-        enUS: "Preparing the mansion...",
-        ptBR: "Preparando a mansão...",
-    },
-
-    enterMansion: {
-        enUS: "Enter the mansion",
-        ptBR: "Entrar na mansão",
-    },
-
-    round: {
-        enUS: "Round",
-        ptBR: "Rodada",
+    clickToRoll: {
+        enUS: "Click to roll",
+        ptBR: "Clique para rolar",
     },
 
     damageRoll: {
@@ -677,6 +681,21 @@ export const texts_ui = {
     defenseRoll: {
         enUS: "Defense roll",
         ptBR: "Rolagem de defesa",
+    },
+
+    toDodge: {
+        enUS: "to dodge",
+        ptBR: "para esquivar",
+    },
+
+    toGuard: {
+        enUS: "to guard",
+        ptBR: "para aparar",
+    },
+
+    cannotDodge: {
+        enUS: "cannot dodge",
+        ptBR: "não desvia",
     },
 
     defenseDodge: {
@@ -704,35 +723,9 @@ export const texts_ui = {
         ptBR: "Coroa",
     },
 
-    verbHit: {
-        enUS: "hit",
-        ptBR: "acertou",
-    },
-
-    verbGuarded: {
-        enUS: "blocked",
-        ptBR: "aparou o golpe de",
-    },
-
-    verbDodged: {
-        enUS: "dodged",
-        ptBR: "desviou de",
-    },
-
-    alreadyMoved: {
-        enUS: "Already moved",
-        ptBR: "Já se moveu",
-    },
-
-    alreadyActed: {
-        enUS: "Already acted",
-        ptBR: "Já agiu",
-    },
-
-    clickToRoll: {
-        enUS: "Click to roll",
-        ptBR: "Clique para rolar",
-    },
+    // ---------------------------------------------------------------------------
+    // Manipulação
+    // ---------------------------------------------------------------------------
 
     manipulationRoll: {
         enUS: "Manipulation roll",
@@ -774,10 +767,9 @@ export const texts_ui = {
         ptBR: "resistiu à manipulação",
     },
 
-    and: {
-        enUS: "and",
-        ptBR: "e",
-    },
+    // ---------------------------------------------------------------------------
+    // Afinidade
+    // ---------------------------------------------------------------------------
 
     affinity: {
         enUS: "Affinity",
@@ -798,6 +790,10 @@ export const texts_ui = {
         enUS: "recovered vigor through affinity",
         ptBR: "revigoraram pela afinidade",
     },
+
+    // ---------------------------------------------------------------------------
+    // Rivalidade
+    // ---------------------------------------------------------------------------
 
     rivalry: {
         enUS: "Rivalry",
@@ -823,4 +819,89 @@ export const texts_ui = {
         enUS: "fought back against",
         ptBR: "revidou o golpe de",
     },
+
+    // ---------------------------------------------------------------------------
+    // O histórico de jogadas
+    // ---------------------------------------------------------------------------
+
+    verbUsed: {
+        enUS: "used",
+        ptBR: "usou",
+    },
+
+    verbMoved: {
+        enUS: "moved",
+        ptBR: "moveu",
+    },
+
+    verbManipulated: {
+        enUS: "manipulated",
+        ptBR: "manipulou",
+    },
+
+    verbReinvigorated: {
+        enUS: "reinvigorated",
+        ptBR: "revigorou",
+    },
+
+    verbPromoted: {
+        enUS: "promoted",
+        ptBR: "promoveu",
+    },
+
+    toLevel: {
+        enUS: "to level",
+        ptBR: "ao nível",
+    },
+
+    toMove: {
+        enUS: "to move",
+        ptBR: "para mover",
+    },
+
+    toAttack: {
+        enUS: "to attack",
+        ptBR: "para atacar",
+    },
+
+    toCollectItem: {
+        enUS: "to collect item",
+        ptBR: "para coletar o item",
+    },
+
+    itemFellBack: {
+        enUS: "fell back on the floor",
+        ptBR: "caiu de volta no chão",
+    },
+
+    verbHit: {
+        enUS: "hit",
+        ptBR: "acertou",
+    },
+
+    verbGuarded: {
+        enUS: "blocked",
+        ptBR: "aparou o golpe de",
+    },
+
+    verbDodged: {
+        enUS: "dodged",
+        ptBR: "desviou de",
+    },
+
+    wasEliminated: {
+        enUS: "fled the mansion",
+        ptBR: "fugiu da mansão",
+    },
+
+    wasDefeated: {
+        enUS: "abandoned the mansion",
+        ptBR: "abandonou a mansão",
+    },
+
+    and: {
+        enUS: "and",
+        ptBR: "e",
+    },
+
 }

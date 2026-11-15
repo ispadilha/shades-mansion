@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import type { Barrier, MotivationItem, CharacterColor, CharacterDefinition, CharacterPosition, RangeKind } from "../logic/types"
 import type { Maze } from "../logic/maze"
-import { lineOfFire, meleeAttackCells, reachableCells } from "../logic/movement"
+import { meleeAttackCells, moveRangeOf, reachableCells } from "../logic/movement"
+import { lineOfFire } from "../logic/sight"
 import { barrierCells } from "../logic/barriers"
 import { chargeCells, chargeVictims } from "../logic/charge"
 import { areaCells, mayAttack } from "../logic/combat"
 import { atPosition, blockedCellsFor, positionKey } from "../logic/grid"
 import { imitableSkillOf, reachOf, skillFor, skillMaxRangeOf, type SkillReach } from "../logic/skills"
-import { statsFor } from "../constants/rules"
 
 interface RangeCells {
     // Casas em que a personagem selecionada pode terminar o movimento
@@ -102,7 +102,7 @@ export const useHighlightedCells = (
         // Até onde a personagem anda e golpeia com a ação comum.
         // Corpo-a-corpo: uma casa a mais que o movimento, contornando as paredes.
         const basicCells = (): RangeCells => {
-            const { moveRange } = statsFor(character.type, character.level)
+            const moveRange = moveRangeOf(character)
             return {
                 move: reachableCells(character, characters, maze, moveRange, blocked),
                 attack: strikable(meleeAttackCells(character, characters, items, maze, moveRange, blocked), true),

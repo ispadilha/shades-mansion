@@ -9,13 +9,13 @@ import type {
 import { itemKeyColor } from "./types"
 import type { Maze } from "./maze"
 import { blockedCellsFor, includesPosition, manhattan, positionKey, samePosition, touching } from "./grid"
-import { distanceMap, findApproachCell, reachableCells } from "./movement"
+import { distanceMap, findApproachCell, moveRangeOf, reachableCells } from "./movement"
 import { mayAttack, type AttackArea } from "./combat"
 import { isProtected } from "./barriers"
 import { affinityPartnerOf } from "./affinity"
 import { itemUseFor, promoted, reinvigorated, type ItemUse } from "./items"
 import { chance, pickRandom } from "./random"
-import { AI_CHANCES, AI_TACTICS, statsFor } from "../constants/rules"
+import { AI_CHANCES, AI_TACTICS } from "../constants/rules"
 
 // O tabuleiro como a IA o lê para decidir
 export interface AiBoard {
@@ -53,8 +53,6 @@ export interface AiMemory {
 // O elemento de menor medida. A lista não pode estar vazia.
 export const minBy = <T>(list: T[], measure: (entry: T) => number): T =>
     list.reduce((best, entry) => (measure(entry) < measure(best) ? entry : best))
-
-export const moveRangeOf = (character: CharacterDefinition) => statsFor(character.type, character.level).moveRange
 
 export const opponentsOf = (character: CharacterDefinition, characters: CharacterDefinition[]) =>
     characters.filter((p) => mayAttack(character, p, character.color))

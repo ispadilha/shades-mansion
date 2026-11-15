@@ -10,7 +10,8 @@ import {
     samePosition,
 } from "./grid"
 import { isCorridor } from "./maze"
-import { distanceMap, findPath, lineOfFire } from "./movement"
+import { distanceMap, findPath, moveRangeOf } from "./movement"
+import { lineOfFire } from "./sight"
 import { areaCells, charactersInCells, mayAttack } from "./combat"
 import { barrierCells, isProtected, litBarrier } from "./barriers"
 import { chargeCells, chargeVictims } from "./charge"
@@ -21,7 +22,6 @@ import {
     itemWorth,
     meleeOptions,
     minBy,
-    moveRangeOf,
     movementGoals,
     opponentsOf,
     pickMeleeTarget,

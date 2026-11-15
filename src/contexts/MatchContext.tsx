@@ -14,7 +14,7 @@ import type {
     TextKey,
 } from "../logic/types"
 import { controlledColorsFor } from "../logic/types"
-import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../logic/combat"
+import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../logic/boardEffects"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { turnStageOf } from "../logic/turn"
 import { useAiTurn } from "../hooks/useAiTurn"
@@ -26,12 +26,15 @@ import { useGame } from "../hooks/useGame"
 import { useGameLog } from "../hooks/useGameLog"
 import { useHighlightedCells } from "../hooks/useHighlightedCells"
 import { useAffinity } from "../hooks/useAffinity"
+import { useAuras } from "../hooks/useAuras"
+import { useBoardEffects } from "../hooks/useBoardEffects"
 import { useBarriers } from "../hooks/useBarriers"
 import { useBoardInput } from "../hooks/useBoardInput"
 import { useIdleHint, type IdleHint } from "../hooks/useIdleHint"
 import { useItemActions, type Manipulation } from "../hooks/useItemActions"
 import { useMatchFocus } from "../hooks/useMatchFocus"
 import { useMatchItems } from "../hooks/useMatchItems"
+import { useRivalry } from "../hooks/useRivalry"
 import { useRolls, type RollQueue } from "../hooks/useRolls"
 import { useSkillFlow, type SkillFlow } from "../hooks/useSkillFlow"
 import { useTurnFlow } from "../hooks/useTurnFlow"
@@ -172,14 +175,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         resolving: rolls.resolving,
     })
 
-    // Explosões de fogo já resolvidas, para a cena animar (o tabuleiro ignora as repetidas)
-    const [fireBursts, setFireBursts] = useState<FireBurst[]>([])
-    // Números de dano já resolvidos, para a cena mostrá-los subindo (ela ignora os repetidos)
-    const [damagePopups, setDamagePopups] = useState<DamagePopup[]>([])
-    // Investidas já decididas, para a cena fazer a personagem correr em linha reta (ela ignora as repetidas)
-    const [chargeRuns, setChargeRuns] = useState<ChargeRun[]>([])
-    // Viradas para o alvo de quem age, para a cena virar a personagem (ela ignora as repetidas)
-    const [aims, setAims] = useState<Aim[]>([])
+    // O que a cena anima a pedido das jogadas: o fogo, os números de dano, as investidas, as viradas
+    const effects = useBoardEffects()
     const [infoCharacter, setInfoCharacter] = useState<CharacterDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [infoBarrier, setInfoBarrier] = useState<Barrier | null>(null)
@@ -273,15 +270,16 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         focus.showDroppedItem(item)
     }
 
+    // O duelo entre rivais, que toma o lugar da defesa no golpe corpo a corpo entre as duas
+    const rivalry = useRivalry({ rolls, isManualRoll, log })
+
     const combat = useCombatResolution({
         characters,
         maze,
         barriers: barriers.all,
         setCharacters,
-        setFireBursts,
-        setDamagePopups,
-        setChargeRuns,
-        setAims,
+        effects,
+        rivalry,
         setManipulatedId: focus.setManipulatedId,
         rolls,
         log,
@@ -427,21 +425,13 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             rolls.current === null,
     })
 
-    // Destaques das personagens ("auras"), desenhados tanto pelo tabuleiro quanto pelo HUD
-    const activeCharacterId = activeCharacter?.id ?? null
-    const skillCharacterId = skill.active?.characterId ?? aiSkillUserId
-    const manipulatedId = focus.manipulatedId
-    const auras = useMemo<CharacterAuras>(() => {
-        const result: CharacterAuras = {}
-        if (activeCharacterId) result[activeCharacterId] = "active"
-        // A dupla que se revigora brilha junta, por cima da aura da vez
-        for (const id of affinityDuo) result[id] = "affinity"
-        if (skillCharacterId) result[skillCharacterId] = "skill"
-        if (manipulatedId) result[manipulatedId] = "manipulated"
-        // As rivais em duelo, por cima de tudo, só enquanto os dados delas rolam
-        for (const id of combat.rivals) result[id] = "rivalry"
-        return result
-    }, [activeCharacterId, affinityDuo, skillCharacterId, manipulatedId, combat.rivals])
+    const auras = useAuras({
+        activeCharacterId: activeCharacter?.id ?? null,
+        affinityDuo,
+        skillCharacterId: skill.active?.characterId ?? aiSkillUserId,
+        manipulatedId: focus.manipulatedId,
+        rivals: rivalry.rivals,
+    })
 
     // O valor nasce de novo a cada render de propósito: quem o lê depende do estado da
     // partida de qualquer jeito, e memorizar não pouparia render nenhum.
@@ -453,10 +443,10 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             items: items.items,
             ranges: highlighted.ranges,
             barriers: barriers.all,
-            fireBursts,
-            damagePopups,
-            chargeRuns,
-            aims,
+            fireBursts: effects.fireBursts,
+            damagePopups: effects.damagePopups,
+            chargeRuns: effects.chargeRuns,
+            aims: effects.aims,
             auras,
             selectedId,
             droppedItemId: focus.droppedItem?.id ?? null,

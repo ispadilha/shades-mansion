@@ -1,9 +1,10 @@
-import type { CharacterDefinition, CharacterType } from "./types"
+import type { CharacterDefinition, CharacterType, MotivationItemKey } from "./types"
+import { characterKey, itemKeyColor, keyCharacterType } from "./types"
 import type { DiceSpec } from "./rolls"
 import { touching } from "./grid"
 import { AFFINITY_DICE } from "../constants/rules"
 
-// As duplas de afinidade: em cada time, duas personagens que confiam uma na outra e se revigoram
+// As duplas de afinidade: em cada time, duas personagens que se revigoram
 // juntas quando uma delas começa o turno ao lado da outra
 const AFFINITY_DUOS: Array<[CharacterType, CharacterType]> = [
     ["A", "B"],
@@ -11,12 +12,19 @@ const AFFINITY_DUOS: Array<[CharacterType, CharacterType]> = [
     ["E", "F"],
 ]
 
-// A parceira de dupla da personagem, no mesmo time. Null quando ela já saiu da mansão.
-export const affinityPartnerOf = (character: CharacterDefinition, characters: CharacterDefinition[]): CharacterDefinition | null => {
-    const duo = AFFINITY_DUOS.find((types) => types.includes(character.type))
-    const partnerType = duo?.find((type) => type !== character.type)
-    return characters.find((p) => p.color === character.color && p.type === partnerType) ?? null
+// O outro tipo da dupla.
+const partnerTypeOf = (type: CharacterType): CharacterType => {
+    const duo = AFFINITY_DUOS.find((types) => types.includes(type))!
+    return duo[0] === type ? duo[1] : duo[0]
 }
+
+// A chave da parceira de dupla de uma personagem, pela chave dela.
+export const affinityPartnerKey = (key: MotivationItemKey): MotivationItemKey =>
+    characterKey(itemKeyColor(key), partnerTypeOf(keyCharacterType(key)))
+
+// A parceira de dupla da personagem, no mesmo time. Null quando ela já saiu da mansão.
+export const affinityPartnerOf = (character: CharacterDefinition, characters: CharacterDefinition[]): CharacterDefinition | null =>
+    characters.find((p) => p.id === affinityPartnerKey(character.id as MotivationItemKey)) ?? null
 
 // A dupla se revigora no começo do turno de uma das duas,
 // se estiverem encostadas e se alguma delas tiver perdido vigor.

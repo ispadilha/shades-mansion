@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
 import type { Barrier, CharacterAuras, CharacterDefinition, MotivationItem } from "../../logic/types"
-import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../../logic/combat"
+import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../../logic/boardEffects"
 import type { Maze } from "../../logic/maze"
 import { BoardScene } from "../../game/BoardScene"
+import { usePlayOnce } from "../../hooks/usePlayOnce"
 import { BOARD_OVERFLOW } from "../../constants/rules"
 
-interface PhaserBoardProps {
+// Tudo o que a cena desenha por cima das casas
+export interface PhaserBoardProps {
     cellSize: number
     maze: Maze
     characters: CharacterDefinition[]
@@ -17,9 +19,14 @@ interface PhaserBoardProps {
     chargeRuns: ChargeRun[]
     aims: Aim[]
     auras: CharacterAuras
+    // Item que caiu de volta no tabuleiro
     droppedItemId: string | null
 }
 
+// A cena do Phaser dentro do React: o jogo nasce uma vez, e cada mudança de estado é
+// repassada a ela pelos efeitos abaixo. A ordem deles é a ordem em que a cena precisa saber
+// das coisas: as personagens depois das investidas (uma troca de casa que chega junto com uma
+// investida é corrida, não caminhada), e as viradas e as auras depois das personagens.
 export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     cellSize,
     maze,
@@ -35,10 +42,6 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
 }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<BoardScene | null>(null)
-    const playedBurstsRef = useRef(new Set<string>())
-    const playedDamageRef = useRef(new Set<string>())
-    const playedChargesRef = useRef(new Set<string>())
-    const playedAimsRef = useRef(new Set<string>())
     // A cena passa da borda do tabuleiro, para não cortar o que sobe das casas da beirada
     const overflow = Math.round(cellSize * BOARD_OVERFLOW)
     const side = maze.size * cellSize + 2 * overflow
@@ -79,55 +82,21 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
         sceneRef.current?.syncBarriers(barriers)
     }, [barriers])
 
-    // Antes das personagens (a ordem dos efeitos é a de declaração): a cena precisa saber que a
-    // troca de casa que chega junto é uma investida, e não uma caminhada
-    useEffect(() => {
-        for (const run of chargeRuns) {
-            if (playedChargesRef.current.has(run.id)) continue
-            playedChargesRef.current.add(run.id)
-            sceneRef.current?.playCharge(run)
-        }
-    }, [chargeRuns])
+    usePlayOnce(chargeRuns, (run) => sceneRef.current?.playCharge(run))
 
     useEffect(() => {
         sceneRef.current?.syncCharacters(characters)
     }, [characters])
 
-    // Depois das personagens (a ordem dos efeitos é a de declaração): a virada parte da casa em
-    // que a personagem está, ou da casa a que ela está indo
-    useEffect(() => {
-        for (const aim of aims) {
-            if (playedAimsRef.current.has(aim.id)) continue
-            playedAimsRef.current.add(aim.id)
-            sceneRef.current?.playAim(aim)
-        }
-    }, [aims])
+    usePlayOnce(aims, (aim) => sceneRef.current?.playAim(aim))
 
-    // Depois das personagens (a ordem dos efeitos é a de declaração): a aura entra no container
-    // da personagem, que já precisa existir.
+    // A aura entra no container da personagem, que já precisa existir
     useEffect(() => {
         sceneRef.current?.syncAuras(auras)
     }, [auras])
 
-    // Uma explosão fica na lista depois de animada (a lista é estado da partida), então
-    // os ids já tocados ficam guardados para o efeito não repetir a animação a cada render.
-    useEffect(() => {
-        for (const burst of fireBursts) {
-            if (playedBurstsRef.current.has(burst.id)) continue
-            playedBurstsRef.current.add(burst.id)
-            sceneRef.current?.playFireBurst(burst)
-        }
-    }, [fireBursts])
-
-    // Mesmo cuidado das explosões: a lista é estado da partida e volta a cada render,
-    // então os ids já mostrados ficam guardados.
-    useEffect(() => {
-        for (const popup of damagePopups) {
-            if (playedDamageRef.current.has(popup.id)) continue
-            playedDamageRef.current.add(popup.id)
-            sceneRef.current?.playDamage(popup)
-        }
-    }, [damagePopups])
+    usePlayOnce(fireBursts, (burst) => sceneRef.current?.playFireBurst(burst))
+    usePlayOnce(damagePopups, (popup) => sceneRef.current?.playDamage(popup))
 
     return (
         <div

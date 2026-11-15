@@ -1,7 +1,7 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
 import { ModalCard } from "../../../components/ui"
-import { ItemIcon } from "../../../components/characters"
+import { ItemIcon } from "../../../components/icons"
 import type { CharacterColor, MotivationItemKey } from "../../../logic/types"
 import { itemKeyColor } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"

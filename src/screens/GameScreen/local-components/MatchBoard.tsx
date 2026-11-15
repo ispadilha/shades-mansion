@@ -9,23 +9,5 @@ interface MatchBoardProps {}
 export const MatchBoard: React.FC<MatchBoardProps> = ({}) => {
     const { board } = useMatch()
 
-    return (
-        <BoardArea
-            scrollRef={board.scrollRef}
-            maze={board.maze}
-            characters={board.characters}
-            items={board.items}
-            ranges={board.ranges}
-            barriers={board.barriers}
-            fireBursts={board.fireBursts}
-            damagePopups={board.damagePopups}
-            chargeRuns={board.chargeRuns}
-            aims={board.aims}
-            auras={board.auras}
-            selectedCharacterId={board.selectedId}
-            droppedItemId={board.droppedItemId}
-            onCellClick={board.onCellClick}
-            onCellContextMenu={board.onCellContextMenu}
-        />
-    )
+    return <BoardArea {...board} />
 }

@@ -2,7 +2,7 @@ import type { Barrier, MotivationItem, CharacterDefinition, CharacterPosition } 
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { atPosition, positionKey } from "./grid"
-import { hasClearLine, lineSteps } from "./movement"
+import { hasClearLine, lineSteps } from "./sight"
 import { STEP_MS } from "../constants/rules"
 
 // A investida corre em linha reta, em qualquer direção, e não para em personagem nenhuma: passa

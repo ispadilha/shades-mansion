@@ -36,13 +36,9 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
     const [itemMenu, setItemMenu] = useState<{ mouseX: number; mouseY: number; key: MotivationItemKey } | null>(null)
     const [examineKey, setExamineKey] = useState<MotivationItemKey | null>(null)
 
-    // Agrupa por key para mostrar contagem (×N) ao invés de uma linha por unidade
-    const aggregated = inventory.reduce<Array<{ key: MotivationItemKey; count: number }>>((acc, key) => {
-        const entry = acc.find((e) => e.key === key)
-        if (entry) entry.count++
-        else acc.push({ key, count: 1 })
-        return acc
-    }, [])
+    // As cópias de cada item contadas, para mostrar "×N" em vez de uma linha por unidade
+    const counts = new Map<MotivationItemKey, number>()
+    for (const key of inventory) counts.set(key, (counts.get(key) ?? 0) + 1)
 
     // Item do próprio time revigora a personagem atingida ou promove a que está inteira.
     // Item de outro time serve para tentar manipular a personagem.
@@ -70,10 +66,10 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({
                     {t("inventory")}
                 </Typography>
 
-                {aggregated.length === 0 && <Typography sx={{ color: palette.surface.textMuted }}>{t("noItems")}</Typography>}
+                {counts.size === 0 && <Typography sx={{ color: palette.surface.textMuted }}>{t("noItems")}</Typography>}
 
                 <Stack gap={1} sx={{ maxHeight: "55vh", overflowY: "auto" }}>
-                    {aggregated.map(({ key, count }) => (
+                    {[...counts].map(([key, count]) => (
                         <InventoryItemRow
                             key={key}
                             itemKey={key}

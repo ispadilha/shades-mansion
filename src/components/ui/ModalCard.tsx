@@ -1,5 +1,6 @@
 import React from "react"
 import { Box, Modal, type SxProps, type Theme } from "@mui/material"
+import { withSx } from "./withSx"
 import { usePalette } from "../../hooks/usePalette"
 
 interface ModalCardProps {
@@ -33,7 +34,7 @@ export const ModalCard: React.FC<ModalCardProps> = ({ open, onClose, children, w
                 }}
             >
                 <Box
-                    sx={[
+                    sx={withSx(
                         {
                             width,
                             bgcolor: palette.surface.bg,
@@ -42,8 +43,8 @@ export const ModalCard: React.FC<ModalCardProps> = ({ open, onClose, children, w
                             pointerEvents: "auto",
                             p: 3,
                         },
-                        ...(Array.isArray(sx) ? sx : [sx]),
-                    ]}
+                        sx,
+                    )}
                 >
                     {children}
                 </Box>

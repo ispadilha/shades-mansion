@@ -1,5 +1,6 @@
 import React from "react"
 import { Box, type SxProps, type Theme } from "@mui/material"
+import { withSx } from "./withSx"
 import { usePalette } from "../../hooks/usePalette"
 
 interface ScreenLayoutProps {
@@ -20,7 +21,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({ children, gap = 0, p
 
     return (
         <Box
-            sx={[
+            sx={withSx(
                 {
                     width: "100vw",
                     height: "100vh",
@@ -37,8 +38,8 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({ children, gap = 0, p
                     gap,
                     p: padded ? 4 : 0,
                 },
-                ...(Array.isArray(sx) ? sx : [sx]),
-            ]}
+                sx,
+            )}
         >
             {children}
         </Box>

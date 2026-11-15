@@ -397,6 +397,12 @@ export const DODGE_ROLL_TIMING = { spinMs: 380, holdMs: 700 }
 // Animações do tabuleiro (Phaser)
 // ---------------------------------------------------------------------------
 
+// As camadas da cena, de baixo para cima. As personagens ocupam a faixa que vai de `character` até o
+// número seguinte, cada uma pela altura em que está: quem está mais abaixo no tabuleiro fica por cima,
+// com tudo o que a acompanha (a aura, a barra de vigor, a estrela). A que corre numa investida passa por
+// cima de todas.
+export const BOARD_DEPTHS = { barrier: -1, item: 0, character: 1, charge: 5, fire: 10, damage: 20 }
+
 export const BARRIER_PULSE_MS = 2600
 export const BARRIER_GLOW = { height: 0.22, slices: 4 }
 export const BARRIER_GLOW_ALPHA = { dim: 0.3, bright: 0.52 }
@@ -413,14 +419,19 @@ export const MOVED_CHARACTER_ALPHA = 0.55
 export const ITEM_DROP_MS = 1000
 export const ITEM_DROP_HEIGHT = 1.6
 
-// Saídas de cena: personagem eliminada, item coletado, e a troca de transparência das personagens
-export const CHARACTER_FADE_MS = 280
+// Saídas de cena: a personagem eliminada fugindo da mansão (corre uma casa enquanto some),
+// o item coletado, e a troca de transparência das personagens
+export const CHARACTER_FLEE_MS = 350
 export const ITEM_FADE_MS = 220
 export const ALPHA_TWEEN_MS = 200
 
 // ---------------------------------------------------------------------------
 // Medidas da interface
 // ---------------------------------------------------------------------------
+
+// Quem não tem base própria (comanda todos os times, ou só assiste)
+// começa com a câmera um pouco acima do meio do tabuleiro, estas linhas para cima
+export const CAMERA_START_ROWS_ABOVE_MIDDLE = 4
 
 // O HUD é feito de faixas horizontais de mesma altura e mesma cor
 export const HUD_BAND_HEIGHT = 76

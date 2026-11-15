@@ -28,7 +28,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
     return (
         <GameContext.Provider value={{ selection, setSelection, match, setMatch, winner, setWinner }}>
-        {children}
+            {children}
         </GameContext.Provider>
     )
 }

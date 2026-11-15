@@ -1,6 +1,6 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import { CharacterIcon } from "../../../components/characters"
+import { CharacterIcon } from "../../../components/icons"
 import type { CharacterSlot } from "../../../logic/setup"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"

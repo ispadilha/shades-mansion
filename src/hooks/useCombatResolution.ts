@@ -1,29 +1,27 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import type { Dispatch, SetStateAction } from "react"
-import type { Barrier, CharacterColor, CharacterDefinition, CharacterPosition, MotivationItemKey, TextKey } from "../logic/types"
+import type { Barrier, CharacterColor, CharacterDefinition, CharacterPosition, MotivationItemKey } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import {
+    DEFENSE_READING,
     areaCells,
     charactersInBlast,
     rollDamage,
     rollDefense,
     rollDispel,
     rollManipulation,
-    rollRivalry,
-    type Aim,
-    type ChargeRun,
     type DamageRoll,
-    type DefenseOutcome,
-    type DamagePopup,
-    type FireBurst,
+    type Hit,
     type PendingAttack,
     type PendingCharge,
     type PendingDispel,
 } from "../logic/combat"
-import { dieKind, type RollTarget, type RollTone } from "../logic/rolls"
-import { areRivals } from "../logic/rivalry"
+import { dieKind, type RollTarget } from "../logic/rolls"
+import { awakensRivalry } from "../logic/rivalry"
 import { useLanguage } from "./useLanguage"
+import type { BoardEffects } from "./useBoardEffects"
 import type { GameLog } from "./useGameLog"
+import type { Rivalry } from "./useRivalry"
 import type { RollQueue } from "./useRolls"
 import {
     ACTION_SETTLE_MS,
@@ -35,26 +33,9 @@ import {
     DISPEL_MIN_ROLL,
     DODGE_ROLL_TIMING,
     ITEM_DROP_HOLD_MS,
-    MAX_AIMS,
-    MAX_CHARGE_RUNS,
-    MAX_DAMAGE_POPUPS,
-    MAX_FIRE_BURSTS,
     statsFor,
     SUCCESS_FACE,
 } from "../constants/rules"
-
-// Uma personagem atingida e quanto ela levou. As defesas são roladas uma a uma, mas o dano
-// fica guardado aqui até o fim: ninguém sai do tabuleiro no meio das rolagens.
-interface Hit {
-    characterId: string
-    damage: number
-}
-
-const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }> = {
-    dodged: { label: "defenseDodge", tone: "good" },
-    guarded: { label: "defenseGuard", tone: "neutral" },
-    clean: { label: "defenseNone", tone: "bad" },
-}
 
 interface CombatResolutionOptions {
     characters: CharacterDefinition[]
@@ -62,13 +43,10 @@ interface CombatResolutionOptions {
     // Barreiras acesas: as adversárias de quem atira seguram o fogo do incêndio
     barriers: Barrier[]
     setCharacters: Dispatch<SetStateAction<CharacterDefinition[]>>
-    setFireBursts: Dispatch<SetStateAction<FireBurst[]>>
-    // Os números de dano que sobem acima das personagens atingidas
-    setDamagePopups: Dispatch<SetStateAction<DamagePopup[]>>
-    // As investidas, para a cena fazer a personagem correr em linha reta
-    setChargeRuns: Dispatch<SetStateAction<ChargeRun[]>>
-    // As viradas para o alvo, para a cena virar a personagem antes de ela agir
-    setAims: Dispatch<SetStateAction<Aim[]>>
+    // O que a cena anima a pedido das rolagens: o fogo, os números de dano, as investidas, as viradas
+    effects: BoardEffects
+    // O duelo entre rivais: quem está nele, e a rolagem que toma o lugar da defesa
+    rivalry: Rivalry
     // Personagem sob manipulação: é ela que a câmera segue enquanto a moeda está no ar
     setManipulatedId: (characterId: string | null) => void
     rolls: RollQueue
@@ -97,8 +75,6 @@ export interface CombatResolution {
     // O ataque e a dissipação viram quem age sozinhos, quando ela chega, e o ataque vira também quem
     // é atingido. As outras ações com alvo chamam isto.
     aimAt: (characterId: string, target: CharacterPosition | string) => void
-    // As duas rivais de um golpe corpo a corpo, enquanto os dados dele rolam (vazio fora disso)
-    rivals: string[]
 }
 
 export const useCombatResolution = ({
@@ -106,10 +82,8 @@ export const useCombatResolution = ({
     maze,
     barriers,
     setCharacters,
-    setFireBursts,
-    setDamagePopups,
-    setChargeRuns,
-    setAims,
+    effects,
+    rivalry,
     setManipulatedId,
     rolls,
     log,
@@ -134,7 +108,6 @@ export const useCombatResolution = ({
     // As personagens como estão agora. As rolagens terminam depois de quem ataca ter andado até o
     // alvo, e o número do dano que volta para ela tem que subir da casa a que ela chegou.
     const charactersRef = useRef(characters)
-    const [rivals, setRivals] = useState<string[]>([])
     useEffect(() => {
         charactersRef.current = characters
     })
@@ -161,8 +134,8 @@ export const useCombatResolution = ({
             const aimed = attack.area?.center ?? attack.targetId
             if (aimed) aimAt(attack.attackerId, aimed)
             // Golpe corpo a corpo na rival: as duas brilham juntas até os dados acabarem
-            if (attack.melee && attack.targetId && areRivals(attack.attackerId, attack.targetId)) {
-                setRivals([attack.attackerId, attack.targetId])
+            if (attack.targetId && awakensRivalry(attack, attack.targetId)) {
+                rivalry.begin(attack.attackerId, attack.targetId)
             }
 
             // Quem segura o fogo é barreira adversária de quem o acendeu,
@@ -240,8 +213,11 @@ export const useCombatResolution = ({
             settleAttack(attack, reached, hits)
             return
         }
-        if (attack.melee && areRivals(attack.attackerId, defender.id)) {
-            resolveRivalry(attack, reached, damage, defenders, index, hits)
+        // Na rival, a defesa é a rolagem de rivalidade
+        if (awakensRivalry(attack, defender.id)) {
+            rivalry.resolve(attack.attackerId, defender, damage.total, (duel) =>
+                resolveDefenders(attack, reached, damage, defenders, index + 1, [...hits, ...duel]),
+            )
             return
         }
 
@@ -271,51 +247,11 @@ export const useCombatResolution = ({
         )
     }
 
-    // Golpe corpo a corpo na rival: a defesa vira a rolagem de rivalidade, na moeda.
-    const resolveRivalry = (
-        attack: PendingAttack,
-        reached: CharacterPosition[],
-        damage: DamageRoll,
-        defenders: CharacterDefinition[],
-        index: number,
-        hits: Hit[],
-    ) => {
-        const defender = defenders[index]
-        const rivalry = rollRivalry(damage.total)
-
-        rolls.show(
-            {
-                id: `rivalry-${defender.id}-${Date.now()}`,
-                kind: "coin",
-                value: rivalry.face,
-                title: t("rivalryRoll"),
-                subtitle: tCharacterName(defender.id),
-                targets: [{ value: t(SUCCESS_FACE === "heads" ? "coinHeads" : "coinTails"), label: t("toFightBack") }],
-                outcome: rivalry.foughtBack
-                    ? { label: t("foughtBack"), tone: "good" }
-                    : { label: t(DEFENSE_READING.clean.label), tone: DEFENSE_READING.clean.tone },
-                manual: isManualRoll(defender.color),
-                ...DODGE_ROLL_TIMING,
-            },
-            () => {
-                if (rivalry.foughtBack) log.foughtBack(attack.attackerId, defender.id, rivalry.damage, rivalry.returned)
-                else log.attackHit(attack.attackerId, defender.id, rivalry.damage)
-
-                const next = [
-                    ...hits,
-                    { characterId: defender.id, damage: rivalry.damage },
-                    ...(rivalry.returned > 0 ? [{ characterId: attack.attackerId, damage: rivalry.returned }] : []),
-                ]
-                resolveDefenders(attack, reached, damage, defenders, index + 1, next)
-            },
-        )
-    }
-
     // Fim das rolagens: agora sim o golpe aparece no tabuleiro, e o dano de todas as personagens
     // atingidas entra junto com ele. Nenhuma personagem sai do tabuleiro antes de a animação
     // mostrar o que a tirou de lá.
     const settleAttack = (attack: PendingAttack, reached: CharacterPosition[], hits: Hit[]) => {
-        setRivals((prev) => (prev.length > 0 ? [] : prev))
+        rivalry.end()
         const animated = playAttackEffect(attack, reached)
         if (hits.length > 0) applyDamage(hits)
 
@@ -336,10 +272,7 @@ export const useCombatResolution = ({
         const { area } = attack
         if (!area) return false
 
-        setFireBursts((prev) => [
-            ...prev.slice(-MAX_FIRE_BURSTS + 1),
-            { id: `fire-${attack.attackerId}-${Date.now()}`, center: area.center, cells: reached },
-        ])
+        effects.addFireBurst({ id: `fire-${attack.attackerId}-${Date.now()}`, center: area.center, cells: reached })
         return true
     }
 
@@ -352,9 +285,7 @@ export const useCombatResolution = ({
             if (!character) return []
             return [{ id: `dmg-${hit.characterId}-${Date.now()}`, position: { ...character.position }, amount: hit.damage }]
         })
-        if (popups.length > 0) {
-            setDamagePopups((prev) => [...prev.slice(-MAX_DAMAGE_POPUPS + popups.length), ...popups])
-        }
+        if (popups.length > 0) effects.addDamagePopups(popups)
 
         setCharacters((prev) =>
             prev
@@ -454,15 +385,12 @@ export const useCombatResolution = ({
         rolls.setResolving(true)
         // Quem está no caminho se vira para encarar a investida que vem
         for (const hit of charge.hits) aimAt(hit.characterId, charge.from)
-        setChargeRuns((prev) => [
-            ...prev.slice(-MAX_CHARGE_RUNS + 1),
-            {
-                id: `charge-${charge.characterId}-${Date.now()}`,
-                characterId: charge.characterId,
-                to: charge.to,
-                durationMs: charge.durationMs,
-            },
-        ])
+        effects.addChargeRun({
+            id: `charge-${charge.characterId}-${Date.now()}`,
+            characterId: charge.characterId,
+            to: charge.to,
+            durationMs: charge.durationMs,
+        })
 
         const timers = charge.hits.map((hit) =>
             window.setTimeout(() => {
@@ -478,9 +406,8 @@ export const useCombatResolution = ({
     }
 
     const aimAt = (characterId: string, target: CharacterPosition | string) => {
-        const aim = { id: `aim-${characterId}-${Date.now()}`, characterId, target }
-        setAims((prev) => [...prev.slice(-MAX_AIMS + 1), aim])
+        effects.addAim({ id: `aim-${characterId}-${Date.now()}`, characterId, target })
     }
 
-    return { resolveAttack, resolveManipulation, resolveDispel, resolveCharge, aimAt, rivals }
+    return { resolveAttack, resolveManipulation, resolveDispel, resolveCharge, aimAt }
 }

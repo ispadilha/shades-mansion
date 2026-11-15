@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Box, Typography, type SxProps, type Theme } from "@mui/material"
+import { withSx } from "../ui"
 import { RollFaces } from "./RollFaces"
 import { RollOutcome } from "./RollOutcome"
 import { COIN_FACES, rollDice, sidesOf, sumDice, type CoinFace, type RollView } from "../../logic/rolls"
@@ -114,7 +115,7 @@ export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }
     return (
         <Box
             onClick={handleClick}
-            sx={[
+            sx={withSx(
                 {
                     display: "flex",
                     flexDirection: "column",
@@ -123,8 +124,8 @@ export const RollBoard: React.FC<RollBoardProps> = ({ roll, onDone, footer, sx }
                     cursor: "pointer",
                     userSelect: "none",
                 },
-                ...(Array.isArray(sx) ? sx : [sx]),
-            ]}
+                sx,
+            )}
         >
             <Typography sx={{ color: palette.roll.title, fontSize: 15, letterSpacing: 1, textTransform: "uppercase" }}>
                 {roll?.title}

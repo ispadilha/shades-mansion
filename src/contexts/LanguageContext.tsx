@@ -4,12 +4,9 @@ import { texts_characters } from "../constants/texts_characters"
 import { texts_rules } from "../constants/texts_rules"
 import type { CharacterField, CharacterKey, Language, LoreField, CharacterColor, RuleKey, TextKey } from "../logic/types"
 
-// O nome de cada time também é um texto da interface
-const TEAM_TEXT_KEY: Record<CharacterColor, TextKey> = { light: "light", dark: "dark", gray: "gray" }
-
 interface LanguageContextValue {
-    value: Language
-    setValue: (lang: Language) => void
+    language: Language
+    setLanguage: (language: Language) => void
     t: (key: TextKey) => string
     tTeam: (color: CharacterColor) => string
     tCharacter: (key: CharacterKey, field: CharacterField) => string
@@ -28,30 +25,25 @@ const LanguageContext = createContext<LanguageContextValue>({} as LanguageContex
 export default LanguageContext
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
-    const [value, setValue] = useState<Language>("enUS")
+    const [language, setLanguage] = useState<Language>("enUS")
 
-    const t = (key: TextKey): string => {
-        return texts_ui[key][value]
-    }
+    const t = (key: TextKey) => texts_ui[key][language]
 
-    const tTeam = (color: CharacterColor): string => {
-        return texts_ui[TEAM_TEXT_KEY[color]][value]
-    }
+    // O nome de cada time é um texto da interface com a própria cor por chave
+    const tTeam = (color: CharacterColor) => t(color)
 
-    const tCharacter = (key: CharacterKey, field: CharacterField): string => {
-        return texts_characters[key][field][value]
-    }
+    const tCharacter = (key: CharacterKey, field: CharacterField) => texts_characters[key][field][language]
 
-    const tCharacterName = (id: string): string => tCharacter(id as CharacterKey, "name")
+    const tCharacterName = (id: string) => tCharacter(id as CharacterKey, "name")
 
-    const tItemName = (key: string): string => tCharacter(key as CharacterKey, "item")
+    const tItemName = (key: string) => tCharacter(key as CharacterKey, "item")
 
-    const tRule = (key: RuleKey, field: LoreField): string => {
-        return texts_rules[key][field][value]
-    }
+    const tRule = (key: RuleKey, field: LoreField) => texts_rules[key][field][language]
 
     return (
-        <LanguageContext.Provider value={{ value, setValue, t, tTeam, tCharacter, tCharacterName, tItemName, tRule }}>
+        <LanguageContext.Provider
+            value={{ language, setLanguage, t, tTeam, tCharacter, tCharacterName, tItemName, tRule }}
+        >
             {children}
         </LanguageContext.Provider>
     )

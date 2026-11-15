@@ -1,7 +1,7 @@
 import type { Barrier, CharacterDefinition, CharacterPosition } from "./types"
 import type { Maze } from "./maze"
 import { atPosition, positionKey, samePosition } from "./grid"
-import { lineOfFire, type LineSight } from "./movement"
+import { lineOfFire, type LineSight } from "./sight"
 
 // As barreiras que uma personagem mantém acesas
 export const barriersOf = (barriers: Barrier[], characterId: string) =>

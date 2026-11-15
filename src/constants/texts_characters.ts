@@ -24,10 +24,6 @@ export const texts_characters = {
             ptBR:
                 "rola um dado para alcance adicional, e ganha de volta as opções de sempre: andar, coletar, golpear e dissipar.",
         },
-        affinity: {
-            enUS: "Cultist",
-            ptBR: "Cultista",
-        },
     },
 
     dB: {
@@ -54,10 +50,6 @@ export const texts_characters = {
                 "lights barriers at a distance, which close their cells to the other teams and let its own team through.",
             ptBR:
                 "acende barreiras à distância, que fecham a casa para os outros times e deixam o próprio time passar.",
-        },
-        affinity: {
-            enUS: "Ghost",
-            ptBR: "Fantasma",
         },
     },
 
@@ -86,10 +78,6 @@ export const texts_characters = {
             ptBR:
                 "corre em linha reta por cima de toda personagem no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
         },
-        affinity: {
-            enUS: "Renegade",
-            ptBR: "Renegado",
-        },
     },
 
     dD: {
@@ -116,10 +104,6 @@ export const texts_characters = {
                 "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other characters interrupt the line of fire.",
             ptBR:
                 "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras personagens interrompem a linha de tiro.",
-        },
-        affinity: {
-            enUS: "Vampire",
-            ptBR: "Vampiro",
         },
     },
 
@@ -148,10 +132,6 @@ export const texts_characters = {
             ptBR:
                 "copia a habilidade de outra personagem na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
         },
-        affinity: {
-            enUS: "Mad Doctor",
-            ptBR: "Doutor Louco",
-        },
     },
 
     dF: {
@@ -177,10 +157,6 @@ export const texts_characters = {
             enUS:
                 "shoots from a distance, and where the shot lands an area catches fire, burning friend and foe alike.",
             ptBR: "atira à distância, e onde o tiro cai uma área pega fogo, sem distinguir amigo de inimigo.",
-        },
-        affinity: {
-            enUS: "Monster",
-            ptBR: "Monstro",
         },
     },
 
@@ -209,10 +185,6 @@ export const texts_characters = {
             ptBR:
                 "rola um dado para alcance adicional, e ganha de volta as opções de sempre: andar, coletar, golpear e dissipar.",
         },
-        affinity: {
-            enUS: "Witch",
-            ptBR: "Bruxa",
-        },
     },
 
     gB: {
@@ -239,10 +211,6 @@ export const texts_characters = {
                 "lights barriers at a distance, which close their cells to the other teams and let its own team through.",
             ptBR:
                 "acende barreiras à distância, que fecham a casa para os outros times e deixam o próprio time passar.",
-        },
-        affinity: {
-            enUS: "Wildcat",
-            ptBR: "Gato Selvagem",
         },
     },
 
@@ -271,10 +239,6 @@ export const texts_characters = {
             ptBR:
                 "corre em linha reta por cima de toda personagem no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
         },
-        affinity: {
-            enUS: "Warrior Shaman",
-            ptBR: "Xamã Guerreiro",
-        },
     },
 
     gD: {
@@ -301,10 +265,6 @@ export const texts_characters = {
                 "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other characters interrupt the line of fire.",
             ptBR:
                 "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras personagens interrompem a linha de tiro.",
-        },
-        affinity: {
-            enUS: "Werewolf",
-            ptBR: "Lobisomem",
         },
     },
 
@@ -333,10 +293,6 @@ export const texts_characters = {
             ptBR:
                 "copia a habilidade de outra personagem na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
         },
-        affinity: {
-            enUS: "Alien",
-            ptBR: "Alien",
-        },
     },
 
     gF: {
@@ -362,10 +318,6 @@ export const texts_characters = {
             enUS:
                 "shoots from a distance, and where the shot lands an area catches fire, burning friend and foe alike.",
             ptBR: "atira à distância, e onde o tiro cai uma área pega fogo, sem distinguir amigo de inimigo.",
-        },
-        affinity: {
-            enUS: "Cryptid",
-            ptBR: "Criptídeo",
         },
     },
 
@@ -394,10 +346,6 @@ export const texts_characters = {
             ptBR:
                 "rola um dado para alcance adicional, e ganha de volta as opções de sempre: andar, coletar, golpear e dissipar.",
         },
-        affinity: {
-            enUS: "Paranormal Investigator",
-            ptBR: "Investigador Paranormal",
-        },
     },
 
     lB: {
@@ -424,10 +372,6 @@ export const texts_characters = {
                 "lights barriers at a distance, which close their cells to the other teams and let its own team through.",
             ptBR:
                 "acende barreiras à distância, que fecham a casa para os outros times e deixam o próprio time passar.",
-        },
-        affinity: {
-            enUS: "Drone",
-            ptBR: "Drone",
         },
     },
 
@@ -456,10 +400,6 @@ export const texts_characters = {
             ptBR:
                 "corre em linha reta por cima de toda personagem no caminho, e cada uma leva o dano, aliadas inclusive. Pede cuidado e estratégia.",
         },
-        affinity: {
-            enUS: "Police Officer",
-            ptBR: "Policial",
-        },
     },
 
     lD: {
@@ -486,10 +426,6 @@ export const texts_characters = {
                 "hits from where it stands, farther and harder than its usual blow; walls, opponents' barriers and other characters interrupt the line of fire.",
             ptBR:
                 "acerta de onde está, mais longe e mais forte que o golpe comum; paredes, barreiras adversárias e outras personagens interrompem a linha de tiro.",
-        },
-        affinity: {
-            enUS: "Modern Paladin",
-            ptBR: "Paladino Moderno",
         },
     },
 
@@ -518,10 +454,6 @@ export const texts_characters = {
             ptBR:
                 "copia a habilidade de outra personagem na sua linha de visão, aliada ou adversária, e a usa como se fosse sua naquele turno.",
         },
-        affinity: {
-            enUS: "Inventor",
-            ptBR: "Inventor",
-        },
     },
 
     lF: {
@@ -547,10 +479,6 @@ export const texts_characters = {
             enUS:
                 "shoots from a distance, and where the shot lands an area catches fire, burning friend and foe alike.",
             ptBR: "atira à distância, e onde o tiro cai uma área pega fogo, sem distinguir amigo de inimigo.",
-        },
-        affinity: {
-            enUS: "Robot",
-            ptBR: "Robô",
         },
     },
 }

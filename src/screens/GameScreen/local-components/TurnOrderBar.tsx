@@ -1,6 +1,6 @@
 import React from "react"
 import { Box, Typography } from "@mui/material"
-import { CharacterIcon } from "../../../components/characters"
+import { CharacterIcon } from "../../../components/icons"
 import type { CharacterAuras, CharacterDefinition } from "../../../logic/types"
 import { isSpent } from "../../../logic/turn"
 import { useLanguage } from "../../../hooks/useLanguage"

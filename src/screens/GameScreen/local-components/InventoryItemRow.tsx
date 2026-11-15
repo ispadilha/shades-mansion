@@ -1,6 +1,6 @@
 import React from "react"
 import { Box, Button, Typography } from "@mui/material"
-import { ItemIcon } from "../../../components/characters"
+import { ItemIcon } from "../../../components/icons"
 import type { MotivationItemKey, TextKey } from "../../../logic/types"
 import type { ItemUse } from "../../../logic/items"
 import { useLanguage } from "../../../hooks/useLanguage"

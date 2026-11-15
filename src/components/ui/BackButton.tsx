@@ -1,5 +1,6 @@
 import React from "react"
 import { Button, type SxProps, type Theme } from "@mui/material"
+import { withSx } from "./withSx"
 import { useLanguage } from "../../hooks/useLanguage"
 import { usePalette } from "../../hooks/usePalette"
 
@@ -15,7 +16,7 @@ export const BackButton: React.FC<BackButtonProps> = ({ onClick, sx }) => {
     const { t } = useLanguage()
 
     return (
-        <Button onClick={onClick} sx={[{ mt: 3, color: palette.ui.text }, ...(Array.isArray(sx) ? sx : [sx])]}>
+        <Button onClick={onClick} sx={withSx({ mt: 3, color: palette.ui.text }, sx)}>
             {t("goBack")}
         </Button>
     )

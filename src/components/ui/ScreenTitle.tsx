@@ -1,5 +1,6 @@
 import React from "react"
 import { Typography, type SxProps, type Theme } from "@mui/material"
+import { withSx } from "./withSx"
 import { usePalette } from "../../hooks/usePalette"
 
 interface ScreenTitleProps {
@@ -12,7 +13,7 @@ export const ScreenTitle: React.FC<ScreenTitleProps> = ({ children, size = 32, s
     const palette = usePalette()
 
     return (
-        <Typography sx={[{ color: palette.ui.text, fontSize: size }, ...(Array.isArray(sx) ? sx : [sx])]}>
+        <Typography sx={withSx({ color: palette.ui.text, fontSize: size }, sx)}>
             {children}
         </Typography>
     )

@@ -14,24 +14,22 @@ interface NumberSettingProps {
 // Opção numérica com botões "-" e "+"; os botões desligam nos limites
 export const NumberSetting: React.FC<NumberSettingProps> = ({ label, unit, value, min, max, onChange }) => {
     const palette = usePalette()
+    const stepButton = {
+        minWidth: 36,
+        bgcolor: palette.ui.buttonBg,
+        color: palette.ui.text,
+        "&.Mui-disabled": { color: palette.ui.buttonDisabledText },
+    }
 
     return (
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, width: "100%" }}>
             <Typography sx={{ color: palette.ui.textBody, flex: 1, textAlign: "right" }}>{label}</Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Button
-                    onClick={() => onChange(value - 1)}
-                    disabled={value <= min}
-                    sx={{ minWidth: 36, bgcolor: palette.ui.buttonBg, color: palette.ui.text, "&.Mui-disabled": { color: palette.ui.buttonDisabledText } }}
-                >
+                <Button onClick={() => onChange(value - 1)} disabled={value <= min} sx={stepButton}>
                     −
                 </Button>
                 <Typography sx={{ color: palette.ui.text, width: 36, textAlign: "center", fontSize: 20 }}>{value}</Typography>
-                <Button
-                    onClick={() => onChange(value + 1)}
-                    disabled={value >= max}
-                    sx={{ minWidth: 36, bgcolor: palette.ui.buttonBg, color: palette.ui.text, "&.Mui-disabled": { color: palette.ui.buttonDisabledText } }}
-                >
+                <Button onClick={() => onChange(value + 1)} disabled={value >= max} sx={stepButton}>
                     +
                 </Button>
             </Box>

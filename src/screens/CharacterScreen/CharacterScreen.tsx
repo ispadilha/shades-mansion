@@ -4,6 +4,7 @@ import { BackButton, LibraryEntry, ScreenLayout, ScreenTitle } from "../../compo
 import { characterKeys } from "../../constants/texts_characters"
 import { CHARACTER_TYPE_NAMES, keyCharacterType } from "../../logic/types"
 import { skillFor } from "../../logic/skills"
+import { affinityPartnerKey } from "../../logic/affinity"
 import { rivalOf } from "../../logic/rivalry"
 import { useLanguage } from "../../hooks/useLanguage"
 
@@ -20,14 +21,13 @@ export const CharacterScreen: React.FC<CharacterScreenProps> = ({}) => {
 
     const type = keyCharacterType(key)
     const skill = skillFor(type)
-    const rival = rivalOf(key)
     const sections = [
         { title: t("type"), text: `${t(CHARACTER_TYPE_NAMES[type])}: ${tCharacter(key, "type")}` },
         { title: t("item"), text: tCharacter(key, "item") },
         { title: t("description"), text: tCharacter(key, "description") },
         { title: t("skill"), text: `${t(skill.name)}: ${tCharacter(key, "skill")}` },
-        { title: t("affinity"), text: tCharacter(key, "affinity") },
-        ...(rival ? [{ title: t("rivalry"), text: tCharacterName(rival) }] : []),
+        { title: t("affinity"), text: tCharacterName(affinityPartnerKey(key)) },
+        { title: t("rivalry"), text: tCharacterName(rivalOf(key)) },
     ]
 
     return (

@@ -1,8 +1,8 @@
-import type { Barrier, CharacterColor, CharacterDefinition, CharacterPosition } from "./types"
+import type { Barrier, CharacterColor, CharacterDefinition, CharacterPosition, TextKey } from "./types"
 import type { Maze } from "./maze"
 import { isWalkable } from "./maze"
 import { NO_BLOCKED_CELLS, manhattan, neighbors, positionKey, type BlockedCells } from "./grid"
-import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec } from "./rolls"
+import { flipCoin, rollDie, rollSpec, sumDice, type CoinFace, type DiceSpec, type RollTone } from "./rolls"
 import { skillAreaSideOf, type Skill } from "./skills"
 import { DEFENSE_DIE, DISPEL_DIE, DISPEL_MIN_ROLL, GUARDED_DAMAGE_SHARE, SUCCESS_FACE, statsFor } from "../constants/rules"
 
@@ -17,8 +17,7 @@ export const rollManipulation = (): CoinCheck => {
 }
 
 // Nenhuma personagem ataca as aliadas, nem sob manipulação.
-// `commander` é quem manda no golpe: o time da personagem, ou quem a manipula. A manipulada
-// também não ataca esse time, então o golpe dela só pode ir para o terceiro.
+// `commander` é quem manda no golpe: o time da personagem, ou quem a manipula.
 // O alvo pode ser uma barreira: dissipá-la é atacá-la.
 export const mayAttack = (attacker: CharacterDefinition, target: { color: CharacterColor }, commander: CharacterColor) =>
     target.color !== attacker.color && target.color !== commander
@@ -54,6 +53,20 @@ export function rollDefense(character: CharacterDefinition, damage: number): Def
     if (die >= dodge) return { die, outcome: "dodged", damage: 0 }
     if (die >= guard) return { die, outcome: "guarded", damage: Math.ceil(damage * GUARDED_DAMAGE_SHARE) }
     return { die, outcome: "clean", damage }
+}
+
+// Como cada resultado da defesa é lido na mesa de rolagem
+export const DEFENSE_READING: Record<DefenseOutcome, { label: TextKey; tone: RollTone }> = {
+    dodged: { label: "defenseDodge", tone: "good" },
+    guarded: { label: "defenseGuard", tone: "neutral" },
+    clean: { label: "defenseNone", tone: "bad" },
+}
+
+// Uma personagem atingida e quanto ela levou. As defesas são roladas uma a uma,
+// mas o dano fica guardado até o fim: ninguém sai do tabuleiro no meio das rolagens.
+export interface Hit {
+    characterId: string
+    damage: number
 }
 
 export interface RivalryRoll {
@@ -196,33 +209,6 @@ export interface PendingDispel {
     manipulatedBy?: CharacterColor
 }
 
-// Um clarão de fogo para a cena desenhar. O id garante que cada explosão seja animada
-// uma vez só, mesmo que a lista seja reenviada em outro render. As casas vêm prontas
-// para o desenho bater com o que queimou de verdade, paredes recortadas incluídas.
-export interface FireBurst {
-    id: string
-    center: CharacterPosition
-    cells: CharacterPosition[]
-}
-
-// Um número de dano para a cena mostrar subindo acima da personagem atingida. Ele carrega a
-// casa, e não o id da personagem: quem chega a zero sai do tabuleiro no mesmo instante, e o
-// número ainda tem que aparecer.
-export interface DamagePopup {
-    id: string
-    position: CharacterPosition
-    amount: number
-}
-
-// Uma investida para a cena desenhar: a personagem corre em linha reta até `to`, em `durationMs`,
-// em vez de caminhar pelo labirinto. Como as explosões, cada uma é animada uma vez só.
-export interface ChargeRun {
-    id: string
-    characterId: string
-    to: CharacterPosition
-    durationMs: number
-}
-
 // Uma investida já decidida: a personagem já está correndo, e cada atropelada leva o dano no
 // instante em que ela passa por cima, `atMs` depois da largada
 export interface PendingCharge {
@@ -233,14 +219,4 @@ export interface PendingCharge {
     damage: number
     durationMs: number
     hits: Array<{ characterId: string; atMs: number }>
-}
-
-// A personagem se vira para o alvo do que vai fazer (quem ela ataca, a barreira que vai dissipar,
-// a casa em que acende uma barreira, quem ela imita) ou para quem a ataca.
-// Como as explosões, cada uma é tocada uma vez só.
-export interface Aim {
-    id: string
-    characterId: string
-    // Uma casa, ou o id de outra personagem: aí a virada é para a casa em que ela estiver
-    target: CharacterPosition | string
 }

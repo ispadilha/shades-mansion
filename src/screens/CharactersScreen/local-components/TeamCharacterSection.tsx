@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { Box, Typography } from "@mui/material"
 import { TeamButton } from "../../../components/ui"
 import type { CharacterColor } from "../../../logic/types"
-import { characterKeys } from "../../../constants/texts_characters"
+import { ALL_CHARACTER_TYPES, characterKey } from "../../../logic/types"
 import { useLanguage } from "../../../hooks/useLanguage"
 import { usePalette } from "../../../hooks/usePalette"
 
@@ -16,7 +16,7 @@ export const TeamCharacterSection: React.FC<TeamCharacterSectionProps> = ({ colo
     const navigate = useNavigate()
     const { tTeam, tCharacter } = useLanguage()
 
-    const keys = characterKeys.filter((key) => key.startsWith(color[0]))
+    const keys = ALL_CHARACTER_TYPES.map((type) => characterKey(color, type))
 
     return (
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1.5 }}>
