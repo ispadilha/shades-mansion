@@ -12,11 +12,12 @@ export interface FireBurst {
     cells: CharacterPosition[]
 }
 
-// Um número de dano para a cena mostrar subindo acima da personagem atingida.
-// Ele carrega a casa, e não o id da personagem:
-// quem chega a zero sai do tabuleiro no mesmo instante, e o número ainda tem que aparecer.
+// O dano faz a cena mostrar o número subindo acima da personagem atingida, que pisca.
+// O número sobe da casa, e não da personagem:
+// quem chega a zero sai do tabuleiro quase no mesmo instante, e o número ainda tem que aparecer.
 export interface DamagePopup {
     id: string
+    characterId: string
     position: CharacterPosition
     amount: number
 }
@@ -28,6 +29,15 @@ export interface ChargeRun {
     characterId: string
     to: CharacterPosition
     durationMs: number
+}
+
+// Um número de vigor recuperado para a cena mostrar subindo acima da personagem,
+// como o do dano, mas na cor da aura do quê a revigorou: a afinidade ou o item
+export interface ReinvigorationPopup {
+    id: string
+    position: CharacterPosition
+    amount: number
+    source: "affinity" | "item"
 }
 
 // A personagem se vira para o alvo do que vai fazer

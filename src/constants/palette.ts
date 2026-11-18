@@ -28,24 +28,30 @@ export const TEAM_BUTTON_PALETTE: Record<CharacterColor, { bg: string; text: str
     dark: { bg: "#111111", text: "#ffffff", outline: "#dedede" },
 }
 
+const ACTIVE_GLOW = "#ffd700"
 const MANIPULATION_GLOW = "#e05492"
-const SKILL_GLOW = "#1e88e5"
-const AFFINITY_GLOW = "#5ef2df"
+const SKILL_GLOW = "#4e58e5"
+const AFFINITY_GLOW = "#5ef2af"
 const RIVALRY_GLOW = "#ff1a1a"
+const PROMOTION_GLOW = "#e9eef5"
+const REINVIGORATION_GLOW = "#a8f08e"
 
 export interface AuraPalette {
     color: string
     strength: number
     radius: number
     pulseMs: number
+    waves?: boolean
 }
 
 export const AURA_PALETTE: Record<AuraKind, AuraPalette> = {
-    active: { color: "#ffd700", strength: 0.55, radius: 0.62, pulseMs: 1200 },
+    active: { color: ACTIVE_GLOW, strength: 0.55, radius: 0.62, pulseMs: 1200 },
     manipulated: { color: MANIPULATION_GLOW, strength: 0.7, radius: 0.68, pulseMs: 700 },
-    skill: { color: SKILL_GLOW, strength: 0.7, radius: 0.68, pulseMs: 900 },
+    skill: { color: SKILL_GLOW, strength: 0.75, radius: 0.68, pulseMs: 900 },
     affinity: { color: AFFINITY_GLOW, strength: 0.7, radius: 0.68, pulseMs: 1000 },
     rivalry: { color: RIVALRY_GLOW, strength: 0.75, radius: 0.68, pulseMs: 600 },
+    promoted: { color: PROMOTION_GLOW, strength: 0.75, radius: 0.68, pulseMs: 800, waves: true },
+    reinvigorated: { color: REINVIGORATION_GLOW, strength: 0.7, radius: 0.68, pulseMs: 900 },
 }
 
 export const VIGOR_PALETTE = {
@@ -70,8 +76,20 @@ const LEVEL_STAR_PALETTE = {
 export const levelStarColors = (level: number) =>
     level >= 3 ? LEVEL_STAR_PALETTE.gold : LEVEL_STAR_PALETTE.silver
 
-// O número de dano que sobe acima da personagem atingida
-export const DAMAGE_POPUP_PALETTE = { fill: "#ffffff", stroke: "#1a1a1a" }
+// Dano: o número que sobe acima da personagem atingida, e o tom em que ela pisca
+export const DAMAGE_PALETTE = {
+    popup: { fill: "#ffffff", stroke: "#1a1a1a" },
+    flash: "#2d0000",
+}
+
+// Vigor recuperado: o número que sobe acima da personagem, na cor da aura do quê a revigorou
+// (a afinidade ou o item)
+export const REINVIGORATION_PALETTE = {
+    popup: {
+        affinity: { fill: AFFINITY_GLOW, stroke: "#0a1a1a" },
+        item: { fill: REINVIGORATION_GLOW, stroke: "#0a1f1a" },
+    },
+}
 
 // O incêndio do dano em área: as chamas sorteiam uma das cores da lista.
 export const FIRE_PALETTE = {

@@ -283,9 +283,11 @@ export const useCombatResolution = ({
         const popups = hits.flatMap((hit) => {
             const character = charactersRef.current.find((p) => p.id === hit.characterId)
             if (!character) return []
-            return [{ id: `dmg-${hit.characterId}-${Date.now()}`, position: { ...character.position }, amount: hit.damage }]
+            const id = `dmg-${hit.characterId}-${Date.now()}`
+            return [{ id, characterId: hit.characterId, position: { ...character.position }, amount: hit.damage }]
         })
-        if (popups.length > 0) effects.addDamagePopups(popups)
+        // O número espera o modal da rolagem sumir: aparecendo junto, ele ficaria por baixo do fade
+        if (popups.length > 0) rolls.afterFade(() => effects.addDamagePopups(popups))
 
         setCharacters((prev) =>
             prev

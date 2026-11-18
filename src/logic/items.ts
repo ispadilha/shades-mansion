@@ -4,6 +4,9 @@ import { MAX_LEVEL, statsFor } from "../constants/rules"
 
 export type ItemUse = "reinvigorate" | "promote" | "manipulate"
 
+// O que o item do próprio time faz na personagem
+export type OwnItemUse = Exclude<ItemUse, "manipulate">
+
 export const canPromote = (character: CharacterDefinition) => character.level < MAX_LEVEL && character.vigor >= character.maxVigor
 
 // Para o que este item serve agora. Null quando não serve para nada: a personagem já saiu do

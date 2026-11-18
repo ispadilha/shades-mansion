@@ -346,7 +346,7 @@ export const MAX_CHARGE_RUNS = 8
 // Viradas para o alvo guardadas no estado, pelo mesmo motivo
 export const MAX_AIMS = 8
 
-// Quanto tempo a câmera fica presa no item que caiu de volta no tabuleiro
+// Quanto a partida espera o item que caiu de volta no tabuleiro terminar de cair, antes de seguir
 export const ITEM_DROP_HOLD_MS = 1000
 
 // Tempo para a câmera ir até a personagem que vai usar habilidade, antes de abrir o modal
@@ -358,11 +358,14 @@ export const IDLE_HINT_MS = 5000
 // Tempo para a barra de dica deslizar
 export const HUD_BANNER_SLIDE_MS = 500
 
+// Tempo de fade para todo modal
+export const MODAL_FADE_MS = 250
+
+// Quanto tempo cada aviso importante fica no topo da tela
+export const IMPORTANT_LOG_MS = 4000
+
 // Quanto a partida espera a animação de um golpe antes de seguir
 export const ATTACK_EFFECT_HOLD_MS = 1000
-
-// Rolagem da câmera quando o cursor encosta na borda da viewport
-export const EDGE_SCROLL = { edgeSize: 80, maxSpeed: 20 }
 
 // ---------------------------------------------------------------------------
 // Encenação das rolagens
@@ -410,6 +413,14 @@ export const BARRIER_FLOOR_ALPHA = { dim: 0.5, bright: 0.78 }
 export const BARRIER_EDGE_WIDTH = 3
 
 export const FIRE_BURST_MS = 900
+
+// As "ondas" que uma aura pode ter, em forma de anéis.
+// Um a cada `everyMs`, cada um subindo `rise` casas em `riseMs`. O anel tem
+// `width` casas de largura, e a altura dele é essa fração (`tilt`) da largura.
+export const AURA_WAVES = { everyMs: 450, riseMs: 1100, rise: 1.15, width: 0.9, tilt: 0.32 }
+
+// A personagem atingida pisca no tom do dano: por quanto tempo, e de quanto em quanto ela troca
+export const DAMAGE_FLASH = { durationMs: 500, blinkMs: 100 }
 export const FLAMES_PER_CELL = 2
 
 // Personagem que já agiu na rodada fica translúcida
@@ -419,6 +430,10 @@ export const MOVED_CHARACTER_ALPHA = 0.55
 export const ITEM_DROP_MS = 1000
 export const ITEM_DROP_HEIGHT = 1.6
 
+// A personagem que perde todo o vigor fica parada esse tempo,
+// com a barra de vigor toda preta (e piscando no tom de dano), antes de "fugir da mansão"
+export const CHARACTER_DEFEAT_MS = 600
+
 // Saídas de cena: a personagem eliminada fugindo da mansão (corre uma casa enquanto some),
 // o item coletado, e a troca de transparência das personagens
 export const CHARACTER_FLEE_MS = 350
@@ -426,12 +441,37 @@ export const ITEM_FADE_MS = 220
 export const ALPHA_TWEEN_MS = 200
 
 // ---------------------------------------------------------------------------
-// Medidas da interface
+// Câmera
 // ---------------------------------------------------------------------------
 
 // Quem não tem base própria (comanda todos os times, ou só assiste)
 // começa com a câmera um pouco acima do meio do tabuleiro, estas linhas para cima
 export const CAMERA_START_ROWS_ABOVE_MIDDLE = 4
+
+// Quanto a câmera leva para deslizar até onde precisa ir: a personagem da vez, algo importante
+export const CAMERA_GLIDE_MS = 500
+
+// A câmera acompanha a personagem da vez (ou a manipulada) enquanto ela se mexe
+// Quando ela chega a esta distância da borda, em casas, a câmera desliza e a centraliza
+export const CAMERA_FOLLOW_MARGIN = 2
+
+// Quando a câmera vai atrás da personagem que anda, quantas casas além do centro ela passa,
+// na direção para onde a personagem vai: o caminho pela frente fica mais à vista
+export const CAMERA_FOLLOW_LEAD = 2
+
+// Depois de o jogador rolar o tabuleiro, por quanto tempo a câmera não se mexe sozinha
+export const CAMERA_MANUAL_PAUSE_MS = 2000
+
+// Quanto tempo a câmera fica em algo importante antes de voltar para a personagem da vez
+// Golpes acontecem o tempo todo, então seguram pouco, o resto segura mais
+export const CAMERA_HOLD_MS = { short: 1500, long: 3000 }
+
+// Rolagem da câmera quando o cursor encosta na borda da viewport
+export const EDGE_SCROLL = { edgeSize: 80, maxSpeed: 20 }
+
+// ---------------------------------------------------------------------------
+// Medidas da interface
+// ---------------------------------------------------------------------------
 
 // O HUD é feito de faixas horizontais de mesma altura e mesma cor
 export const HUD_BAND_HEIGHT = 76
@@ -439,6 +479,11 @@ export const HUD_TURN_ORDER_WIDTH = "75%"
 
 // As faixas temporárias que deslizam por trás do HUD (manipulação, habilidade, dica)
 export const HUD_BANNER_HEIGHT = 40
+
+// Os avisos importantes empilhados no topo da tela
+export const IMPORTANT_LOG_HEIGHT = 36
+export const IMPORTANT_LOG_GAP = 6
+export const IMPORTANT_LOG_TOP = 12
 
 // Medidas que existem para a tela não pular. Texto que alterna entre vazio e preenchido
 // (o número da ordem, o resultado de uma rolagem) reserva a própria altura desde o começo,
@@ -465,7 +510,12 @@ export const LEVEL_STAR = { x: 0.4, y: 0.36 }
 // Os pixels dela são uma fração dos do retrato, para ela não cobrir o rosto.
 export const ICON_LEVEL_STAR = { x: 0.27, y: 0.27, pixel: 0.5 }
 
-// O número de dano que sobe acima da personagem atingida
+// O número que sobe acima da personagem atingida: o dano
 export const DAMAGE_POPUP_MS = 1000
 export const DAMAGE_POPUP_RISE = 0.5
 export const MAX_DAMAGE_POPUPS = 12
+
+// O número que sobe acima da personagem revigorada: o vigor recuperado
+export const REINVIGORATION_POPUP_MS = 1000
+export const REINVIGORATION_POPUP_RISE = 0.5
+export const MAX_REINVIGORATION_POPUPS = 12

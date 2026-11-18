@@ -15,6 +15,8 @@ interface AffinityOptions {
     rolls: RollQueue
     // Rolagem de time comandado por jogador espera o clique
     isManualRoll: (color: CharacterColor) => boolean
+    // A dupla revigorou, e quanto cada uma recuperou: quem chama o mostra (câmera, o número que sobe)
+    onReinvigorated: (gains: { character: CharacterDefinition; amount: number }[]) => void
     log: GameLog
 }
 
@@ -28,6 +30,7 @@ export const useAffinity = ({
     turnKey,
     rolls,
     isManualRoll,
+    onReinvigorated,
     log,
 }: AffinityOptions): string[] => {
     const { t, tCharacterName } = useLanguage()
@@ -75,6 +78,10 @@ export const useAffinity = ({
                 })
                 setCharacters((prev) => prev.map((p) => (both.includes(p.id) ? reinvigoratedBy(p, amount) : p)))
                 log.affinity(activeCharacter.id, gain, partner.id, partnerGain)
+                onReinvigorated([
+                    { character: activeCharacter, amount: gain },
+                    { character: partner, amount: partnerGain },
+                ])
                 setRolling([])
                 rolls.setResolving(false)
             },

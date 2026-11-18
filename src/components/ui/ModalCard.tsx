@@ -1,7 +1,8 @@
-import React from "react"
-import { Box, Modal, type SxProps, type Theme } from "@mui/material"
+import React, { useRef } from "react"
+import { Box, Fade, Modal, type SxProps, type Theme } from "@mui/material"
 import { withSx } from "./withSx"
 import { usePalette } from "../../hooks/usePalette"
+import { MODAL_FADE_MS } from "../../constants/rules"
 
 interface ModalCardProps {
     open: boolean
@@ -20,35 +21,48 @@ interface ModalCardProps {
 export const ModalCard: React.FC<ModalCardProps> = ({ open, onClose, children, width = 320, sx }) => {
     const palette = usePalette()
 
+    // Saindo, a caixa continua mostrando o que mostrava: quem fecha costuma zerar junto o dado
+    // que ela exibia (a personagem, a barreira, o item), e o fade-out ficaria com a caixa vazia
+    const shown = useRef(children)
+    if (open) shown.current = children
+
     return (
-        <Modal open={open} onClose={onClose}>
-            <Box
-                sx={{
-                    position: "absolute",
-                    inset: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    pointerEvents: "none",
-                    outline: "none",
-                }}
-            >
+        <Modal
+            open={open}
+            onClose={onClose}
+            closeAfterTransition
+            slotProps={{ backdrop: { transitionDuration: MODAL_FADE_MS } }}
+        >
+            <Fade in={open} timeout={MODAL_FADE_MS}>
                 <Box
-                    sx={withSx(
-                        {
-                            width,
-                            bgcolor: palette.surface.bg,
-                            color: palette.surface.text,
-                            border: `1px solid ${palette.surface.border}`,
-                            pointerEvents: "auto",
-                            p: 3,
-                        },
-                        sx,
-                    )}
+                    sx={{
+                        position: "absolute",
+                        inset: 0,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        pointerEvents: "none",
+                        outline: "none",
+                    }}
                 >
-                    {children}
+                    <Box
+                        sx={withSx(
+                            {
+                                width,
+                                bgcolor: palette.surface.bg,
+                                color: palette.surface.text,
+                                border: `1px solid ${palette.surface.border}`,
+                                // Saindo, os botões da caixa já não valem
+                                pointerEvents: open ? "auto" : "none",
+                                p: 3,
+                            },
+                            sx,
+                        )}
+                    >
+                        {shown.current}
+                    </Box>
                 </Box>
-            </Box>
+            </Fade>
         </Modal>
     )
 }

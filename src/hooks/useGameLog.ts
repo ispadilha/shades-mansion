@@ -1,15 +1,27 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import type { CharacterColor, TextKey } from "../logic/types"
 import { useLanguage } from "./useLanguage"
 import { MAX_LOG_ENTRIES } from "../constants/rules"
+
+// Uma entrada importante do histórico, que também aparece por um tempo no topo da tela
+export interface ImportantNotice {
+    id: string
+    text: string
+}
 
 // O histórico de jogadas do HUD. Cada método monta uma frase no idioma da vez, então
 // nenhuma tela precisa saber como uma jogada é escrita.
 // Os métodos recebem as chaves do código ("dA")
 // e a frase sai com os nomes que o jogador conhece.
+// Algumas entradas são importantes:
+// além do histórico, elas vão para os avisos no topo da tela.
 export interface GameLog {
     // As entradas já escritas, da mais antiga para a mais recente
     entries: string[]
+    // Os avisos importantes que ainda estão no topo da tela, do mais recente para o mais antigo
+    notices: ImportantNotice[]
+    // Tira o aviso da lista, quando ele termina de sair da tela
+    dismissNotice: (id: string) => void
     add: (entry: string) => void
     // "{time} usou {personagem} para {ação} [{alvo}]"
     usedTo: (color: CharacterColor, character: string, actionKey: TextKey, target?: string) => void
@@ -39,11 +51,25 @@ export interface GameLog {
 export const useGameLog = (): GameLog => {
     const { t, tTeam, tCharacterName, tItemName } = useLanguage()
     const [entries, setEntries] = useState<string[]>([])
+    const [notices, setNotices] = useState<ImportantNotice[]>([])
+    // Conta os avisos, para cada um ter um id só dele, mesmo os que saem no mesmo instante
+    const noticeCountRef = useRef(0)
 
     // Aceita novas entradas e descarta as mais antigas além de MAX_LOG_ENTRIES
     const add = (entry: string) => {
         setEntries((prev) => [...prev.slice(-(MAX_LOG_ENTRIES - 1)), entry])
     }
+
+    // Entrada importante: vai para o histórico e também para o topo da tela,
+    // por cima dos outros avisos importantes que já estavam lá
+    const addImportant = (entry: string) => {
+        add(entry)
+        noticeCountRef.current += 1
+        const notice = { id: `notice-${noticeCountRef.current}`, text: entry }
+        setNotices((prev) => [notice, ...prev])
+    }
+
+    const dismissNotice = (id: string) => setNotices((prev) => prev.filter((notice) => notice.id !== id))
 
     // O alvo da ação, pelo nome:
     // o item que a personagem foi coletar, ou a personagem que ela atacou ou imitou
@@ -87,7 +113,7 @@ export const useGameLog = (): GameLog => {
     }
 
     const promoted = (color: CharacterColor, character: string, level: number) => {
-        add(`${tTeam(color)} ${t("verbPromoted")} ${tCharacterName(character)} ${t("toLevel")} ${level}`)
+        addImportant(`${tTeam(color)} ${t("verbPromoted")} ${tCharacterName(character)} ${t("toLevel")} ${level}`)
     }
 
     const returned = (itemKey: string) => {
@@ -127,15 +153,17 @@ export const useGameLog = (): GameLog => {
     }
 
     const eliminated = (characterId: string) => {
-        add(`${tCharacterName(characterId)} ${t("wasEliminated")}!`)
+        addImportant(`${tCharacterName(characterId)} ${t("wasEliminated")}!`)
     }
 
     const defeated = (color: CharacterColor) => {
-        add(`${tTeam(color)} ${t("wasDefeated")}!`)
+        addImportant(`${tTeam(color)} ${t("wasDefeated")}!`)
     }
 
     return {
         entries,
+        notices,
+        dismissNotice,
         add,
         usedTo,
         manipulatedTo,

@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react"
 import type { Inventories, MotivationItemKey, CharacterColor, CharacterDefinition } from "../logic/types"
 import { itemKeyColor } from "../logic/types"
-import { itemUseFor, promoted, reinvigorated } from "../logic/items"
+import { itemUseFor, promoted, reinvigorated, type OwnItemUse } from "../logic/items"
 import type { CombatResolution } from "./useCombatResolution"
 import type { RollQueue } from "./useRolls"
 import type { GameLog } from "./useGameLog"
@@ -29,6 +29,7 @@ interface ItemActionsOptions {
     setManipulation: (manipulation: Manipulation | null) => void
     // Há uma jogada em curso (manipulação ou habilidade)? Os itens esperam.
     locked: boolean
+    onOwnItemUsed: (character: CharacterDefinition, use: OwnItemUse) => void
     rolls: RollQueue
     combat: CombatResolution
     log: GameLog
@@ -56,6 +57,7 @@ export const useItemActions = ({
     closeInventory,
     setManipulation,
     locked,
+    onOwnItemUsed,
     rolls,
     combat,
     log,
@@ -74,6 +76,8 @@ export const useItemActions = ({
         removeFromInventory(inventoryColor, key)
         if (use === "reinvigorate") log.reinvigorated(inventoryColor, key)
         else log.promoted(inventoryColor, key, after.level)
+        closeInventory()
+        onOwnItemUsed(after, use)
     }
 
     const useManipulationItem = (key: MotivationItemKey) => {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react"
-import type { MotivationItem, CharacterColor, CharacterDefinition } from "../logic/types"
+import type { MotivationItem, CharacterColor, CharacterDefinition, CharacterPosition } from "../logic/types"
 import type { Maze } from "../logic/maze"
-import { useBoardCamera, type CameraFocus } from "./useBoardCamera"
+import { useBoardCamera, type CameraFocus, type CameraHold } from "./useBoardCamera"
 import { ITEM_DROP_HOLD_MS } from "../constants/rules"
 
 interface MatchFocusOptions {
@@ -25,16 +25,25 @@ export interface MatchFocus {
     setManipulatedId: (id: string | null) => void
     // Segura a câmera na personagem manipulada enquanto ela ainda caminha até o destino
     holdFocus: (delayMs: number) => void
-    // Item que acabou de cair de volta no tabuleiro: a câmera para em cima dele
+    // Item que acabou de cair de volta no tabuleiro, para a cena animar a queda
     droppedItem: MotivationItem | null
+    // Um item caiu de volta no tabuleiro: a cena o mostra caindo, e a câmera fica nele um tempo
     showDroppedItem: (item: MotivationItem) => void
+    // Algo importante aconteceu nesta casa: a câmera fica nela um tempo
+    spotlight: (position: CharacterPosition, hold?: CameraHold) => void
+    // A câmera está mostrando algo importante: a IA espera ela voltar para jogar
+    spotlighting: boolean
+    // A personagem em foco, que a câmera está acompanhando (a da vez, ou a manipulada),
+    // e o aviso da cena a cada quadro em que ela se mexe
+    followedId: string | null
+    followMove: (position: CharacterPosition) => void
     // Traz a câmera de volta mesmo que o foco já fosse esse
     nudge: () => void
 }
 
 // A câmera da partida e quem manda nela. Ela descansa na personagem da vez,
 // mas uma manipulação rouba esse foco (quem age é a personagem manipulada),
-// e um item caindo de volta no labirinto rouba de todos, por um instante.
+// e um acontecimento importante rouba de todos, por alguns segundos.
 export const useMatchFocus = ({
     maze,
     characters,
@@ -49,22 +58,20 @@ export const useMatchFocus = ({
     // Instante até o qual a câmera trava na personagem manipulada mesmo sem rolagem em andamento:
     // é o caso do movimento forçado, que só tem a caminhada para mostrar.
     const [heldUntil, setHeldUntil] = useState(0)
-    // A câmera só se mexe quando a chave do foco muda.
+    // A câmera só vai até a personagem quando a chave do foco muda.
     // Este contador entra na chave para o HUD conseguir trazê-la de volta à personagem da vez,
     // mesmo que ela já fosse o foco e o jogador tenha passeado com a tela.
     const [nudges, setNudges] = useState(0)
 
-    // Seguir a casa, e não só a personagem, brigaria com a rolagem manual do jogador:
-    // por isso a posição só entra na chave durante uma manipulação.
+    // A casa não entra na chave: andando, quem leva a câmera junto é a própria cena (`followMove`), e só
+    // quando a personagem chega perto da borda. Ir até cada casa nova brigaria com a rolagem do jogador.
     const focusCharacter = characters.find((p) => p.id === (manipulatedId ?? activeCharacterId))
-    const focus: CameraFocus | undefined = droppedItem
-        ? { key: droppedItem.id, position: droppedItem.position }
-        : focusCharacter && {
-              key: `${manipulatedId ? `${focusCharacter.id}:${focusCharacter.position.x},${focusCharacter.position.y}` : focusCharacter.id}#${nudges}`,
-              position: focusCharacter.position,
-          }
+    const focus: CameraFocus | undefined = focusCharacter && {
+        key: `${focusCharacter.id}#${nudges}`,
+        position: focusCharacter.position,
+    }
 
-    useBoardCamera(scrollRef, { maze, homeColor, focus })
+    const camera = useBoardCamera(scrollRef, { maze, homeColor, focus })
 
     // Devolve o foco à personagem da vez quando a manipulação se encerra:
     // a personagem manipulada saiu do comando (resistiu, ou terminou)
@@ -85,6 +92,7 @@ export const useMatchFocus = ({
 
     const showDroppedItem = (item: MotivationItem) => {
         setDroppedItem(item)
+        camera.spotlight(item.position)
         window.setTimeout(() => setDroppedItem(null), ITEM_DROP_HOLD_MS)
     }
 
@@ -95,6 +103,13 @@ export const useMatchFocus = ({
         holdFocus: (delayMs: number) => setHeldUntil(Date.now() + delayMs),
         droppedItem,
         showDroppedItem,
-        nudge: () => setNudges((n) => n + 1),
+        spotlight: camera.spotlight,
+        spotlighting: camera.spotlighting,
+        followedId: focusCharacter?.id ?? null,
+        followMove: camera.follow,
+        nudge: () => {
+            camera.release()
+            setNudges((n) => n + 1)
+        },
     }
 }

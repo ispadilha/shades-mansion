@@ -1,8 +1,8 @@
 import Phaser from "phaser"
 import type { AuraKind } from "../logic/types"
 import { AURA_PALETTE, levelStarColors } from "../constants/palette"
-import { BOARD_ART_SCALE, GLOW_BANDS } from "../constants/rules"
-import { glowGrid, starGrid, numberGrid, type PixelGrid } from "../assets/pixels"
+import { AURA_WAVES, BOARD_ART_SCALE, GLOW_BANDS } from "../constants/rules"
+import { glowGrid, starGrid, numberGrid, waveGrid, type PixelGrid } from "../assets/pixels"
 
 // As texturas da cena que não vêm de arquivo: desenhadas em pixel, em código, e guardadas no
 // gerenciador de texturas do Phaser pela chave. Cada uma nasce uma vez só.
@@ -47,6 +47,16 @@ export const auraTexture = (scene: Phaser.Scene, kind: AuraKind, cellSize: numbe
     const { color, radius } = AURA_PALETTE[kind]
     const side = Math.round((radius * 2 * cellSize) / BOARD_ART_SCALE.character)
     return pixelTexture(scene, `aura-${kind}-${color}-${side}`, () => glowGrid(side, color, AURA_FADE, GLOW_BANDS))
+}
+
+// As duas metades de um anel de onda da aura, com pixels do tamanho dos da arte
+export const waveTextures = (scene: Phaser.Scene, kind: AuraKind, cellSize: number) => {
+    const { color } = AURA_PALETTE[kind]
+    const width = Math.round((AURA_WAVES.width * cellSize) / BOARD_ART_SCALE.character)
+    const height = Math.max(3, Math.round(width * AURA_WAVES.tilt))
+    const texture = (half: "back" | "front") =>
+        pixelTexture(scene, `wave-${half}-${color}-${width}x${height}`, () => waveGrid(width, height, color, half))
+    return { back: texture("back"), front: texture("front") }
 }
 
 // A estrela de promoção, na cor do nível

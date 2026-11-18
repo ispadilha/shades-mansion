@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react"
 import Phaser from "phaser"
-import type { Barrier, CharacterAuras, CharacterDefinition, MotivationItem } from "../../logic/types"
-import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../../logic/boardEffects"
+import type { Barrier, CharacterAuras, CharacterDefinition, CharacterPosition, MotivationItem } from "../../logic/types"
+import type { Aim, ChargeRun, DamagePopup, FireBurst, ReinvigorationPopup } from "../../logic/boardEffects"
 import type { Maze } from "../../logic/maze"
 import { BoardScene } from "../../game/BoardScene"
 import { usePlayOnce } from "../../hooks/usePlayOnce"
@@ -16,11 +16,15 @@ export interface PhaserBoardProps {
     barriers: Barrier[]
     fireBursts: FireBurst[]
     damagePopups: DamagePopup[]
+    reinvigorationPopups: ReinvigorationPopup[]
     chargeRuns: ChargeRun[]
     aims: Aim[]
     auras: CharacterAuras
     // Item que caiu de volta no tabuleiro
     droppedItemId: string | null
+    // A personagem que a câmera acompanha
+    followedId: string | null
+    onFollowedMove: (position: CharacterPosition) => void
 }
 
 // A cena do Phaser dentro do React: o jogo nasce uma vez, e cada mudança de estado é
@@ -35,10 +39,13 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
     barriers,
     fireBursts,
     damagePopups,
+    reinvigorationPopups,
     chargeRuns,
     aims,
     auras,
     droppedItemId,
+    followedId,
+    onFollowedMove,
 }) => {
     const containerRef = useRef<HTMLDivElement>(null)
     const sceneRef = useRef<BoardScene | null>(null)
@@ -69,6 +76,11 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
         }
     }, [cellSize, maze, overflow, side])
 
+    // A cena conta à câmera cada passo da personagem que ela acompanha
+    useEffect(() => {
+        sceneRef.current?.follow(followedId, onFollowedMove)
+    }, [followedId, onFollowedMove])
+
     useEffect(() => {
         sceneRef.current?.syncItems(items)
     }, [items])
@@ -97,6 +109,7 @@ export const PhaserBoard: React.FC<PhaserBoardProps> = ({
 
     usePlayOnce(fireBursts, (burst) => sceneRef.current?.playFireBurst(burst))
     usePlayOnce(damagePopups, (popup) => sceneRef.current?.playDamage(popup))
+    usePlayOnce(reinvigorationPopups, (popup) => sceneRef.current?.playReinvigoration(popup))
 
     return (
         <div

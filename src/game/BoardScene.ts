@@ -2,17 +2,20 @@ import Phaser from "phaser"
 import type { Barrier, CharacterAuras, CharacterDefinition, CharacterPosition, MotivationItem } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { isWalkable } from "../logic/maze"
-import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../logic/boardEffects"
+import type { Aim, ChargeRun, DamagePopup, FireBurst, ReinvigorationPopup } from "../logic/boardEffects"
 import { findPath } from "../logic/movement"
 import { atPosition, blockedCellsFor, facingToward, neighbors, positionKey, samePosition } from "../logic/grid"
 import { isSpent } from "../logic/turn"
 import { pickRandom } from "../logic/random"
-import { DAMAGE_POPUP_PALETTE } from "../constants/palette"
+import { DAMAGE_PALETTE, REINVIGORATION_PALETTE } from "../constants/palette"
 import {
     BOARD_ART_SCALE,
     BOARD_DEPTHS,
+    CHARACTER_DEFEAT_MS,
     DAMAGE_POPUP_MS,
     DAMAGE_POPUP_RISE,
+    REINVIGORATION_POPUP_MS,
+    REINVIGORATION_POPUP_RISE,
     ITEM_DROP_HEIGHT,
     ITEM_DROP_MS,
     ITEM_FADE_MS,
@@ -37,6 +40,10 @@ export class BoardScene extends Phaser.Scene {
     private cellSize: number
     private maze: Maze
     private characters: Map<string, CharacterSprite> = new Map()
+    // Quem perdeu todo o vigor e está um instante parada antes de "fugir"
+    private defeated: Map<string, CharacterSprite> = new Map()
+    // A última lista de personagens recebida, para quem vai "fugir" preferir uma casa vaga
+    private lastCharacters: CharacterDefinition[] = []
     private itemSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     private barrierSprites: Map<string, Phaser.GameObjects.Container> = new Map()
     // A última lista recebida: o caminho de uma personagem contorna as barreiras dos oponentes,
@@ -50,6 +57,13 @@ export class BoardScene extends Phaser.Scene {
     private pendingSyncs: Map<SyncKind, () => void> = new Map()
     private pendingPlays: Array<() => void> = []
     private isReady = false
+    // A personagem que a câmera acompanha, quem a cena avisa quando ela se mexe,
+    // e onde ela estava no quadro anterior
+    private followed: {
+        id: string
+        onMove: (position: CharacterPosition) => void
+        last: { x: number; y: number } | null
+    } | null = null
 
     // Quanto a cena passa da borda do tabuleiro, em pixels:
     // a câmera recua isso, e o tabuleiro começa um pouco para dentro dela
@@ -82,11 +96,33 @@ export class BoardScene extends Phaser.Scene {
         this.pendingPlays = []
     }
 
-    // A cada quadro, a ordem de desenho das personagens acompanha a altura de cada uma no tabuleiro:
-    // quem desce passa a ficar por cima de quem ficou para trás
+    // A cada quadro, a ordem de desenho das personagens acompanha a altura da posição
+    // de cada uma no tabuleiro (quem desce passa a ficar na frente), e a câmera
+    // fica sabendo se a personagem que ela acompanha se mexeu
     update() {
         const boardHeight = this.maze.size * this.cellSize
         for (const sprite of this.characters.values()) sprite.updateDepth(boardHeight)
+        this.reportFollowed()
+    }
+
+    // A câmera é do React (ela rola a página), mas é a cena que sabe
+    // onde a personagem está no meio de um passo. A personagem acompanhada
+    // passa a ser esta, e a primeira posição dela só é guardada.
+    follow(characterId: string | null, onMove: (position: CharacterPosition) => void) {
+        this.followed = characterId ? { id: characterId, onMove, last: null } : null
+    }
+
+    // Só o movimento conta: a cada quadro em que a personagem acompanhada mudou de lugar,
+    // a cena avisa em que casa ela está
+    private reportFollowed() {
+        const followed = this.followed
+        const sprite = followed && this.characters.get(followed.id)
+        if (!followed || !sprite) return
+        const { x, y } = sprite.container
+        const last = followed.last
+        followed.last = { x, y }
+        if (!last || (last.x === x && last.y === y)) return
+        followed.onMove({ x: x / this.cellSize - 0.5, y: y / this.cellSize - 0.5 })
     }
 
     // Uma sincronia antes de a cena montar espera por ela, e só a última de cada lista vale
@@ -124,10 +160,24 @@ export class BoardScene extends Phaser.Scene {
         this.play(() => spawnFireBurst(this, this.cellSize, this.cellToPixel(burst.center), burst))
     }
 
-    // O número de dano que sobe acima da personagem atingida. Como cada explosão, ele é tocado
-    // uma vez só, e é quem chama que controla isso.
+    // O número de dano sobe acima da personagem atingida, que pisca no tom de dano.
+    // Como cada explosão, isso é tocado uma vez só, e é quem chama que controla isso.
+    // Quem foi eliminada também pisca, parada por um instante, antes de "fugir da mansão".
     playDamage(popup: DamagePopup) {
-        this.play(() => this.spawnDamage(popup))
+        this.play(() => {
+            this.spawnNumber(popup.position, popup.amount, DAMAGE_PALETTE.popup, DAMAGE_POPUP_MS, DAMAGE_POPUP_RISE)
+            const sprite = this.characters.get(popup.characterId) ?? this.defeated.get(popup.characterId)
+            sprite?.flashDamage()
+        })
+    }
+
+    // O vigor recuperado sobe acima da personagem revigorada, como o número do dano,
+    // mas na cor da aura do quê a revigorou (afinidade ou item). Também é tocado uma vez só.
+    playReinvigoration(popup: ReinvigorationPopup) {
+        const colors = REINVIGORATION_PALETTE.popup[popup.source]
+        this.play(() =>
+            this.spawnNumber(popup.position, popup.amount, colors, REINVIGORATION_POPUP_MS, REINVIGORATION_POPUP_RISE),
+        )
     }
 
     // A queda de um item que voltou ao tabuleiro.
@@ -178,6 +228,7 @@ export class BoardScene extends Phaser.Scene {
     }
 
     private applyCharacters(characters: CharacterDefinition[]) {
+        this.lastCharacters = characters
         const seen = new Set<string>()
 
         for (const character of characters) {
@@ -204,11 +255,18 @@ export class BoardScene extends Phaser.Scene {
             sprite.sync(character)
         }
 
-        // Quem saiu da lista foi eliminada / "foge da mansão"
+        // Quem saiu da lista foi eliminada / "foge da mansão".
+        // Primeiro a barra de vigor fica toda preta, para mostrar que esvaziou,
+        // e só depois de `CHARACTER_DEFEAT_MS` ela foge.
         for (const [id, sprite] of this.characters) {
             if (seen.has(id)) continue
             this.characters.delete(id)
-            this.flee(sprite, characters)
+            this.defeated.set(id, sprite)
+            sprite.defeat()
+            this.time.delayedCall(CHARACTER_DEFEAT_MS, () => {
+                this.defeated.delete(id)
+                this.flee(sprite, this.lastCharacters)
+            })
         }
     }
 
@@ -276,13 +334,19 @@ export class BoardScene extends Phaser.Scene {
         for (const [id, sprite] of this.characters) sprite.setAura(auras[id] ?? null)
     }
 
-    // O número branco que sobe da casa e desaparece, em algarismos de pixel do tamanho dos da arte
-    private spawnDamage(popup: DamagePopup) {
+    // O número que sobe da casa e desaparece, em algarismos de pixel do tamanho dos da arte:
+    // o dano em branco, o vigor recuperado na cor do quê revigorou
+    private spawnNumber(
+        position: CharacterPosition,
+        amount: number,
+        { fill, stroke }: { fill: string; stroke: string },
+        durationMs: number,
+        rise: number,
+    ) {
         const cs = this.cellSize
-        const { x, y } = this.cellToPixel(popup.position)
-        const { fill, stroke } = DAMAGE_POPUP_PALETTE
+        const { x, y } = this.cellToPixel(position)
         const label = this.add
-            .image(x, y - cs * 0.12, numberTexture(this, popup.amount, fill, stroke))
+            .image(x, y - cs * 0.12, numberTexture(this, amount, fill, stroke))
             .setOrigin(0.5, 1)
             .setScale(BOARD_ART_SCALE.character)
             .setVertexRoundMode(WHOLE_PIXELS)
@@ -290,9 +354,9 @@ export class BoardScene extends Phaser.Scene {
 
         this.tweens.add({
             targets: label,
-            y: label.y - cs * DAMAGE_POPUP_RISE,
+            y: label.y - cs * rise,
             alpha: { from: 1, to: 0 },
-            duration: DAMAGE_POPUP_MS,
+            duration: durationMs,
             ease: "Quad.easeOut",
             onComplete: () => label.destroy(),
         })

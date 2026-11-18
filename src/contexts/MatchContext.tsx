@@ -14,7 +14,8 @@ import type {
     TextKey,
 } from "../logic/types"
 import { controlledColorsFor } from "../logic/types"
-import type { Aim, ChargeRun, DamagePopup, FireBurst } from "../logic/boardEffects"
+import type { OwnItemUse } from "../logic/items"
+import type { Aim, ChargeRun, DamagePopup, FireBurst, ReinvigorationPopup } from "../logic/boardEffects"
 import type { BoardMenuState } from "../logic/boardMenu"
 import { turnStageOf } from "../logic/turn"
 import { useAiTurn } from "../hooks/useAiTurn"
@@ -22,8 +23,9 @@ import { useBoardActions } from "../hooks/useBoardActions"
 import { useCombatResolution } from "../hooks/useCombatResolution"
 import { useEdgeScroll } from "../hooks/useEdgeScroll"
 import { useEliminations } from "../hooks/useEliminations"
+import { useEventAuras } from "../hooks/useEventAuras"
 import { useGame } from "../hooks/useGame"
-import { useGameLog } from "../hooks/useGameLog"
+import { useGameLog, type ImportantNotice } from "../hooks/useGameLog"
 import { useHighlightedCells } from "../hooks/useHighlightedCells"
 import { useAffinity } from "../hooks/useAffinity"
 import { useAuras } from "../hooks/useAuras"
@@ -34,10 +36,12 @@ import { useIdleHint, type IdleHint } from "../hooks/useIdleHint"
 import { useItemActions, type Manipulation } from "../hooks/useItemActions"
 import { useMatchFocus } from "../hooks/useMatchFocus"
 import { useMatchItems } from "../hooks/useMatchItems"
+import { usePlayOnce } from "../hooks/usePlayOnce"
 import { useRivalry } from "../hooks/useRivalry"
 import { useRolls, type RollQueue } from "../hooks/useRolls"
 import { useSkillFlow, type SkillFlow } from "../hooks/useSkillFlow"
 import { useTurnFlow } from "../hooks/useTurnFlow"
+import { MODAL_FADE_MS } from "../constants/rules"
 
 // A partida em curso, do jeito que a tela precisa vê-la.
 // Os nomes aqui são os do jogo: o tabuleiro, a vez, a habilidade, os itens;
@@ -55,11 +59,15 @@ export interface MatchContextValue {
         barriers: Barrier[]
         fireBursts: FireBurst[]
         damagePopups: DamagePopup[]
+        reinvigorationPopups: ReinvigorationPopup[]
         chargeRuns: ChargeRun[]
         aims: Aim[]
         auras: CharacterAuras
         selectedId: string | null
         droppedItemId: string | null
+        // A personagem que a câmera acompanha quando ela anda, e o aviso da cena a cada passo dela
+        followedId: string | null
+        onFollowedMove: (position: CharacterPosition) => void
         onCellClick: (position: CharacterPosition) => void
         onCellContextMenu: (event: React.MouseEvent, position: CharacterPosition) => void
     }
@@ -127,6 +135,10 @@ export interface MatchContextValue {
     }
 
     log: string[]
+    importantLog: {
+        notices: ImportantNotice[]
+        dismiss: (id: string) => void
+    }
     rolls: RollQueue
     hint: IdleHint
 }
@@ -177,6 +189,26 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
 
     // O que a cena anima a pedido das jogadas: o fogo, os números de dano, as investidas, as viradas
     const effects = useBoardEffects()
+    // Auras passageiras
+    const eventAuras = useEventAuras()
+
+    // O vigor que cada personagem recuperou sobe dela, na cor do quê a revigorou.
+    // Quem já estava inteira não recuperou nada, e não ganha número.
+    const showReinvigorationPopups = (
+        gains: { character: CharacterDefinition; amount: number }[],
+        source: ReinvigorationPopup["source"],
+    ) => {
+        const shown = gains.filter((gain) => gain.amount > 0)
+        if (shown.length === 0) return
+        effects.addReinvigorationPopups(
+            shown.map(({ character, amount }) => ({
+                id: `reinvigoration-${character.id}-${Date.now()}`,
+                position: { ...character.position },
+                amount,
+                source,
+            })),
+        )
+    }
     const [infoCharacter, setInfoCharacter] = useState<CharacterDefinition | null>(null)
     const [itemInfoKey, setItemInfoKey] = useState<MotivationItemKey | null>(null)
     const [infoBarrier, setInfoBarrier] = useState<Barrier | null>(null)
@@ -219,6 +251,13 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         turnKey: `${turn.round}-${turn.turnIndex}`,
         rolls,
         isManualRoll,
+        // Dupla que revigorou: a câmera fica entre as duas um tempo,
+        // e o vigor que cada uma recuperou sobe dela na cor da afinidade, quando o modal da rolagem some
+        onReinvigorated: (gains) => {
+            const [one, other] = gains.map((gain) => gain.character.position)
+            focus.spotlight({ x: (one.x + other.x) / 2, y: (one.y + other.y) / 2 })
+            rolls.afterFade(() => showReinvigorationPopups(gains, "affinity"))
+        },
         log,
     })
 
@@ -268,6 +307,22 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         if (!item) return
         log.returned(key)
         focus.showDroppedItem(item)
+    }
+
+    // Promover e revigorar com o item do próprio time são acontecimentos importantes:
+    // a câmera vai até a personagem, que ganha a aura passageira.
+    // Revigorada, ela também mostra o vigor que recuperou, subindo na cor do item.
+    // O estado deste render ainda é o de antes do item, então é dele que sai quanto ela tinha.
+    const showOwnItemUse = (character: CharacterDefinition, use: OwnItemUse) => {
+        focus.spotlight(character.position)
+        eventAuras.light(character.id, use === "promote" ? "promoted" : "reinvigorated")
+        if (use !== "reinvigorate") return
+        const before = characters.find((p) => p.id === character.id)
+        if (!before) return
+        const show = () => showReinvigorationPopups([{ character, amount: character.vigor - before.vigor }], "item")
+        // Pelo inventário, o número espera a janela dele terminar de sumir, como depois de uma rolagem
+        if (inventoryOpen) window.setTimeout(show, MODAL_FADE_MS)
+        else show()
     }
 
     // O duelo entre rivais, que toma o lugar da defesa no golpe corpo a corpo entre as duas
@@ -327,6 +382,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         closeInventory: () => setInventoryOpen(false),
         setManipulation,
         locked: inventoryLocked,
+        onOwnItemUsed: showOwnItemUse,
         rolls,
         combat,
         log,
@@ -360,6 +416,8 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         moveActionFor,
         removeFromInventory: items.removeFromInventory,
         holdFocus: focus.holdFocus,
+        spotlighting: focus.spotlighting,
+        onOwnItemUsed: showOwnItemUse,
         combat,
         log,
     })
@@ -382,7 +440,19 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [characters, turn.turnIndex, rolls.resolving])
 
-    useEliminations(characters, { onCharacterEliminated: log.eliminated, onTeamDefeated: log.defeated })
+    // Quem "foge da mansão" sai no histórico, e a câmera mostra de onde ela fugiu
+    useEliminations(characters, {
+        onCharacterEliminated: (character) => {
+            log.eliminated(character.id)
+            focus.spotlight(character.position)
+        },
+        onTeamDefeated: log.defeated,
+    })
+
+    // Explosão também prende a câmera um tempo, antes de voltar para a personagem da vez.
+    // Demais golpes prendem por um tempo menor.
+    usePlayOnce(effects.fireBursts, (burst) => focus.spotlight(burst.center))
+    usePlayOnce(effects.damagePopups, (popup) => focus.spotlight(popup.position, "short"))
 
     // Vitória: último time com personagens no tabuleiro
     useEffect(() => {
@@ -428,6 +498,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
     const auras = useAuras({
         activeCharacterId: activeCharacter?.id ?? null,
         affinityDuo,
+        eventAuras: eventAuras.auras,
         skillCharacterId: skill.active?.characterId ?? aiSkillUserId,
         manipulatedId: focus.manipulatedId,
         rivals: rivalry.rivals,
@@ -445,11 +516,14 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             barriers: barriers.all,
             fireBursts: effects.fireBursts,
             damagePopups: effects.damagePopups,
+            reinvigorationPopups: effects.reinvigorationPopups,
             chargeRuns: effects.chargeRuns,
             aims: effects.aims,
             auras,
             selectedId,
             droppedItemId: focus.droppedItem?.id ?? null,
+            followedId: focus.followedId,
+            onFollowedMove: focus.followMove,
             onCellClick: input.onCellClick,
             onCellContextMenu: input.onCellContextMenu,
         },
@@ -508,6 +582,7 @@ export const MatchProvider: React.FC<MatchProviderProps> = ({ match, children })
             closeInfoBarrier: () => setInfoBarrier(null),
         },
         log: log.entries,
+        importantLog: { notices: log.notices, dismiss: log.dismissNotice },
         rolls,
         hint,
     }

@@ -5,6 +5,7 @@ import { boardActionsFor, isInfoAction, type BoardMenuState } from "../logic/boa
 import { atPosition } from "../logic/grid"
 import { turnStageOf } from "../logic/turn"
 import type { SkillFlow } from "./useSkillFlow"
+import { useStableCallback } from "./useStableCallback"
 
 interface BoardInputOptions {
     characters: CharacterDefinition[]
@@ -59,7 +60,12 @@ export const useBoardInput = ({
     const [menu, setMenu] = useState<BoardMenuState | null>(null)
     const closeMenu = () => setMenu(null)
 
-    const onCellClick = (position: CharacterPosition) => {
+    // Os dois tratadores de clique (esquerdo e direito) chegam a todas as casas do tabuleiro,
+    // que são memorizadas.
+    // (`Cell`): com a mesma função a cada render, uma casa que não mudou não precisa
+    // ser desenhada de novo.
+    // O que a função faz continua enxergando o estado de agora.
+    const onCellClick = useStableCallback((position: CharacterPosition) => {
         // Com habilidade em uso, a personagem fica travada: sair dela é só pelo botão de cancelar
         if (!activeColor || manipulatedCharacterId || skill.active) return
 
@@ -75,9 +81,9 @@ export const useBoardInput = ({
             return
         }
         setSelectedId(selectedId === clicked.id ? null : clicked.id)
-    }
+    })
 
-    const onCellContextMenu = (event: React.MouseEvent, position: CharacterPosition) => {
+    const onCellContextMenu = useStableCallback((event: React.MouseEvent, position: CharacterPosition) => {
         const actions = boardActionsFor({
             position,
             characters,
@@ -108,7 +114,7 @@ export const useBoardInput = ({
             actions,
             ...(skill.active ? { skillAction: skill.active.skill.action } : {}),
         })
-    }
+    })
 
     return { onCellClick, onCellContextMenu, menu, closeMenu }
 }

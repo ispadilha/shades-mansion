@@ -1,19 +1,21 @@
 import Phaser from "phaser"
 import type { AuraKind, CharacterColor, CharacterDefinition, CharacterPosition, Facing } from "../logic/types"
 import { characterKey } from "../logic/types"
-import { AURA_PALETTE, VIGOR_PALETTE, hex } from "../constants/palette"
+import { AURA_PALETTE, DAMAGE_PALETTE, VIGOR_PALETTE, hex } from "../constants/palette"
 import {
     ALPHA_TWEEN_MS,
+    AURA_WAVES,
     BOARD_ART_SCALE,
     BOARD_DEPTHS,
     CHARACTER_FLEE_MS,
     CHARACTER_FLOOR,
+    DAMAGE_FLASH,
     LEVEL_STAR,
     STEP_MS,
     VIGOR_BAR,
 } from "../constants/rules"
 import { CHARACTER_ART_SIZE, FACING_FRAMES } from "../assets"
-import { auraTexture, characterTexture, starTexture } from "./pixelTextures"
+import { auraTexture, characterTexture, starTexture, waveTextures } from "./pixelTextures"
 
 // As artes sempre caem em pixels inteiros da tela, paradas ou no meio da caminhada:
 // ampliadas, numa posição quebrada os pixels delas mudariam de largura a cada passo
@@ -48,7 +50,11 @@ export class CharacterSprite {
     // Largura da barra cheia, já descontada a moldura
     private readonly vigorWidth: number
     private readonly star: Phaser.GameObjects.Image
-    private aura: { kind: AuraKind; sprite: Phaser.GameObjects.Image } | null = null
+    // O halo da aura e, nas que têm ondas, o relógio que faz nascer cada uma
+    private aura: { kind: AuraKind; sprite: Phaser.GameObjects.Image; waves: Phaser.Time.TimerEvent | null } | null =
+        null
+    // O relógio do piscar da personagem atingida
+    private flash: Phaser.Time.TimerEvent | null = null
     // A casa em que a personagem está, ou a que está indo
     cell: CharacterPosition
     // Durante a caminhada são os passos que decidem para onde a personagem olha: a virada para o
@@ -194,13 +200,15 @@ export class CharacterSprite {
         this.arrivalFacing = null
     }
 
-    // Aura: um halo que se apaga em faixas até a borda, pulsando devagar.
-    // Null apaga o que houver.
+    // Aura: um halo que se apaga em faixas até a borda, pulsando devagar,
+    // e ondas subindo pela personagem se for o caso. Null apaga o que houver.
     setAura(kind: AuraKind | null) {
         if (this.aura?.kind === kind) return
         if (this.aura) {
-            const { sprite } = this.aura
+            const { sprite, waves } = this.aura
             this.aura = null
+            // As ondas param de nascer, e as que já estão subindo terminam a subida
+            waves?.remove()
             this.scene.tweens.killTweensOf(sprite)
             this.scene.tweens.add({
                 targets: sprite,
@@ -211,7 +219,7 @@ export class CharacterSprite {
         }
         if (!kind) return
 
-        const { strength, pulseMs } = AURA_PALETTE[kind]
+        const { strength, pulseMs, waves } = AURA_PALETTE[kind]
         const scale = BOARD_ART_SCALE.character
         const sprite = this.scene.add
             .image(0, 0, auraTexture(this.scene, kind, this.cellSize))
@@ -228,12 +236,78 @@ export class CharacterSprite {
         })
         // Na primeira posição do container: o brilho fica atrás do desenho da personagem
         this.container.addAt(sprite, 0)
-        this.aura = { kind, sprite }
+        this.aura = { kind, sprite, waves: waves ? this.startWaves(kind) : null }
+    }
+
+    // Uma onda agora, e outra a cada `AURA_WAVES.everyMs`, enquanto a aura durar
+    private startWaves(kind: AuraKind) {
+        const spawn = () => this.spawnWave(kind)
+        spawn()
+        return this.scene.time.addEvent({ delay: AURA_WAVES.everyMs, loop: true, callback: spawn })
+    }
+
+    // Onda é um "anel deitado" que nasce nos pés e sobe pela personagem, sumindo.
+    // A metade de cima passa por trás da arte, e a de baixo pela frente dela,
+    // mas por trás da barra de vigor e da estrela de nível.
+    private spawnWave(kind: AuraKind) {
+        const cs = this.cellSize
+        const { back, front } = waveTextures(this.scene, kind, cs)
+        const halves = [back, front].map((texture) =>
+            this.scene.add
+                .image(0, feetY(cs), texture)
+                .setScale(BOARD_ART_SCALE.character)
+                .setVertexRoundMode(WHOLE_PIXELS),
+        )
+        const artAt = this.container.getIndex(this.art)
+        this.container.addAt(halves[0], artAt)
+        this.container.addAt(halves[1], artAt + 2)
+        this.scene.tweens.add({
+            targets: halves,
+            y: feetY(cs) - AURA_WAVES.rise * cs,
+            alpha: { from: 1, to: 0, ease: "Quad.easeIn" },
+            duration: AURA_WAVES.riseMs,
+            ease: "Sine.easeOut",
+            onComplete: () => halves.forEach((half) => half.destroy()),
+        })
+    }
+
+    // A personagem atingida piscando: a arte inteira no tom do dano,
+    // a cada `blinkMs`, até passar o tempo do piscar.
+    flashDamage() {
+        this.flash?.remove()
+        const { durationMs, blinkMs } = DAMAGE_FLASH
+        const blinks = Math.max(1, Math.round(durationMs / blinkMs))
+        const lit = (on: boolean) => {
+            if (on) this.art.setTint(hex(DAMAGE_PALETTE.flash)).setTintMode(Phaser.TintModes.FILL)
+            else this.art.clearTint()
+        }
+        let count = 0
+        lit(true)
+        this.flash = this.scene.time.addEvent({
+            delay: blinkMs,
+            repeat: blinks - 1,
+            callback: () => {
+                count++
+                // A última troca deixa a arte como era
+                lit(count < blinks && count % 2 === 0)
+                if (count >= blinks) this.flash = null
+            },
+        })
     }
 
     // Comprimento e cor acompanham o vigor que restou. A barra some quando a personagem está inteira.
     private syncVigor(character: CharacterDefinition) {
-        const ratio = Math.max(0, Math.min(1, character.vigor / character.maxVigor))
+        this.showVigor(Math.max(0, Math.min(1, character.vigor / character.maxVigor)))
+    }
+
+    // A personagem perdeu todo o vigor: a barra fica toda preta, antes de ela "fugir da mansão"
+    defeat() {
+        this.showVigor(0)
+    }
+
+    // A barra com o vigor que sobrou,
+    private showVigor(ratio: number) {
+        this.vigorFill.setVisible(ratio > 0)
         this.vigorFill.setSize(Math.max(1, this.vigorWidth * ratio), this.vigorFill.height)
         this.vigorFill.setFillStyle(hex(vigorColor(ratio)))
 
@@ -259,6 +333,10 @@ export class CharacterSprite {
     flee(to: { x: number; y: number }, facing: Facing) {
         this.stop()
         this.face(facing)
+        // Nada mais nasce nela: nem onda da aura, nem piscar
+        this.aura?.waves?.remove()
+        this.flash?.remove()
+        this.art.clearTint()
         this.scene.tweens.add({
             targets: this.container,
             x: to.x,

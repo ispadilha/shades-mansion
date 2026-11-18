@@ -4,6 +4,7 @@ import { BoardContextMenu } from "./BoardContextMenu"
 import { InventoryModal } from "./InventoryModal"
 import { ItemInfoModal } from "./ItemInfoModal"
 import { CharacterInfoModal } from "./CharacterInfoModal"
+import { ImportantLogStack } from "./ImportantLogStack"
 import { SkillsModal } from "./SkillsModal"
 import { RollModal } from "../../../components/rolls"
 import { hasSkillLeft } from "../../../logic/turn"
@@ -12,9 +13,9 @@ import { useMatch } from "../../../hooks/useMatch"
 interface MatchMenusProps {}
 
 // Tudo o que abre por cima do tabuleiro: o menu do clique direito, as fichas de personagem e
-// de item, a lista de habilidades, o inventário e a rolagem em cena.
+// de item, a lista de habilidades, o inventário, a rolagem em cena e os avisos importantes no topo.
 export const MatchMenus: React.FC<MatchMenusProps> = ({}) => {
-    const { board, turn, skill, inventory, menu, rolls } = useMatch()
+    const { board, turn, skill, inventory, menu, rolls, importantLog } = useMatch()
 
     // A lista abre sempre, mas só deixa usar quando a personagem da vez ainda tem habilidade
     const skillsDisabled = !turn.isPlayerTurn || turn.busy || turn.activeCharacter === null || !hasSkillLeft(turn.activeCharacter)
@@ -67,6 +68,8 @@ export const MatchMenus: React.FC<MatchMenusProps> = ({}) => {
             )}
 
             <RollModal roll={rolls.current} onDone={rolls.finish} />
+
+            <ImportantLogStack notices={importantLog.notices} onDismiss={importantLog.dismiss} />
         </>
     )
 }

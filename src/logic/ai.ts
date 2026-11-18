@@ -13,7 +13,7 @@ import { distanceMap, findApproachCell, moveRangeOf, reachableCells } from "./mo
 import { mayAttack, type AttackArea } from "./combat"
 import { isProtected } from "./barriers"
 import { affinityPartnerOf } from "./affinity"
-import { itemUseFor, promoted, reinvigorated, type ItemUse } from "./items"
+import { itemUseFor, promoted, reinvigorated, type OwnItemUse } from "./items"
 import { chance, pickRandom } from "./random"
 import { AI_CHANCES, AI_TACTICS } from "../constants/rules"
 
@@ -71,7 +71,7 @@ export const itemWorth = (
 // Um item do time gasto na personagem dele, e como ela ficou
 export interface SpentItem {
     key: MotivationItemKey
-    use: ItemUse
+    use: OwnItemUse
     character: CharacterDefinition
 }
 

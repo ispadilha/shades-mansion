@@ -161,6 +161,22 @@ export const paintGlow = (
     )
 }
 
+// Aura com "onda"
+export const waveGrid = (width: number, height: number, color: string, half: "back" | "front"): PixelGrid => {
+    const inside = (x: number, y: number) =>
+        ((x + 0.5 - width / 2) / (width / 2)) ** 2 + ((y + 0.5 - height / 2) / (height / 2)) ** 2 <= 1
+    const ellipse = Array.from({ length: height }, (_, y) => Array.from({ length: width }, (_, x) => inside(x, y)))
+    const ring = borderOf(ellipse)
+    const inner = borderOf(ellipse.map((row, y) => row.map((on, x) => on && !ring[y][x])))
+    return ellipse.map((row, y) =>
+        row.map((_, x) => {
+            if ((half === "back") !== y < height / 2) return null
+            if (ring[y][x]) return color
+            return inner[y][x] ? rgba(color, 0.4) : null
+        }),
+    )
+}
+
 // Uma imagem por cima da outra, com o canto de cima à esquerda em (left, top)
 export const stamp = (grid: PixelGrid, image: PixelGrid, left: number, top: number) => {
     image.forEach((row, y) =>

@@ -12,6 +12,7 @@ import type {
 } from "../logic/types"
 import type { Maze } from "../logic/maze"
 import { chargeDurationMs, chargeVictims } from "../logic/charge"
+import type { OwnItemUse } from "../logic/items"
 import { walkDurationMs } from "../logic/movement"
 import { damageOf, imitableSkillOf, skillFor, skillMaxRangeOf, skillRangeOf, type Skill } from "../logic/skills"
 import {
@@ -57,6 +58,10 @@ interface AiTurnOptions {
     removeFromInventory: (color: CharacterColor, key: MotivationItemKey) => void
     // Segura a câmera na personagem manipulada enquanto ela ainda caminha até o destino
     holdFocus: (delayMs: number) => void
+    // A câmera está mostrando algo importante: a próxima jogada espera ela voltar
+    spotlighting: boolean
+    // A personagem foi promovida ou revigorada: quem chama mostra (a câmera, a aura)
+    onOwnItemUsed: (character: CharacterDefinition, use: OwnItemUse) => void
     combat: CombatResolution
     log: GameLog
 }
@@ -109,6 +114,8 @@ export const useAiTurn = ({
     moveActionFor,
     removeFromInventory,
     holdFocus,
+    spotlighting,
+    onOwnItemUsed,
     combat,
     log,
 }: AiTurnOptions): string | null => {
@@ -309,6 +316,7 @@ export const useAiTurn = ({
                 removeFromInventory(color, key)
                 if (use === "reinvigorate") log.reinvigorated(color, key)
                 else log.promoted(color, key, after.level)
+                onOwnItemUsed(after, use)
             }
             // Cada personagem fica como saiu do último item gasto nela
             const updated = new Map<string, CharacterDefinition>(spent.map((item) => [item.key, item.character]))
@@ -369,12 +377,27 @@ export const useAiTurn = ({
         const turn = turnRef.current
         // A imitação da última etapa ainda tem a habilidade copiada para usar
         const done = turn.stage === "done" && !turn.copied
+        // Com a câmera mostrando algo importante, a próxima jogada espera ela voltar
+        // para a personagem: nada acontece fora da tela. Passar a vez não espera,
+        // a câmera vai direto para a personagem seguinte.
+        if (spotlighting && !done) return
         const wait = Math.max(done ? AI_END_TURN_MS : AI_STEP_MS, busyUntilRef.current - Date.now())
         const timer = window.setTimeout(() => (done ? finish() : play(turn, activeCharacter)), wait)
         return () => clearTimeout(timer)
         // As funções da vez fecham sobre o estado deste render, que está todo nas dependências
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [turnIndex, round, characters, isPlayerTurn, inventories, items, rolls.resolving, barriers, decisions])
+    }, [
+        turnIndex,
+        round,
+        characters,
+        isPlayerTurn,
+        inventories,
+        items,
+        rolls.resolving,
+        barriers,
+        decisions,
+        spotlighting,
+    ])
 
     return skillUserId
 }

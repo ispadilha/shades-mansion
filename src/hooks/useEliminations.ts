@@ -2,7 +2,8 @@ import { useEffect, useRef } from "react"
 import type { CharacterColor, CharacterDefinition } from "../logic/types"
 
 interface EliminationHandlers {
-    onCharacterEliminated: (characterId: string) => void
+    // Quem saiu e como estava antes disso (na casa de onde "fugiu")
+    onCharacterEliminated: (character: CharacterDefinition) => void
     onTeamDefeated: (color: CharacterColor) => void
 }
 
@@ -20,7 +21,7 @@ export const useEliminations = (
 
         const currentIds = new Set(characters.map((p) => p.id))
         for (const character of previous) {
-            if (!currentIds.has(character.id)) onCharacterEliminated(character.id)
+            if (!currentIds.has(character.id)) onCharacterEliminated(character)
         }
 
         const previousColors = new Set(previous.map((p) => p.color))
